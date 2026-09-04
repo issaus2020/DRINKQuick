@@ -15,6 +15,9 @@ type Mode = 'signin' | 'signup';
 
 export function AccountScreen({ onBack }: { onBack: () => void }) {
   const { data } = useStore();
+  // Ohne eigenes Kind ist diese Person mit hoher Wahrscheinlichkeit
+  // eingeladen worden - dann führt der Code, nicht das Anlegen.
+  const invitedFirst = data.babies.length === 0;
   const sync = useSync();
   const [mode, setMode] = useState<Mode>('signin');
   const [email, setEmail] = useState('');
@@ -145,41 +148,19 @@ export function AccountScreen({ onBack }: { onBack: () => void }) {
         </div>
       ) : !account.familyId ? (
         <div className="card stack">
-          <h2 className="card__title">Familien-Bereich</h2>
+          <h2 className="card__title">
+            {invitedFirst ? 'Einladungscode eingeben' : 'Familien-Bereich'}
+          </h2>
           <p className="muted small">
-            Angemeldet als {account.email}. Lege jetzt einen Bereich an – oder tritt mit einem Code
-            dem Bereich bei, den jemand anderes schon angelegt hat.
+            Angemeldet als {account.email}.{' '}
+            {invitedFirst
+              ? 'Gib den Code ein, den du bekommen hast - danach siehst du dasselbe Kind wie die Person, die dich eingeladen hat.'
+              : 'Lege einen Bereich an – oder tritt mit einem Code dem Bereich bei, den jemand anderes schon angelegt hat.'}
           </p>
 
           <div className="field">
-            <label className="field__label" htmlFor="a-family">
-              Name des Bereichs
-            </label>
-            <input
-              id="a-family"
-              className="input"
-              type="text"
-              value={familyName}
-              onChange={(event) => setFamilyName(event.target.value)}
-            />
-          </div>
-          <button
-            type="button"
-            className="btn btn--primary btn--block"
-            disabled={busy}
-            onClick={() =>
-              run(async () => {
-                await sync.createFamily(familyName);
-                await sync.syncNow();
-              }, 'Bereich angelegt. Deine bisherigen Einträge sind hochgeladen.')
-            }
-          >
-            Bereich anlegen
-          </button>
-
-          <div className="field">
             <label className="field__label" htmlFor="a-code">
-              Oder Einladungscode eingeben
+              Einladungscode
             </label>
             <input
               id="a-code"
@@ -193,7 +174,7 @@ export function AccountScreen({ onBack }: { onBack: () => void }) {
           </div>
           <button
             type="button"
-            className="btn btn--block"
+            className={invitedFirst ? 'btn btn--primary btn--block' : 'btn btn--block'}
             disabled={busy || joinCode.trim().length < 4}
             onClick={() =>
               run(async () => {
@@ -203,6 +184,32 @@ export function AccountScreen({ onBack }: { onBack: () => void }) {
             }
           >
             Beitreten
+          </button>
+
+          <div className="field">
+            <label className="field__label" htmlFor="a-family">
+              {invitedFirst ? 'Kein Code? Eigenen Bereich anlegen' : 'Name des Bereichs'}
+            </label>
+            <input
+              id="a-family"
+              className="input"
+              type="text"
+              value={familyName}
+              onChange={(event) => setFamilyName(event.target.value)}
+            />
+          </div>
+          <button
+            type="button"
+            className={invitedFirst ? 'btn btn--block' : 'btn btn--primary btn--block'}
+            disabled={busy}
+            onClick={() =>
+              run(async () => {
+                await sync.createFamily(familyName);
+                await sync.syncNow();
+              }, 'Bereich angelegt. Deine bisherigen Einträge sind hochgeladen.')
+            }
+          >
+            Bereich anlegen
           </button>
 
           <button
