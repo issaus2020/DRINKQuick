@@ -4,7 +4,7 @@ import { Sheet } from '../ui/Sheet';
 import { fromLocalInputValue, toLocalInputValue } from '../../lib/date';
 import { newId } from '../../lib/id';
 import { useStore } from '../../lib/store-context';
-import type { Measurement } from '../../lib/types';
+import type { Draft, Measurement } from '../../lib/types';
 
 interface MeasurementSheetProps {
   onClose: () => void;
@@ -29,7 +29,7 @@ export function MeasurementSheet({ onClose, babyId, existing }: MeasurementSheet
   const canSave = weightG !== undefined || parse(length) !== undefined || parse(head) !== undefined;
 
   const save = () => {
-    const entry: Measurement = {
+    const entry: Draft<Measurement> = {
       id: existing?.id ?? newId(),
       babyId,
       takenAt: fromLocalInputValue(takenAt),

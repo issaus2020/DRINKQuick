@@ -11,6 +11,7 @@ import type { Baby, Feed } from '../types';
 
 const baby: Baby = {
   id: 'b1',
+  updatedAt: '2026-03-01T06:00:00.000Z',
   name: 'Test',
   sex: 'girl',
   birthedAt: '2026-03-01T06:00:00.000Z',
@@ -21,6 +22,7 @@ const baby: Baby = {
 
 const feed = (startedAt: string, patch: Partial<Feed> = {}): Feed => ({
   id: startedAt + (patch.kind ?? 'bottle'),
+  updatedAt: startedAt,
   babyId: 'b1',
   kind: 'bottle',
   startedAt,
@@ -140,6 +142,7 @@ describe('suggestBottleAmounts', () => {
     at.setHours(hour, 15, 0, 0);
     return {
       id: `${daysAgo}-${hour}-${amountMl}`,
+      updatedAt: at.toISOString(),
       babyId: 'b1',
       kind: 'bottle',
       startedAt: at.toISOString(),

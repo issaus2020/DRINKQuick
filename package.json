@@ -14,6 +14,7 @@
     "test:watch": "TZ=Europe/Berlin vitest"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.115.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },

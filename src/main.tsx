@@ -2,12 +2,15 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';
 import { StoreProvider } from './lib/store';
+import { SyncProvider } from './lib/sync/SyncProvider';
 import './styles.css';
 
 createRoot(document.getElementById('root') as HTMLElement).render(
   <StrictMode>
     <StoreProvider>
-      <App />
+      <SyncProvider>
+        <App />
+      </SyncProvider>
     </StoreProvider>
   </StrictMode>,
 );

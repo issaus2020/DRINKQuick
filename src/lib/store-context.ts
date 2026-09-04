@@ -1,42 +1,49 @@
 import { createContext, useContext } from 'react';
 import type {
+  Account,
+  ActiveTimer,
   AppData,
   Baby,
   Checkup,
   Diaper,
+  Draft,
   Feed,
   HealthEntry,
   Measurement,
   Settings,
-  ActiveTimer,
 } from './types';
 
 export interface Store {
+  /** Sichtbarer Bestand: ohne die als gelöscht markierten Einträge. */
   data: AppData;
+  /** Vollständiger Bestand inklusive Löschmarkierungen - für Abgleich und Sicherung. */
+  rawData: AppData;
   /** Erst nach dem Laden aus IndexedDB true - vorher zeigt die App einen Ladezustand. */
   ready: boolean;
   activeBaby?: Baby;
 
   setSettings(patch: Partial<Settings>): void;
-  addBaby(baby: Baby): void;
-  updateBaby(id: string, patch: Partial<Baby>): void;
+  setAccount(account?: Account): void;
+
+  addBaby(baby: Draft<Baby>): void;
+  updateBaby(id: string, patch: Partial<Draft<Baby>>): void;
   removeBaby(id: string): void;
 
-  addFeed(feed: Feed): void;
-  updateFeed(id: string, patch: Partial<Feed>): void;
+  addFeed(feed: Draft<Feed>): void;
+  updateFeed(id: string, patch: Partial<Draft<Feed>>): void;
   removeFeed(id: string): void;
 
-  addMeasurement(entry: Measurement): void;
-  updateMeasurement(id: string, patch: Partial<Measurement>): void;
+  addMeasurement(entry: Draft<Measurement>): void;
+  updateMeasurement(id: string, patch: Partial<Draft<Measurement>>): void;
   removeMeasurement(id: string): void;
 
-  addDiaper(entry: Diaper): void;
+  addDiaper(entry: Draft<Diaper>): void;
   removeDiaper(id: string): void;
 
-  addHealth(entry: HealthEntry): void;
+  addHealth(entry: Draft<HealthEntry>): void;
   removeHealth(id: string): void;
 
-  toggleCheckup(entry: Checkup): void;
+  toggleCheckup(entry: Draft<Checkup>): void;
 
   /** Timer eines Babys setzen oder (mit undefined) beenden. */
   setTimer(babyId: string, timer?: ActiveTimer): void;

@@ -7,6 +7,7 @@ import { GrowthScreen } from './screens/GrowthScreen';
 import { HealthScreen } from './screens/HealthScreen';
 import { Onboarding } from './screens/Onboarding';
 import { ReportScreen } from './screens/ReportScreen';
+import { AccountScreen } from './screens/AccountScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { TodayScreen } from './screens/TodayScreen';
 
@@ -32,6 +33,7 @@ export function App() {
   const { ready, activeBaby, data } = useStore();
   const [tab, setTab] = useState<Tab>('today');
   const [showReport, setShowReport] = useState(false);
+  const [showAccount, setShowAccount] = useState(false);
 
   // Das Farbschema hängt am Wurzelelement, damit CSS und Formularelemente
   // (color-scheme) gemeinsam umschalten.
@@ -65,6 +67,16 @@ export function App() {
     );
   }
 
+  if (showAccount) {
+    return (
+      <div className="app">
+        <main className="app__main">
+          <AccountScreen onBack={() => setShowAccount(false)} />
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="app">
       <header className="topbar">
@@ -88,7 +100,11 @@ export function App() {
         {tab === 'growth' && <GrowthScreen baby={activeBaby} />}
         {tab === 'health' && <HealthScreen baby={activeBaby} />}
         {tab === 'settings' && (
-          <SettingsScreen baby={activeBaby} onShowReport={() => setShowReport(true)} />
+          <SettingsScreen
+            baby={activeBaby}
+            onShowReport={() => setShowReport(true)}
+            onShowAccount={() => setShowAccount(true)}
+          />
         )}
       </main>
 
