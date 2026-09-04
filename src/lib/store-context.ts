@@ -1,4 +1,5 @@
 import { createContext, useContext } from 'react';
+import type { SyncedCollection } from './sync/merge';
 import type {
   Account,
   ActiveTimer,
@@ -11,6 +12,7 @@ import type {
   HealthEntry,
   Measurement,
   Settings,
+  Syncable,
 } from './types';
 
 export interface Store {
@@ -50,6 +52,15 @@ export interface Store {
 
   /** Kompletten Datenbestand ersetzen - für Import und Zurücksetzen. */
   replaceAll(data: AppData): void;
+
+  /**
+   * Vom Server geholte Einträge einarbeiten.
+   *
+   * Bewusst als eigene Aktion statt über replaceAll: die Zusammenführung
+   * passiert gegen den Stand, der beim Schreiben aktuell ist. Wer während des
+   * Abgleichs eine Flasche einträgt, verliert sie sonst.
+   */
+  applySync(incoming: Partial<Record<SyncedCollection, Syncable[]>>, account: Account): void;
 }
 
 export const StoreContext = createContext<Store | null>(null);

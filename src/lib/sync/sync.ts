@@ -37,10 +37,16 @@ interface EntryRow {
 /** Beim Hochladen bleibt server_updated_at weg - das setzt der Server selbst. */
 type EntryUpload = Omit<EntryRow, 'server_updated_at'>;
 
+export type IncomingRecords = Partial<Record<SyncedCollection, Syncable[]>>;
+
 export interface SyncOutcome {
-  data: AppData;
-  /** Hat sich am lokalen Bestand etwas geändert? */
-  changed: boolean;
+  /**
+   * Was vom Server hereinkam, nach Sammlung sortiert. Bewusst NICHT der
+   * fertig zusammengeführte Bestand: eingearbeitet wird erst im Store, gegen
+   * den dann aktuellen Stand. Sonst gingen Einträge verloren, die während des
+   * Abgleichs entstanden sind.
+   */
+  incoming: IncomingRecords;
   /** Neuer Lesezeiger (Serverzeit) für den nächsten Durchgang. */
   cursor?: string;
   /** Zeitpunkt, bis zu dem lokal alles hochgeladen ist. */
@@ -92,9 +98,9 @@ export async function runSync(
   const { data: rows, error } = await query.order('server_updated_at', { ascending: true });
   if (error) throw new Error(`Abgleich fehlgeschlagen: ${error.message}`);
 
-  const incoming = (rows ?? []) as EntryRow[];
+  const rowsIn = (rows ?? []) as EntryRow[];
   const byCollection = new Map<SyncedCollection, Syncable[]>();
-  for (const row of incoming) {
+  for (const row of rowsIn) {
     const collection = KIND_COLLECTION[row.kind];
     if (!collection) continue; // unbekannte Art: eine neuere App-Version, ignorieren
     const bucket = byCollection.get(collection) ?? [];
@@ -102,15 +108,15 @@ export async function runSync(
     byCollection.set(collection, bucket);
   }
 
-  // --- 2. zusammenführen ----------------------------------------------------
+  // --- 2. zusammenführen (nur, um zu wissen, was hochmuss) -----------------
+  const incoming: IncomingRecords = {};
   let merged: AppData = data;
-  let changed = false;
   for (const collection of SYNCED_COLLECTIONS) {
-    const result = mergeCollection<Syncable>(merged[collection], byCollection.get(collection) ?? []);
-    if (result.changed) {
-      merged = { ...merged, [collection]: result.merged } as AppData;
-      changed = true;
-    }
+    const fresh = byCollection.get(collection);
+    if (!fresh?.length) continue;
+    incoming[collection] = fresh;
+    const result = mergeCollection<Syncable>(merged[collection], fresh);
+    if (result.changed) merged = { ...merged, [collection]: result.merged } as AppData;
   }
 
   // --- 3. hochladen ---------------------------------------------------------
@@ -127,13 +133,12 @@ export async function runSync(
     if (pushError) throw new Error(`Hochladen fehlgeschlagen: ${pushError.message}`);
   }
 
-  const newest = incoming[incoming.length - 1]?.server_updated_at;
+  const newest = rowsIn[rowsIn.length - 1]?.server_updated_at;
   return {
-    data: merged,
-    changed,
+    incoming,
     cursor: newest ?? cursor,
     pushedUpTo: pushStartedAt,
-    pulled: incoming.length,
+    pulled: rowsIn.length,
     pushed: outgoing.length,
   };
 }
