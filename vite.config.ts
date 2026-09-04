@@ -12,6 +12,9 @@ export default defineConfig({
           // Die WHO-Tabellen sind ~100 kB Rohdaten und werden nur auf dem
           // Gewichts-Tab gebraucht - eigener Chunk, damit der Start schlank bleibt.
           who: ['./src/lib/who/tables.ts'],
+          // Der Supabase-Client wird nur gebraucht, wenn ein Konto eingerichtet
+          // ist; getrennt halten, damit er den ersten Start nicht ausbremst.
+          supabase: ['@supabase/supabase-js'],
         },
       },
     },

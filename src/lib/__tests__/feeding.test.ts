@@ -1,9 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import { dailyIntake, expectedMealsPerDay, feedingHeatmap, feedingStats, intakeTarget } from '../feeding';
+import {
+  dailyIntake,
+  expectedMealsPerDay,
+  feedingHeatmap,
+  feedingStats,
+  intakeTarget,
+  suggestBottleAmounts,
+} from '../feeding';
 import type { Baby, Feed } from '../types';
 
 const baby: Baby = {
   id: 'b1',
+  updatedAt: '2026-03-01T06:00:00.000Z',
   name: 'Test',
   sex: 'girl',
   birthedAt: '2026-03-01T06:00:00.000Z',
@@ -14,6 +22,7 @@ const baby: Baby = {
 
 const feed = (startedAt: string, patch: Partial<Feed> = {}): Feed => ({
   id: startedAt + (patch.kind ?? 'bottle'),
+  updatedAt: startedAt,
   babyId: 'b1',
   kind: 'bottle',
   startedAt,
@@ -120,5 +129,104 @@ describe('feedingHeatmap', () => {
     const todayRow = rows[rows.length - 1];
     const hour = new Date('2026-03-10T08:30:00.000Z').getHours();
     expect(todayRow.hours[hour]).toEqual({ count: 1, ml: 90 });
+  });
+});
+
+describe('suggestBottleAmounts', () => {
+  const now = new Date('2026-03-20T21:00:00.000Z'); // 22 Uhr Ortszeit
+
+  /** Flasche vor `daysAgo` Tagen zur Ortszeit-Stunde `hour`. */
+  const bottleAt = (daysAgo: number, hour: number, amountMl: number): Feed => {
+    const at = new Date(now);
+    at.setDate(at.getDate() - daysAgo);
+    at.setHours(hour, 15, 0, 0);
+    return {
+      id: `${daysAgo}-${hour}-${amountMl}`,
+      updatedAt: at.toISOString(),
+      babyId: 'b1',
+      kind: 'bottle',
+      startedAt: at.toISOString(),
+      amountMl,
+    };
+  };
+
+  const currentHour = now.getHours();
+
+  it('lernt aus den Flaschen um dieselbe Uhrzeit', () => {
+    const feeds = [
+      // Abends viel - das soll der Vorschlag treffen.
+      bottleAt(1, currentHour, 120),
+      bottleAt(2, currentHour, 110),
+      bottleAt(3, currentHour, 130),
+      bottleAt(4, currentHour, 120),
+      // Morgens wenig - darf die Abendvorschläge nicht verwässern.
+      bottleAt(1, (currentHour + 10) % 24, 40),
+      bottleAt(2, (currentHour + 10) % 24, 45),
+      bottleAt(3, (currentHour + 10) % 24, 40),
+    ];
+
+    const result = suggestBottleAmounts(feeds, 75, now);
+    expect(result.basis).toBe('hour');
+    expect(result.sampleSize).toBe(4);
+    expect(Math.min(...result.amounts)).toBeGreaterThanOrEqual(105);
+    expect(Math.max(...result.amounts)).toBeLessThanOrEqual(130);
+  });
+
+  it('weitet auf den ganzen Tag aus, wenn es zu dieser Stunde zu wenig gibt', () => {
+    const feeds = [
+      bottleAt(1, (currentHour + 8) % 24, 60),
+      bottleAt(2, (currentHour + 9) % 24, 70),
+      bottleAt(3, (currentHour + 10) % 24, 80),
+      bottleAt(4, (currentHour + 11) % 24, 65),
+    ];
+
+    const result = suggestBottleAmounts(feeds, 75, now);
+    expect(result.basis).toBe('day');
+    expect(result.sampleSize).toBe(4);
+  });
+
+  it('greift ohne Historie auf den Richtwert zurück', () => {
+    const result = suggestBottleAmounts([], 80, now);
+    expect(result.basis).toBe('target');
+    expect(result.amounts).toEqual([60, 80, 100]);
+  });
+
+  it('rundet auf 5 ml und liefert aufsteigende, eindeutige Werte', () => {
+    const feeds = [
+      bottleAt(1, currentHour, 63),
+      bottleAt(2, currentHour, 71),
+      bottleAt(3, currentHour, 78),
+      bottleAt(4, currentHour, 84),
+    ];
+
+    const result = suggestBottleAmounts(feeds, 75, now);
+    expect(result.amounts.every((amount) => amount % 5 === 0)).toBe(true);
+    expect([...result.amounts].sort((a, b) => a - b)).toEqual(result.amounts);
+    expect(new Set(result.amounts).size).toBe(result.amounts.length);
+  });
+
+  it('gibt auch bei lauter gleichen Mengen mehr als einen Knopf aus', () => {
+    const feeds = [
+      bottleAt(1, currentHour, 90),
+      bottleAt(2, currentHour, 90),
+      bottleAt(3, currentHour, 90),
+    ];
+
+    const result = suggestBottleAmounts(feeds, 75, now);
+    expect(result.amounts.length).toBeGreaterThan(1);
+    expect(result.amounts).toContain(90);
+  });
+
+  it('ignoriert Stillen, Abpumpen und alte Einträge', () => {
+    const old = bottleAt(40, currentHour, 200);
+    const feeds: Feed[] = [
+      old,
+      { ...bottleAt(1, currentHour, 300), kind: 'pump' },
+      { ...bottleAt(2, currentHour, 300), kind: 'breast' },
+    ];
+
+    const result = suggestBottleAmounts(feeds, 80, now);
+    expect(result.basis).toBe('target');
+    expect(result.amounts).toEqual([60, 80, 100]);
   });
 });

@@ -1,12 +1,30 @@
-/** Datenmodell der App. Alle Zeitstempel sind ISO-8601-Strings in lokaler Zeit-UTC. */
+/** Datenmodell der App. Alle Zeitstempel sind ISO-8601-Strings in UTC. */
+
+/**
+ * Felder, die jeder synchronisierbare Eintrag trägt.
+ *
+ * `updatedAt` entscheidet beim Abgleich zwischen zwei Geräten, welche Fassung
+ * gewinnt. `deletedAt` markiert Gelöschtes, statt es zu entfernen - ein hart
+ * gelöschter Eintrag käme beim nächsten Abgleich vom anderen Gerät zurück.
+ */
+export interface Syncable {
+  id: string;
+  updatedAt: string;
+  deletedAt?: string;
+}
+
+/**
+ * Ein Eintrag, wie ihn die Oberfläche anlegt: ohne die Sync-Felder, die
+ * ausschließlich der Store setzt.
+ */
+export type Draft<T extends Syncable> = Omit<T, 'updatedAt' | 'deletedAt'>;
 
 export type Sex = 'girl' | 'boy';
 
 /** Wie das Kind ernährt wird - steuert, welche Kennzahl auf "Heute" führt. */
 export type FeedingMode = 'breast' | 'bottle' | 'mixed';
 
-export interface Baby {
-  id: string;
+export interface Baby extends Syncable {
   name: string;
   sex: Sex;
   /** Geburtszeitpunkt (ISO). Bestimmt Lebenstag, Perzentile und Soll-Trinkmenge. */
@@ -29,8 +47,7 @@ export type BottleContent = 'breastmilk' | 'formula' | 'follow_on' | 'other';
 
 export type FeedKind = 'breast' | 'bottle' | 'pump' | 'solids';
 
-export interface Feed {
-  id: string;
+export interface Feed extends Syncable {
   babyId: string;
   kind: FeedKind;
   /** Beginn der Mahlzeit (ISO). */
@@ -58,8 +75,7 @@ export interface ActiveTimer {
   runningSince?: string;
 }
 
-export interface Measurement {
-  id: string;
+export interface Measurement extends Syncable {
   babyId: string;
   /** Zeitpunkt der Messung (ISO). */
   takenAt: string;
@@ -73,8 +89,7 @@ export type DiaperKind = 'wet' | 'dirty' | 'both';
 /** Stuhlfarben, die in den ersten Wochen unterschieden werden. */
 export type StoolColor = 'meconium' | 'green' | 'yellow' | 'brown' | 'other';
 
-export interface Diaper {
-  id: string;
+export interface Diaper extends Syncable {
   babyId: string;
   at: string;
   kind: DiaperKind;
@@ -84,8 +99,7 @@ export interface Diaper {
 
 export type HealthKind = 'temperature' | 'medication' | 'vitamin' | 'symptom' | 'spit_up' | 'note';
 
-export interface HealthEntry {
-  id: string;
+export interface HealthEntry extends Syncable {
   babyId: string;
   at: string;
   kind: HealthKind;
@@ -99,8 +113,7 @@ export interface HealthEntry {
 }
 
 /** Abgehakte Vorsorgeuntersuchung (U1-U9) bzw. Impftermin. */
-export interface Checkup {
-  id: string;
+export interface Checkup extends Syncable {
   babyId: string;
   /** Schlüssel aus CHECKUP_SCHEDULE, z. B. "U3". */
   key: string;
@@ -109,6 +122,21 @@ export interface Checkup {
 }
 
 export type ThemeSetting = 'system' | 'light' | 'dark';
+
+/** Angemeldeter Nutzer und sein Familien-Bereich. Fehlt beides, läuft die App rein lokal. */
+export interface Account {
+  userId: string;
+  email: string;
+  /** Leer, solange noch kein Bereich angelegt oder beigetreten wurde. */
+  familyId: string;
+  familyName: string;
+  /** Serverseitiger Lesezeiger: bis hierher ist alles geholt. */
+  syncCursor?: string;
+  /** Lokaler Zeitpunkt, bis zu dem alles hochgeladen ist. */
+  lastPushedAt?: string;
+  /** Zeitpunkt des letzten erfolgreichen Abgleichs (ISO), für die Anzeige. */
+  lastSyncedAt?: string;
+}
 
 export interface Settings {
   theme: ThemeSetting;
@@ -123,6 +151,8 @@ export interface Settings {
 /** Der gesamte persistierte Zustand - genau das, was Export und Import bewegen. */
 export interface AppData {
   version: 1;
+  /** Nur gesetzt, solange jemand angemeldet ist. */
+  account?: Account;
   babies: Baby[];
   feeds: Feed[];
   measurements: Measurement[];

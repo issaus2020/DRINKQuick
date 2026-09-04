@@ -1,19 +1,36 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { loadData, saveData } from './db';
 import { EMPTY_DATA, type AppData } from './types';
-import type {
-  ActiveTimer,
-  Baby,
-  Checkup,
-  Diaper,
-  HealthEntry,
-  Measurement,
-  Settings,
-} from './types';
+import type { Account, ActiveTimer, Draft, Settings, Syncable } from './types';
 import { StoreContext, type Store } from './store-context';
 
 /** Schreibt frühestens nach dieser Ruhezeit - schont die Platte bei laufenden Timern. */
 const SAVE_DEBOUNCE_MS = 300;
+
+const now = () => new Date().toISOString();
+
+/** Aus einem Entwurf einen vollständigen Eintrag machen. */
+function stamp<T extends Syncable>(draft: Draft<T>): T {
+  return { ...draft, updatedAt: now() } as T;
+}
+
+/** Einen Eintrag ändern und dabei den Änderungszeitstempel neu setzen. */
+function patchIn<T extends Syncable>(items: T[], id: string, patch: Partial<Draft<T>>): T[] {
+  return items.map((item) => (item.id === id ? { ...item, ...patch, updatedAt: now() } : item));
+}
+
+/**
+ * Löschen heißt markieren, nicht entfernen. Ein hart gelöschter Eintrag käme
+ * beim nächsten Abgleich vom anderen Gerät zurück.
+ */
+function softDelete<T extends Syncable>(items: T[], match: (item: T) => boolean): T[] {
+  const at = now();
+  return items.map((item) =>
+    match(item) && !item.deletedAt ? { ...item, deletedAt: at, updatedAt: at } : item,
+  );
+}
+
+const alive = <T extends Syncable>(items: T[]): T[] => items.filter((item) => !item.deletedAt);
 
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<AppData>(EMPTY_DATA);
@@ -43,71 +60,92 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setData((current) => fn(current));
   }, []);
 
-  const store = useMemo<Store>(() => {
-    const patchIn = <T extends { id: string }>(items: T[], id: string, patch: Partial<T>): T[] =>
-      items.map((item) => (item.id === id ? { ...item, ...patch } : item));
+  // Die Oberfläche sieht nur, was nicht gelöscht ist; Abgleich und Sicherung
+  // brauchen dagegen die Löschmarkierungen.
+  const visible = useMemo<AppData>(
+    () => ({
+      ...data,
+      babies: alive(data.babies),
+      feeds: alive(data.feeds),
+      measurements: alive(data.measurements),
+      diapers: alive(data.diapers),
+      health: alive(data.health),
+      checkups: alive(data.checkups),
+    }),
+    [data],
+  );
 
+  const store = useMemo<Store>(() => {
     const activeBaby =
-      data.babies.find((b) => b.id === data.settings.activeBabyId) ?? data.babies[0];
+      visible.babies.find((b) => b.id === visible.settings.activeBabyId) ?? visible.babies[0];
 
     return {
-      data,
+      data: visible,
+      rawData: data,
       ready,
       activeBaby,
 
       setSettings: (patch: Partial<Settings>) =>
         update((d) => ({ ...d, settings: { ...d.settings, ...patch } })),
 
-      addBaby: (baby: Baby) =>
-        update((d) => ({
-          ...d,
-          babies: [...d.babies, baby],
-          settings: { ...d.settings, activeBabyId: baby.id, onboarded: true },
-        })),
+      setAccount: (account?: Account) => update((d) => ({ ...d, account })),
+
+      addBaby: (baby) =>
+        update((d) => {
+          const entry = stamp(baby);
+          return {
+            ...d,
+            babies: [...d.babies, entry],
+            settings: { ...d.settings, activeBabyId: entry.id, onboarded: true },
+          };
+        }),
       updateBaby: (id, patch) => update((d) => ({ ...d, babies: patchIn(d.babies, id, patch) })),
       removeBaby: (id) =>
         update((d) => {
-          const babies = d.babies.filter((b) => b.id !== id);
+          const byBaby = (item: { babyId: string }) => item.babyId === id;
+          const babies = softDelete(d.babies, (b) => b.id === id);
           return {
             ...d,
             babies,
-            feeds: d.feeds.filter((f) => f.babyId !== id),
-            measurements: d.measurements.filter((m) => m.babyId !== id),
-            diapers: d.diapers.filter((x) => x.babyId !== id),
-            health: d.health.filter((x) => x.babyId !== id),
-            checkups: d.checkups.filter((x) => x.babyId !== id),
+            feeds: softDelete(d.feeds, byBaby),
+            measurements: softDelete(d.measurements, byBaby),
+            diapers: softDelete(d.diapers, byBaby),
+            health: softDelete(d.health, byBaby),
+            checkups: softDelete(d.checkups, byBaby),
             timers: d.timers.filter((t) => t.babyId !== id),
-            settings: { ...d.settings, activeBabyId: babies[0]?.id },
+            settings: {
+              ...d.settings,
+              activeBabyId: babies.find((b) => !b.deletedAt)?.id,
+            },
           };
         }),
 
-      addFeed: (feed) => update((d) => ({ ...d, feeds: [...d.feeds, feed] })),
+      addFeed: (feed) => update((d) => ({ ...d, feeds: [...d.feeds, stamp(feed)] })),
       updateFeed: (id, patch) => update((d) => ({ ...d, feeds: patchIn(d.feeds, id, patch) })),
-      removeFeed: (id) => update((d) => ({ ...d, feeds: d.feeds.filter((f) => f.id !== id) })),
+      removeFeed: (id) => update((d) => ({ ...d, feeds: softDelete(d.feeds, (f) => f.id === id) })),
 
-      addMeasurement: (entry: Measurement) =>
-        update((d) => ({ ...d, measurements: [...d.measurements, entry] })),
+      addMeasurement: (entry) =>
+        update((d) => ({ ...d, measurements: [...d.measurements, stamp(entry)] })),
       updateMeasurement: (id, patch) =>
         update((d) => ({ ...d, measurements: patchIn(d.measurements, id, patch) })),
       removeMeasurement: (id) =>
-        update((d) => ({ ...d, measurements: d.measurements.filter((m) => m.id !== id) })),
+        update((d) => ({ ...d, measurements: softDelete(d.measurements, (m) => m.id === id) })),
 
-      addDiaper: (entry: Diaper) => update((d) => ({ ...d, diapers: [...d.diapers, entry] })),
-      removeDiaper: (id) => update((d) => ({ ...d, diapers: d.diapers.filter((x) => x.id !== id) })),
+      addDiaper: (entry) => update((d) => ({ ...d, diapers: [...d.diapers, stamp(entry)] })),
+      removeDiaper: (id) =>
+        update((d) => ({ ...d, diapers: softDelete(d.diapers, (x) => x.id === id) })),
 
-      addHealth: (entry: HealthEntry) => update((d) => ({ ...d, health: [...d.health, entry] })),
-      removeHealth: (id) => update((d) => ({ ...d, health: d.health.filter((x) => x.id !== id) })),
+      addHealth: (entry) => update((d) => ({ ...d, health: [...d.health, stamp(entry)] })),
+      removeHealth: (id) =>
+        update((d) => ({ ...d, health: softDelete(d.health, (x) => x.id === id) })),
 
-      toggleCheckup: (entry: Checkup) =>
+      toggleCheckup: (entry) =>
         update((d) => {
           const existing = d.checkups.find(
-            (c) => c.babyId === entry.babyId && c.key === entry.key,
+            (c) => c.babyId === entry.babyId && c.key === entry.key && !c.deletedAt,
           );
-          if (!existing) return { ...d, checkups: [...d.checkups, entry] };
-          return {
-            ...d,
-            checkups: d.checkups.filter((c) => c !== existing),
-          };
+          if (!existing) return { ...d, checkups: [...d.checkups, stamp(entry)] };
+          return { ...d, checkups: softDelete(d.checkups, (c) => c.id === existing.id) };
         }),
 
       setTimer: (babyId: string, timer?: ActiveTimer) =>
@@ -120,7 +158,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
       replaceAll: (next: AppData) => update(() => next),
     };
-  }, [data, ready, update]);
+  }, [data, visible, ready, update]);
 
   return <StoreContext.Provider value={store}>{children}</StoreContext.Provider>;
 }

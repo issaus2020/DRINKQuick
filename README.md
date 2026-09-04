@@ -10,18 +10,27 @@ die in den ersten Wochen wirklich zählen:
 Rund um diesen Kern lassen sich Windeln, Temperatur, Medikamente, Symptome und die
 Vorsorgeuntersuchungen U1–U9 protokollieren.
 
-Alles läuft **lokal auf dem Gerät**: kein Konto, kein Server, keine Übertragung von
-Gesundheitsdaten. Die App ist als PWA installierbar und offline nutzbar – das ist
-kein Nebeneffekt, sondern Voraussetzung dafür, dass man sie nachts um drei ohne
-Netz benutzen kann.
+Die App läuft **lokal auf dem Gerät**: als PWA installierbar, offline nutzbar,
+und ohne Konto verlässt kein Gesundheitsdatum das Telefon. Das ist kein
+Nebeneffekt, sondern Voraussetzung dafür, dass man sie nachts um drei ohne Netz
+benutzen kann. Wer die Einträge zu zweit führen will, kann optional ein Konto
+anlegen und einen Familien-Bereich teilen – siehe unten.
 
 ## Funktionen
 
 ### Trinkverhalten und Menge
 
-- **Still-Timer**, der aus Zeitstempeln rechnet: läuft weiter, wenn das Display aus
-  ist, die App im Hintergrund liegt oder das Telefon neu startet. Mit Pause,
-  Seitenwechsel und Verwerfen.
+- **Schnelleintrag der Trinkmenge** auf dem Startbildschirm: drei große Knöpfe mit
+  den Mengen, die das Kind um diese Uhrzeit sonst trinkt – ein Tipp, fertig.
+  Die Vorschläge stammen aus den Flaschen der letzten drei Wochen im Zeitfenster
+  ±2 Stunden um jetzt (etwas weniger / wie üblich / etwas mehr); reichen die
+  Einträge dort nicht, weitet sich der Blick auf den ganzen Tag, und am Anfang
+  steht der Richtwert aus Gewicht und Lebenstag. Jeder Eintrag lässt sich
+  direkt danach zurücknehmen.
+- **Still-Timer** auf dem Trinken-Tab, der aus Zeitstempeln rechnet: läuft weiter,
+  wenn das Display aus ist, die App im Hintergrund liegt oder das Telefon neu
+  startet. Mit Pause, Seitenwechsel und Verwerfen. Ein laufender Timer bleibt
+  auch auf dem Startbildschirm sichtbar.
 - **Flasche** in 5-ml-Schritten, mit Voreinstellungen und Inhalt (Muttermilch,
   Pre, Folgemilch).
 - **Abpumpen** getrennt erfasst – es zählt nicht als Mahlzeit des Kindes.
@@ -53,6 +62,27 @@ Netz benutzen kann.
   ab 38,0 °C ärztlich abzuklären ist.
 - Medikamente, Vitamin D, Symptome, Notizen.
 - Vorsorgeuntersuchungen U1–U9 mit konkreten Terminfenstern aus dem Geburtsdatum.
+
+### Konto und Teilen (optional)
+
+- **Ohne Konto bleibt alles wie bisher**: kein Server, keine Übertragung, alle
+  Daten auf dem Gerät. Das ist der Auslieferungszustand.
+- **Mit Konto** teilen sich mehrere Geräte einen Familien-Bereich: beide Eltern,
+  Großeltern oder eine Betreuungsperson sehen und bearbeiten dieselben Einträge.
+  Eingeladen wird per achtstelligem Code, der sieben Tage gilt und einmal
+  eingelöst werden kann.
+- **Lokal bleibt die Wahrheit.** Die Anzeige kommt immer aus der Datenbank im
+  Browser, nie aus dem Netz – die App funktioniert um drei Uhr nachts ohne
+  Empfang genauso wie mit. Der Abgleich läuft im Hintergrund: beim Start, beim
+  Zurückkehren in den Vordergrund, kurz nach jeder Änderung und sonst einmal
+  pro Minute.
+- **Konflikte** löst der Abgleich mit „die zuletzt geänderte Fassung gewinnt".
+  Das trägt hier weiter als es klingt: Mahlzeiten, Windeln und Wägungen sind
+  eigenständige Einträge mit eigener ID – tragen beide Eltern gleichzeitig
+  etwas ein, entstehen zwei Einträge und kein Konflikt. Entschieden werden muss
+  nur, wenn dieselbe Zeile auf zwei Geräten geändert wurde.
+- **Gelöschtes bleibt gelöscht.** Ein Eintrag wird markiert statt entfernt, sonst
+  käme er beim nächsten Abgleich vom anderen Gerät zurück.
 
 ### Auswertung und Weitergabe
 
@@ -103,6 +133,36 @@ Hinweis darauf, dass genug ankommt.
 - Die WHO-Tabellen liegen in einem eigenen Chunk und werden nur geladen, wenn der
   Gewichts-Tab sie braucht.
 
+### Konto und Teilen einrichten
+
+Der geteilte Bereich braucht ein Supabase-Projekt. Das ist einmalige Arbeit von
+etwa zehn Minuten; danach läuft es von selbst.
+
+1. Auf [supabase.com](https://supabase.com) ein Projekt anlegen. **Bei der
+   Region eine europäische wählen** (z. B. Frankfurt) – dann liegen die
+   Gesundheitsdaten in der EU.
+2. Im Projekt unter *SQL Editor* → *New query* den Inhalt von
+   `supabase/schema.sql` einfügen und ausführen. Das legt die Tabellen, den
+   Zugriffsschutz und die Funktionen für Einladungscodes an. Das Skript ist
+   wiederholbar – ein zweiter Lauf macht nichts kaputt.
+3. Unter *Project Settings* → *API* die Projekt-URL und den `anon`-Key
+   kopieren.
+4. Beide Werte als Umgebungsvariablen hinterlegen: lokal in einer `.env`-Datei
+   (Vorlage: `.env.example`), beim Hosting in den Umgebungsvariablen des
+   Projekts. Danach neu bauen.
+5. In der App unter *Mehr* → *Konto & Teilen* ein Konto anlegen, einen Bereich
+   erstellen und den Einladungscode weitergeben.
+
+Zum Zugriffsschutz: der `anon`-Key darf öffentlich sein. Der Schutz steckt in
+den Row-Level-Security-Regeln – jede Zeile ist nur für Mitglieder genau der
+Familie lesbar und schreibbar, zu der sie gehört. Wer den Key hat, aber in
+keiner Familie ist, sieht nichts.
+
+Die Einträge liegen serverseitig in einer einzigen Tabelle mit einer
+`jsonb`-Spalte. Der Server ist hier nur Briefkasten zwischen den Geräten –
+ausgewertet wird ausschließlich lokal. Deshalb braucht eine neue Angabe im
+Datenmodell später auch keine Datenbank-Migration.
+
 ### Entwicklung
 
 ```bash
@@ -124,10 +184,16 @@ node scripts/generate-who-data.mjs
 
 ## Datenschutz
 
-Es gibt keinen Server und kein Konto. Die Daten liegen ausschließlich in der
+**Ohne Konto** gibt es keinen Server: die Daten liegen ausschließlich in der
 Datenbank des Browsers auf dem Gerät. Deshalb: **vor einem Gerätewechsel eine
 JSON-Sicherung exportieren.** Wer den Browserspeicher der Seite löscht, löscht
 auch die Einträge.
+
+**Mit Konto** liegen die Einträge zusätzlich auf dem eigenen Supabase-Projekt,
+damit ein zweites Gerät sie sehen kann. Das ist eine bewusste Abwägung: geteilte
+Daten brauchen einen gemeinsamen Ort. Wähle bei der Projektanlage eine
+europäische Region, und lade nur Menschen ein, die die Daten sehen sollen – ein
+eingelöster Code gibt vollen Zugriff auf den Bereich.
 
 ## Haftungsausschluss
 

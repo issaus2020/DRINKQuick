@@ -2,6 +2,7 @@
 import { useMemo, useState } from 'react';
 import { FeedingHeatmap } from '../components/charts/FeedingHeatmap';
 import { IntakeChart, type IntakeMetric, type IntakeView } from '../components/charts/IntakeChart';
+import { BreastTimer } from '../components/entry/BreastTimer';
 import { FeedSheet } from '../components/entry/FeedSheet';
 import { Icon } from '../components/ui/Icon';
 import { Segmented } from '../components/ui/Segmented';
@@ -71,6 +72,12 @@ export function FeedingScreen({ baby }: FeedingScreenProps) {
 
   return (
     <div className="page">
+      {/* Der Still-Timer wohnt hier, seit auf "Heute" die schnelle
+          Mengeneingabe an seiner Stelle steht. */}
+      <div className="card">
+        <BreastTimer babyId={baby.id} />
+      </div>
+
       <Segmented
         value={range}
         onChange={setRange}

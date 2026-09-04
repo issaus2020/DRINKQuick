@@ -6,7 +6,7 @@ import { AmountStepper } from '../ui/AmountStepper';
 import { fromLocalInputValue, toLocalInputValue } from '../../lib/date';
 import { newId } from '../../lib/id';
 import { useStore } from '../../lib/store-context';
-import type { BottleContent, Feed, FeedKind, Side } from '../../lib/types';
+import type { BottleContent, Draft, Feed, FeedKind, Side } from '../../lib/types';
 
 const BOTTLE_PRESETS = [30, 60, 90, 120];
 
@@ -52,7 +52,7 @@ export function FeedSheet({ onClose, babyId, kind, existing }: FeedSheetProps) {
   const save = () => {
     const iso = fromLocalInputValue(startedAt);
     const durationS = isBreast || isPump ? minutes * 60 : undefined;
-    const feed: Feed = {
+    const feed: Draft<Feed> = {
       id: existing?.id ?? newId(),
       babyId,
       kind,

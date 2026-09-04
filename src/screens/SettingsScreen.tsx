@@ -2,21 +2,24 @@
 import { useRef, useState } from 'react';
 import { Icon } from '../components/ui/Icon';
 import { Segmented } from '../components/ui/Segmented';
-import { formatAge, fromLocalInputValue, toLocalInputValue } from '../lib/date';
+import { formatAge, formatSince, fromLocalInputValue, toLocalInputValue } from '../lib/date';
 import { clearData } from '../lib/db';
 import { exportBackup, exportCsvBundle, parseBackup } from '../lib/export';
 import { MEDICAL_DISCLAIMER } from '../lib/guidance';
 import { newId } from '../lib/id';
 import { useStore } from '../lib/store-context';
+import { useSync } from '../lib/sync/sync-context';
 import type { Baby, FeedingMode, Sex, ThemeSetting } from '../lib/types';
 
 interface SettingsScreenProps {
   baby: Baby;
   onShowReport: () => void;
+  onShowAccount: () => void;
 }
 
-export function SettingsScreen({ baby, onShowReport }: SettingsScreenProps) {
-  const { data, updateBaby, addBaby, removeBaby, setSettings, replaceAll } = useStore();
+export function SettingsScreen({ baby, onShowReport, onShowAccount }: SettingsScreenProps) {
+  const { data, rawData, updateBaby, addBaby, removeBaby, setSettings, replaceAll } = useStore();
+  const sync = useSync();
   const fileInput = useRef<HTMLInputElement>(null);
   const [importMessage, setImportMessage] = useState<string | null>(null);
 
@@ -30,8 +33,30 @@ export function SettingsScreen({ baby, onShowReport }: SettingsScreenProps) {
     }
   };
 
+  const accountSummary = (() => {
+    if (sync.status === 'unconfigured') return 'Nur auf diesem Gerät';
+    if (!data.account) return 'Nicht angemeldet';
+    if (!data.account.familyId) return 'Angemeldet, noch kein Bereich';
+    return `${data.account.familyName} · ${
+      sync.lastSyncedAt ? `abgeglichen ${formatSince(sync.lastSyncedAt)}` : 'noch kein Abgleich'
+    }`;
+  })();
+
   return (
     <div className="page">
+      <button type="button" className="card row row--between" onClick={onShowAccount}>
+        <span className="list__icon">
+          <Icon name="baby" size={18} />
+        </span>
+        <span className="grow" style={{ textAlign: 'left' }}>
+          <span className="list__title">Konto & Teilen</span>
+          <span className="list__meta" style={{ display: 'block' }}>
+            {accountSummary}
+          </span>
+        </span>
+        <Icon name="chevron-right" size={18} />
+      </button>
+
       <div className="card stack">
         <h2 className="card__title">Profil</h2>
 
@@ -205,7 +230,7 @@ export function SettingsScreen({ baby, onShowReport }: SettingsScreenProps) {
         <button type="button" className="btn" onClick={onShowReport}>
           <Icon name="print" size={18} /> Bericht für die Praxis
         </button>
-        <button type="button" className="btn" onClick={() => exportBackup(data)}>
+        <button type="button" className="btn" onClick={() => exportBackup(rawData)}>
           <Icon name="download" size={18} /> Sicherung als JSON
         </button>
         <button type="button" className="btn" onClick={() => exportCsvBundle(data, baby)}>

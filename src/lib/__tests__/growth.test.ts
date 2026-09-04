@@ -11,6 +11,7 @@ import type { Baby, Measurement } from '../types';
 
 const baby = (patch: Partial<Baby> = {}): Baby => ({
   id: 'b1',
+  updatedAt: '2026-01-01T08:00:00.000Z',
   name: 'Test',
   sex: 'boy',
   birthedAt: '2026-01-01T08:00:00.000Z',
@@ -22,6 +23,7 @@ const baby = (patch: Partial<Baby> = {}): Baby => ({
 
 const weighIn = (takenAt: string, weightG: number): Measurement => ({
   id: takenAt,
+  updatedAt: takenAt,
   babyId: 'b1',
   takenAt,
   weightG,

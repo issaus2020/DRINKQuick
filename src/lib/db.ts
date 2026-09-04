@@ -5,7 +5,7 @@
  * Die App ist bewusst local-first: es gibt keinen Server, kein Konto und
  * keinen Netzwerkaufruf mit Gesundheitsdaten. Alles bleibt auf dem Gerät.
  */
-import { EMPTY_DATA, type AppData } from './types';
+import { EMPTY_DATA, type AppData, type Syncable } from './types';
 
 const DB_NAME = 'drinkquick';
 const STORE = 'state';
@@ -52,17 +52,29 @@ function idbSet(data: AppData): Promise<void> {
   );
 }
 
+/**
+ * Einträge aus der Zeit vor der Synchronisierung haben keinen
+ * Änderungszeitstempel. Sie bekommen den frühestmöglichen, damit eine
+ * spätere Änderung von einem anderen Gerät sie in jedem Fall schlägt.
+ */
+const EPOCH = new Date(0).toISOString();
+
+function withSyncFields<T extends Syncable>(items: T[] | undefined): T[] {
+  return (items ?? []).map((item) => (item.updatedAt ? item : { ...item, updatedAt: EPOCH }));
+}
+
 /** Fehlende Felder auffüllen, damit ältere oder importierte Stände nicht crashen. */
 export function normalize(raw: unknown): AppData {
   const input = (raw ?? {}) as Partial<AppData>;
   return {
     version: 1,
-    babies: input.babies ?? [],
-    feeds: input.feeds ?? [],
-    measurements: input.measurements ?? [],
-    diapers: input.diapers ?? [],
-    health: input.health ?? [],
-    checkups: input.checkups ?? [],
+    account: input.account,
+    babies: withSyncFields(input.babies),
+    feeds: withSyncFields(input.feeds),
+    measurements: withSyncFields(input.measurements),
+    diapers: withSyncFields(input.diapers),
+    health: withSyncFields(input.health),
+    checkups: withSyncFields(input.checkups),
     timers: input.timers ?? [],
     settings: { ...EMPTY_DATA.settings, ...(input.settings ?? {}) },
   };

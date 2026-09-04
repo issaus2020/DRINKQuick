@@ -8,6 +8,7 @@ import { BreastTimer } from '../components/entry/BreastTimer';
 import { DiaperSheet } from '../components/entry/DiaperSheet';
 import { FeedSheet } from '../components/entry/FeedSheet';
 import { MeasurementSheet } from '../components/entry/MeasurementSheet';
+import { QuickAmounts } from '../components/entry/QuickAmounts';
 import { Icon } from '../components/ui/Icon';
 import { ProgressRing } from '../components/ui/ProgressRing';
 import { buildAlerts, type AlertLevel } from '../lib/alerts';
@@ -72,20 +73,28 @@ export function TodayScreen({ baby }: TodayScreenProps) {
   // der Mahlzeiten, und die Flaschenmenge steht daneben als eigene Kennzahl.
   const primaryIsMl = baby.feedingMode === 'bottle' && Boolean(target);
 
+  // Der zuletzt gewählte Inhalt wird für den Schnelleintrag übernommen.
+  const lastBottleContent = useMemo(
+    () =>
+      [...feeds]
+        .sort((a, b) => b.startedAt.localeCompare(a.startedAt))
+        .find((feed) => feed.kind === 'bottle')?.bottleContent,
+    [feeds],
+  );
+
   return (
     <div className="page">
-      <div className="card">
-        <BreastTimer babyId={baby.id} />
-      </div>
+      <BreastTimer babyId={baby.id} showStart={false} />
+
+      <QuickAmounts
+        babyId={baby.id}
+        feeds={feeds}
+        fallbackPerMealMl={target?.perMealMl ?? 70}
+        defaultContent={lastBottleContent}
+        onOpenSheet={() => setFeedSheet({ kind: 'bottle' })}
+      />
 
       <div className="quick-grid">
-        <button type="button" className="quick" onClick={() => setFeedSheet({ kind: 'bottle' })}>
-          <Icon name="bottle" className="quick__icon" />
-          <span className="quick__label">Flasche</span>
-          <span className="quick__meta">
-            {target ? `ca. ${target.perMealMl} ml` : 'Menge eintragen'}
-          </span>
-        </button>
         <button type="button" className="quick" onClick={() => setDiaperOpen(true)}>
           <Icon name="diaper" className="quick__icon" />
           <span className="quick__label">Windel</span>

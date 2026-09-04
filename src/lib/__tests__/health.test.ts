@@ -6,6 +6,7 @@ import type { Baby, Diaper, Feed } from '../types';
 
 const baby: Baby = {
   id: 'b1',
+  updatedAt: '2026-05-01T07:00:00.000Z',
   name: 'Test',
   sex: 'girl',
   birthedAt: '2026-05-01T07:00:00.000Z',
@@ -36,9 +37,9 @@ describe('dailyDiapers', () => {
   it('zählt kombinierte Windeln in beiden Spalten', () => {
     const now = new Date('2026-05-05T20:00:00.000Z');
     const diapers: Diaper[] = [
-      { id: '1', babyId: 'b1', at: '2026-05-05T08:00:00.000Z', kind: 'wet' },
-      { id: '2', babyId: 'b1', at: '2026-05-05T12:00:00.000Z', kind: 'both' },
-      { id: '3', babyId: 'b1', at: '2026-05-05T15:00:00.000Z', kind: 'dirty' },
+      { id: '1', updatedAt: '2026-05-05T08:00:00.000Z', babyId: 'b1', at: '2026-05-05T08:00:00.000Z', kind: 'wet' },
+      { id: '2', updatedAt: '2026-05-05T12:00:00.000Z', babyId: 'b1', at: '2026-05-05T12:00:00.000Z', kind: 'both' },
+      { id: '3', updatedAt: '2026-05-05T15:00:00.000Z', babyId: 'b1', at: '2026-05-05T15:00:00.000Z', kind: 'dirty' },
     ];
     const today = dailyDiapers(diapers, 2, now)[1];
     expect(today.wet).toBe(2);
@@ -68,7 +69,15 @@ describe('checkupStates', () => {
   it('respektiert abgehakte Untersuchungen', () => {
     const states = checkupStates(
       baby,
-      [{ id: 'c1', babyId: 'b1', key: 'U2', doneAt: '2026-05-05T10:00:00.000Z' }],
+      [
+        {
+          id: 'c1',
+          updatedAt: '2026-05-05T10:00:00.000Z',
+          babyId: 'b1',
+          key: 'U2',
+          doneAt: '2026-05-05T10:00:00.000Z',
+        },
+      ],
       new Date('2026-07-01T10:00:00.000Z'),
     );
     expect(states.find((s) => s.key === 'U2')?.status).toBe('done');
@@ -78,6 +87,7 @@ describe('checkupStates', () => {
 describe('buildAlerts', () => {
   const feedAt = (iso: string): Feed => ({
     id: iso,
+    updatedAt: iso,
     babyId: 'b1',
     kind: 'bottle',
     startedAt: iso,
@@ -102,7 +112,7 @@ describe('buildAlerts', () => {
     const alerts = buildAlerts({
       baby,
       feeds: [feedAt('2026-05-05T17:00:00.000Z')],
-      measurements: [{ id: 'm1', babyId: 'b1', takenAt: '2026-05-05T09:00:00.000Z', weightG: 2900 }],
+      measurements: [{ id: 'm1', updatedAt: '2026-05-05T09:00:00.000Z', babyId: 'b1', takenAt: '2026-05-05T09:00:00.000Z', weightG: 2900 }],
       diapers: [],
       health: [],
       now,
@@ -119,7 +129,7 @@ describe('buildAlerts', () => {
       measurements: [],
       diapers: [],
       health: [
-        { id: 'h1', babyId: 'b1', at: '2026-05-20T18:00:00.000Z', kind: 'temperature', temperatureC: 38.6 },
+        { id: 'h1', updatedAt: '2026-05-20T18:00:00.000Z', babyId: 'b1', at: '2026-05-20T18:00:00.000Z', kind: 'temperature', temperatureC: 38.6 },
       ],
       now,
     });
@@ -132,7 +142,7 @@ describe('buildAlerts', () => {
     const alerts = buildAlerts({
       baby,
       feeds: [feedAt('2026-05-20T11:00:00.000Z')],
-      measurements: [{ id: 'm1', babyId: 'b1', takenAt: '2026-05-19T09:00:00.000Z', weightG: 3900 }],
+      measurements: [{ id: 'm1', updatedAt: '2026-05-19T09:00:00.000Z', babyId: 'b1', takenAt: '2026-05-19T09:00:00.000Z', weightG: 3900 }],
       diapers: [],
       health: [],
       now,
