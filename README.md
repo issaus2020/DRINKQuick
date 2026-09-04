@@ -151,18 +151,28 @@ etwa zehn Minuten; danach läuft es von selbst.
    `supabase/schema.sql` einfügen und ausführen. Das legt die Tabellen, den
    Zugriffsschutz und die Funktionen für Einladungscodes an. Das Skript ist
    wiederholbar – ein zweiter Lauf macht nichts kaputt.
-3. Unter *Project Settings* → *API* die Projekt-URL und den `anon`-Key
-   kopieren.
-4. Beide Werte als Umgebungsvariablen hinterlegen: lokal in einer `.env`-Datei
-   (Vorlage: `.env.example`), beim Hosting in den Umgebungsvariablen des
-   Projekts. Danach neu bauen.
-5. In der App unter *Mehr* → *Konto & Teilen* ein Konto anlegen, einen Bereich
+3. Die **Projekt-URL** unter *Settings* → *Data API* kopieren
+   (`https://….supabase.co`).
+4. Den **Schlüssel für den Browser** unter *Settings* → *API Keys* kopieren:
+   - neue Projekte: Reiter *Publishable and secret API keys* → **Publishable
+     key** (`sb_publishable_…`),
+   - ältere Projekte: Reiter *Legacy API keys* → **anon key**.
+
+   Beide funktionieren – nimm den, den dein Projekt anzeigt. **Niemals** den
+   *secret key* bzw. *service_role*: der hebelt den Zugriffsschutz aus, und im
+   Browser ist jeder Wert einsehbar.
+5. Beide Werte als `VITE_SUPABASE_URL` und `VITE_SUPABASE_ANON_KEY` hinterlegen:
+   lokal in einer `.env`-Datei (Vorlage: `.env.example`), beim Hosting in den
+   Umgebungsvariablen des Projekts. **Danach neu bauen bzw. neu deployen** –
+   Vite backt die Werte beim Bauen ein, gespeicherte Variablen allein ändern
+   eine schon gebaute Seite nicht.
+6. In der App unter *Mehr* → *Konto & Teilen* ein Konto anlegen, einen Bereich
    erstellen und den Einladungscode weitergeben.
 
-Zum Zugriffsschutz: der `anon`-Key darf öffentlich sein. Der Schutz steckt in
-den Row-Level-Security-Regeln – jede Zeile ist nur für Mitglieder genau der
-Familie lesbar und schreibbar, zu der sie gehört. Wer den Key hat, aber in
-keiner Familie ist, sieht nichts.
+Zum Zugriffsschutz: der publishable- bzw. `anon`-Key darf öffentlich sein. Der
+Schutz steckt in den Row-Level-Security-Regeln – jede Zeile ist nur für
+Mitglieder genau der Familie lesbar und schreibbar, zu der sie gehört. Wer den
+Key hat, aber in keiner Familie ist, sieht nichts.
 
 Die Einträge liegen serverseitig in einer einzigen Tabelle mit einer
 `jsonb`-Spalte. Der Server ist hier nur Briefkasten zwischen den Geräten –

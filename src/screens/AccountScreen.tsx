@@ -58,8 +58,10 @@ export function AccountScreen({ onBack }: { onBack: () => void }) {
             Diese Kopie der App speichert ausschließlich auf dem Gerät. Damit ein Konto und das
             Teilen möglich werden, müssen die Zugangsdaten eines Supabase-Projekts als
             Umgebungsvariablen <code>VITE_SUPABASE_URL</code> und{' '}
-            <code>VITE_SUPABASE_ANON_KEY</code> hinterlegt und die App neu gebaut werden. Die
-            Schritte stehen in der README unter „Konto und Teilen einrichten".
+            <code>VITE_SUPABASE_ANON_KEY</code> hinterlegt und die App{' '}
+            <strong>neu gebaut</strong> werden – gespeicherte Variablen allein ändern eine schon
+            gebaute Seite nicht. Die Schritte stehen in der README unter „Konto und Teilen
+            einrichten".
           </p>
         </div>
       ) : !account ? (
