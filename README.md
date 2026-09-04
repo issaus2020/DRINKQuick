@@ -20,6 +20,12 @@ anlegen und einen Familien-Bereich teilen – siehe unten.
 
 ### Trinkverhalten und Menge
 
+- **Der Kopf des Startbildschirms** beantwortet die eine Frage, die um sechs
+  Uhr morgens und um drei Uhr nachts zählt: Anrede mit Namen, darunter groß,
+  wie viel bis zum Richtwert noch fehlt, dazu ein Satz zur Lage des Tages. Wird
+  auch gestillt, steht dabei, dass Stillmahlzeiten in der Menge nicht stecken –
+  lieber eine ehrliche Einschränkung als eine Zahl, die es so nicht gibt. Ohne
+  Wägung führen die Mahlzeiten statt der Milliliter.
 - **Schnelleintrag der Trinkmenge** auf dem Startbildschirm: drei große Knöpfe mit
   den Mengen, die das Kind um diese Uhrzeit sonst trinkt – ein Tipp, fertig.
   Die Vorschläge stammen aus den Flaschen der letzten drei Wochen im Zeitfenster

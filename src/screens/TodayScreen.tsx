@@ -4,6 +4,7 @@
  * Tagesbilanz, Hinweise, Verlauf des Tages.
  */
 import { useMemo, useState } from 'react';
+import { DailyGoalHeader } from '../components/DailyGoalHeader';
 import { BreastTimer } from '../components/entry/BreastTimer';
 import { DiaperSheet } from '../components/entry/DiaperSheet';
 import { FeedSheet } from '../components/entry/FeedSheet';
@@ -12,9 +13,9 @@ import { QuickAmounts } from '../components/entry/QuickAmounts';
 import { Icon } from '../components/ui/Icon';
 import { ProgressRing } from '../components/ui/ProgressRing';
 import { buildAlerts, type AlertLevel } from '../lib/alerts';
-import { formatDurationShort, formatSince, formatTime, startOfDay } from '../lib/date';
+import { ageInDays, formatDurationShort, formatSince, formatTime, startOfDay } from '../lib/date';
 import { FEED_KIND_LABELS, SIDE_LABELS } from '../lib/export';
-import { feedingStats, intakeTarget } from '../lib/feeding';
+import { expectedMealsPerDay, feedingStats, intakeTarget } from '../lib/feeding';
 import { weightStats } from '../lib/growth';
 import { dailyDiapers, diaperTargets } from '../lib/health';
 import { useNow } from '../lib/hooks';
@@ -84,6 +85,15 @@ export function TodayScreen({ baby }: TodayScreenProps) {
 
   return (
     <div className="page">
+      <DailyGoalHeader
+        baby={baby}
+        intakeMl={stats.today.ml}
+        meals={stats.today.meals}
+        targetMl={target?.dailyMl}
+        targetMeals={target?.mealsPerDay ?? expectedMealsPerDay(ageInDays(baby.birthedAt, now))}
+        now={now}
+      />
+
       <BreastTimer babyId={baby.id} showStart={false} />
 
       <QuickAmounts
@@ -151,13 +161,6 @@ export function TodayScreen({ baby }: TodayScreenProps) {
                 </div>
               )}
             </div>
-            {target && (
-              <p className="muted small">
-                Richtwert heute: {target.dailyMl} ml ({target.mlPerKg} ml/kg bei{' '}
-                {(target.weightG / 1000).toFixed(2).replace('.', ',')} kg), verteilt auf ca.{' '}
-                {target.mealsPerDay} Mahlzeiten.
-              </p>
-            )}
           </div>
         </div>
       </div>
