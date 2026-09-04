@@ -1,14 +1,24 @@
 /**
- * Tagesbilanz als Balken. Genau eine Kennzahl gleichzeitig - Menge, Anzahl
- * der Mahlzeiten oder Stillzeit haben verschiedene Einheiten und gehören
- * deshalb nie auf zwei Achsen im selben Bild.
+ * Tagesbilanz als Balken oder als Kurve. Genau eine Kennzahl gleichzeitig -
+ * Menge, Anzahl der Mahlzeiten oder Stillzeit haben verschiedene Einheiten
+ * und gehören deshalb nie auf zwei Achsen im selben Bild.
  */
 import { useRef, useState } from 'react';
 import { formatDate, formatDayLabel } from '../../lib/date';
 import type { DayIntake } from '../../lib/feeding';
-import { barPath, linearScale, niceTicks, numberFmt, pointerToViewBox } from './chartUtils';
+import {
+  barPath,
+  linePath,
+  linearScale,
+  niceTicks,
+  numberFmt,
+  pointerToViewBox,
+} from './chartUtils';
 
 export type IntakeMetric = 'ml' | 'meals' | 'breastMinutes';
+
+/** Balken zeigen einzelne Tage, die Kurve zeigt den Verlauf. */
+export type IntakeView = 'bars' | 'line';
 
 const METRIC_LABELS: Record<IntakeMetric, { title: string; unit: string }> = {
   ml: { title: 'Trinkmenge pro Tag', unit: 'ml' },
@@ -29,11 +39,12 @@ const PAD = { top: 16, right: 12, bottom: 28, left: 40 };
 interface IntakeChartProps {
   days: DayIntake[];
   metric: IntakeMetric;
+  view?: IntakeView;
   /** Richtwert als gestrichelte Bezugslinie (nur sinnvoll bei 'ml'). */
   target?: number;
 }
 
-export function IntakeChart({ days, metric, target }: IntakeChartProps) {
+export function IntakeChart({ days, metric, view = 'bars', target }: IntakeChartProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const [hover, setHover] = useState<{ index: number; x: number; y: number } | null>(null);
   const [showTable, setShowTable] = useState(false);
@@ -52,6 +63,25 @@ export function IntakeChart({ days, metric, target }: IntakeChartProps) {
 
   const { unit, title } = METRIC_LABELS[metric];
   const hovered = hover ? days[hover.index] : undefined;
+
+  // Für die Kurve: Tage ohne Mahlzeit sind keine Null, sondern eine Lücke -
+  // sonst läse sich ein vergessener Eintrag als "nichts getrunken".
+  const segments: { index: number; x: number; y: number }[][] = [];
+  if (view === 'line') {
+    let current: { index: number; x: number; y: number }[] = [];
+    days.forEach((day, index) => {
+      if (day.meals > 0) {
+        current.push({ index, x: x(index + 0.5), y: y(values[index]) });
+      } else if (current.length) {
+        segments.push(current);
+        current = [];
+      }
+    });
+    if (current.length) segments.push(current);
+  }
+  const linePoints = segments.flat();
+
+  const labelEvery = Math.ceil(days.length / 7);
 
   return (
     <div>
@@ -108,32 +138,71 @@ export function IntakeChart({ days, metric, target }: IntakeChartProps) {
               </g>
             )}
 
-            {days.map((day, index) => {
-              const value = values[index];
-              const barX = x(index) + (slot - barWidth) / 2;
-              const top = y(value);
-              const isHovered = hover?.index === index;
-              return (
-                <g key={day.date}>
-                  {value > 0 && (
-                    <path
-                      d={barPath(barX, top, barWidth, y(0) - top)}
-                      fill={isHovered ? 'var(--accent-ink)' : 'var(--accent)'}
-                    />
-                  )}
-                  {index % Math.ceil(days.length / 7) === 0 && (
-                    <text
-                      className="chart__axis"
-                      x={barX + barWidth / 2}
-                      y={H - PAD.bottom + 16}
-                      textAnchor="middle"
-                    >
-                      {formatDate(day.date)}
-                    </text>
-                  )}
-                </g>
-              );
-            })}
+            {view === 'bars' &&
+              days.map((day, index) => {
+                const value = values[index];
+                if (value <= 0) return null;
+                const barX = x(index) + (slot - barWidth) / 2;
+                const top = y(value);
+                return (
+                  <path
+                    key={day.date}
+                    d={barPath(barX, top, barWidth, y(0) - top)}
+                    fill={hover?.index === index ? 'var(--accent-ink)' : 'var(--accent)'}
+                  />
+                );
+              })}
+
+            {view === 'line' && (
+              <g>
+                {hovered && (
+                  <line
+                    x1={x(hover!.index + 0.5)}
+                    x2={x(hover!.index + 0.5)}
+                    y1={PAD.top}
+                    y2={y(0)}
+                    stroke="var(--border-strong)"
+                    strokeWidth={1}
+                  />
+                )}
+                {segments.map((segment) => (
+                  <path
+                    key={segment[0].index}
+                    d={linePath(segment)}
+                    fill="none"
+                    stroke="var(--accent)"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                ))}
+                {linePoints.map((point) => (
+                  <circle
+                    key={point.index}
+                    cx={point.x}
+                    cy={point.y}
+                    r={hover?.index === point.index ? 6 : 4.5}
+                    fill="var(--accent)"
+                    stroke="var(--surface-1)"
+                    strokeWidth={2}
+                  />
+                ))}
+              </g>
+            )}
+
+            {days.map((day, index) =>
+              index % labelEvery === 0 ? (
+                <text
+                  key={`label-${day.date}`}
+                  className="chart__axis"
+                  x={x(index + 0.5)}
+                  y={H - PAD.bottom + 16}
+                  textAnchor="middle"
+                >
+                  {formatDate(day.date)}
+                </text>
+              ) : null,
+            )}
 
             <line
               className="chart__grid"
@@ -152,13 +221,19 @@ export function IntakeChart({ days, metric, target }: IntakeChartProps) {
           >
             {formatDayLabel(hovered.date)}
             <br />
-            <span className="tooltip__value">
-              {numberFmt.format(values[hover.index])} {unit}
-            </span>
-            {metric === 'ml' && hovered.meals > 0 && (
+            {hovered.meals === 0 ? (
+              <span className="tooltip__value">kein Eintrag</span>
+            ) : (
               <>
-                <br />
-                {hovered.meals} {hovered.meals === 1 ? 'Mahlzeit' : 'Mahlzeiten'}
+                <span className="tooltip__value">
+                  {numberFmt.format(values[hover.index])} {unit}
+                </span>
+                {metric === 'ml' && (
+                  <>
+                    <br />
+                    {hovered.meals} {hovered.meals === 1 ? 'Mahlzeit' : 'Mahlzeiten'}
+                  </>
+                )}
               </>
             )}
           </div>

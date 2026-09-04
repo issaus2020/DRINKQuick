@@ -16,7 +16,7 @@ interface AmountStepperProps {
 export function AmountStepper({
   value,
   onChange,
-  step = 10,
+  step = 5,
   max = 400,
   unit = 'ml',
   presets = [],
