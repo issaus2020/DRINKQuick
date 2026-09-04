@@ -21,20 +21,30 @@ const CHANGE_DEBOUNCE_MS = 4000;
 const POLL_MS = 60_000;
 
 export function SyncProvider({ children }: { children: ReactNode }) {
-  const { rawData, ready, setAccount, replaceAll } = useStore();
+  const store = useStore();
+  const { rawData, ready } = store;
   const [status, setStatus] = useState<SyncStatus>(
     isSyncConfigured ? 'signed_out' : 'unconfigured',
   );
   const [error, setError] = useState<string | undefined>();
 
-  // Der Ablauf greift auf den jeweils aktuellen Stand zu, ohne dass jede
-  // Änderung den Effekt neu aufhängt.
+  // Der Ablauf greift auf den jeweils aktuellen Stand und die aktuellen
+  // Store-Aktionen über Referenzen zu.
+  //
+  // Das ist hier keine Feinheit, sondern notwendig: der Store baut sein
+  // Aktions-Objekt bei JEDER Zustandsänderung neu. Hinge `sync` direkt an
+  // diesen Aktionen, bekäme es ständig eine neue Identität, der Effekt unten
+  // würde bei jeder Änderung neu aufgesetzt und sofort einen Abgleich
+  // anstoßen - und weil jeder Abgleich den Zustand anfasst, liefe die App in
+  // einer Endlosschleife "gleicht ab …". Genau das ist passiert.
   const latest = useRef(rawData);
+  const actions = useRef(store);
   const running = useRef(false);
 
   useEffect(() => {
     latest.current = rawData;
-  }, [rawData]);
+    actions.current = store;
+  }, [rawData, store]);
 
   const account = rawData.account;
   const pending = account ? countPending(rawData, account.lastPushedAt) : 0;
@@ -62,9 +72,10 @@ export function SyncProvider({ children }: { children: ReactNode }) {
         lastSyncedAt: new Date().toISOString(),
       };
 
-      // In einem Rutsch schreiben: der Abgleich hat auf dem Stand gearbeitet,
-      // der beim Start aktuell war, plus allem, was inzwischen dazukam.
-      replaceAll({ ...outcome.data, account: nextAccount });
+      // Einarbeiten gegen den JETZT aktuellen Stand, nicht gegen den
+      // Schnappschuss vom Beginn: was während des Abgleichs eingetragen
+      // wurde, bleibt so erhalten.
+      actions.current.applySync(outcome.incoming, nextAccount);
       setError(undefined);
       setStatus('idle');
     } catch (caught) {
@@ -73,7 +84,7 @@ export function SyncProvider({ children }: { children: ReactNode }) {
     } finally {
       running.current = false;
     }
-  }, [replaceAll]);
+  }, []);
 
   // Anmeldezustand von Supabase übernehmen.
   useEffect(() => {
@@ -85,7 +96,7 @@ export function SyncProvider({ children }: { children: ReactNode }) {
       if (!active) return;
       const current = latest.current.account;
       if (!userId) {
-        if (current) setAccount(undefined);
+        if (current) actions.current.setAccount(undefined);
         setStatus('signed_out');
         return;
       }
@@ -94,7 +105,7 @@ export function SyncProvider({ children }: { children: ReactNode }) {
         setStatus('idle');
         return;
       }
-      setAccount({ userId, email: email ?? '', familyId: '', familyName: '' });
+      actions.current.setAccount({ userId, email: email ?? '', familyId: '', familyName: '' });
       setStatus('idle');
     };
 
@@ -110,7 +121,7 @@ export function SyncProvider({ children }: { children: ReactNode }) {
       active = false;
       listener.subscription.unsubscribe();
     };
-  }, [ready, setAccount]);
+  }, [ready]);
 
   // Regelmäßig und bei Rückkehr in den Vordergrund abgleichen.
   useEffect(() => {
@@ -167,7 +178,7 @@ export function SyncProvider({ children }: { children: ReactNode }) {
 
       signOut: async () => {
         await requireClient().auth.signOut();
-        setAccount(undefined);
+        actions.current.setAccount(undefined);
         setStatus('signed_out');
       },
 
@@ -178,7 +189,7 @@ export function SyncProvider({ children }: { children: ReactNode }) {
         if (failure) throw new Error(translateAuthError(failure.message));
         const current = latest.current.account;
         if (!current) throw new Error('Nicht angemeldet');
-        setAccount({
+        actions.current.setAccount({
           ...current,
           familyId: familyId as string,
           familyName: name.trim() || 'Familie',
@@ -206,7 +217,7 @@ export function SyncProvider({ children }: { children: ReactNode }) {
         const current = latest.current.account;
         if (!current) throw new Error('Nicht angemeldet');
 
-        setAccount({
+        actions.current.setAccount({
           ...current,
           familyId: familyId as string,
           familyName: await readFamilyName(client, familyId as string),
@@ -222,7 +233,7 @@ export function SyncProvider({ children }: { children: ReactNode }) {
 
       syncNow: sync,
     };
-  }, [status, error, account?.lastSyncedAt, pending, sync, setAccount]);
+  }, [status, error, account?.lastSyncedAt, pending, sync]);
 
   return <SyncContext.Provider value={api}>{children}</SyncContext.Provider>;
 }

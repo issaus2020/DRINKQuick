@@ -3,6 +3,7 @@ import { loadData, saveData } from './db';
 import { EMPTY_DATA, type AppData } from './types';
 import type { Account, ActiveTimer, Draft, Settings, Syncable } from './types';
 import { StoreContext, type Store } from './store-context';
+import { SYNCED_COLLECTIONS, mergeCollection, type SyncedCollection } from './sync/merge';
 
 /** Schreibt frühestens nach dieser Ruhezeit - schont die Platte bei laufenden Timern. */
 const SAVE_DEBOUNCE_MS = 300;
@@ -157,6 +158,18 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         })),
 
       replaceAll: (next: AppData) => update(() => next),
+
+      applySync: (incoming, account) =>
+        update((d) => {
+          let next: AppData = { ...d, account };
+          for (const collection of SYNCED_COLLECTIONS) {
+            const fresh = incoming[collection as SyncedCollection];
+            if (!fresh?.length) continue;
+            const result = mergeCollection<Syncable>(next[collection], fresh);
+            if (result.changed) next = { ...next, [collection]: result.merged } as AppData;
+          }
+          return next;
+        }),
     };
   }, [data, visible, ready, update]);
 
