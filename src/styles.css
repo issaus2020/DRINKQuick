@@ -506,6 +506,64 @@ button {
   font-size: 0.8125rem;
 }
 
+/* --- Kopf des Startbildschirms --------------------------------------------- */
+
+.goal {
+  padding: 4px 4px 0;
+}
+
+.goal__greeting {
+  font-size: 1.0625rem;
+  font-weight: 650;
+  color: var(--text-secondary);
+  letter-spacing: -0.01em;
+}
+
+.goal__headline {
+  margin-top: 2px;
+  font-size: 1.5rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.goal__number {
+  font-family: var(--font-num);
+  font-size: 3rem;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+  line-height: 1;
+}
+
+.goal__unit {
+  font-size: 1.25rem;
+  font-weight: 650;
+  color: var(--accent);
+}
+
+.goal__detail {
+  margin-top: 6px;
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+
+.goal__sentence {
+  margin-top: 10px;
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  color: var(--text-primary);
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+}
+
 /* --- Einladungscode ------------------------------------------------------- */
 
 .invite-code {

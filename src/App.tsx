@@ -87,8 +87,10 @@ export function App() {
           <h1 className="topbar__title">
             {TITLES[tab]}
             <span className="topbar__sub">
-              {activeBaby.name} · {formatAge(activeBaby.birthedAt)} · Lebenstag{' '}
-              {lifeDay(activeBaby.birthedAt)}
+              {/* Auf "Heute" begrüßt der Kopfbereich darunter schon mit Namen -
+                  hier wäre er ein zweites Mal direkt untereinander. */}
+              {tab !== 'today' && `${activeBaby.name} · `}
+              {formatAge(activeBaby.birthedAt)} · Lebenstag {lifeDay(activeBaby.birthedAt)}
             </span>
           </h1>
         </div>
