@@ -49,7 +49,22 @@ export function AccountScreen({ onBack }: { onBack: () => void }) {
         <button type="button" className="btn btn--sm" onClick={onBack}>
           Zurück
         </button>
+        {busy && <span className="muted small">einen Moment …</span>}
       </div>
+
+      {/* Rückmeldungen stehen ganz oben: darunter stehen mehrere Karten, und
+          auf dem Telefon wäre eine Meldung am Seitenende unsichtbar - es sähe
+          aus, als hätte der Knopf nichts getan. */}
+      {message && (
+        <p className="alert alert--good small" role="status">
+          {message}
+        </p>
+      )}
+      {failure && (
+        <p className="alert alert--alert small" role="alert">
+          {failure}
+        </p>
+      )}
 
       {sync.status === 'unconfigured' ? (
         <div className="card stack stack--tight">
@@ -153,10 +168,10 @@ export function AccountScreen({ onBack }: { onBack: () => void }) {
             className="btn btn--primary btn--block"
             disabled={busy}
             onClick={() =>
-              run(
-                () => sync.createFamily(familyName),
-                'Bereich angelegt. Deine bisherigen Einträge werden jetzt hochgeladen.',
-              )
+              run(async () => {
+                await sync.createFamily(familyName);
+                await sync.syncNow();
+              }, 'Bereich angelegt. Deine bisherigen Einträge sind hochgeladen.')
             }
           >
             Bereich anlegen
@@ -180,7 +195,12 @@ export function AccountScreen({ onBack }: { onBack: () => void }) {
             type="button"
             className="btn btn--block"
             disabled={busy || joinCode.trim().length < 4}
-            onClick={() => run(() => sync.joinFamily(joinCode), 'Bereich beigetreten.')}
+            onClick={() =>
+              run(async () => {
+                await sync.joinFamily(joinCode);
+                await sync.syncNow();
+              }, 'Bereich beigetreten. Die Einträge werden abgeglichen.')
+            }
           >
             Beitreten
           </button>
@@ -263,6 +283,42 @@ export function AccountScreen({ onBack }: { onBack: () => void }) {
           </div>
 
           <div className="card stack stack--tight">
+            <h2 className="card__title">Zu einem anderen Bereich wechseln</h2>
+            <p className="muted small">
+              Hast du versehentlich einen eigenen Bereich angelegt, statt dem deines Partners
+              beizutreten? Dann gib hier seinen Code ein. Deine Einträge auf diesem Gerät bleiben
+              erhalten und wandern in den neuen Bereich.
+            </p>
+            <div className="field">
+              <label className="field__label" htmlFor="a-switch-code">
+                Einladungscode
+              </label>
+              <input
+                id="a-switch-code"
+                className="input"
+                type="text"
+                autoCapitalize="characters"
+                placeholder="z. B. K4RT9MPX"
+                value={joinCode}
+                onChange={(event) => setJoinCode(event.target.value.toUpperCase())}
+              />
+            </div>
+            <button
+              type="button"
+              className="btn"
+              disabled={busy || joinCode.trim().length < 4}
+              onClick={() =>
+                run(async () => {
+                  await sync.joinFamily(joinCode);
+                  await sync.syncNow();
+                }, 'Bereich gewechselt. Die Einträge werden abgeglichen.')
+              }
+            >
+              Beitreten
+            </button>
+          </div>
+
+          <div className="card stack stack--tight">
             <h2 className="card__title">Abmelden</h2>
             <p className="muted small">
               Die Einträge bleiben auf diesem Gerät erhalten und werden nur nicht mehr abgeglichen.
@@ -279,8 +335,6 @@ export function AccountScreen({ onBack }: { onBack: () => void }) {
         </>
       )}
 
-      {message && <p className="alert alert--good small">{message}</p>}
-      {failure && <p className="alert alert--alert small">{failure}</p>}
     </div>
   );
 }
