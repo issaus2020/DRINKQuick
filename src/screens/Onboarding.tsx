@@ -7,7 +7,12 @@ import { newId } from '../lib/id';
 import { useStore } from '../lib/store-context';
 import type { FeedingMode, Sex } from '../lib/types';
 
-export function Onboarding() {
+interface OnboardingProps {
+  /** Führt zum Konto-Bildschirm, wo ein Einladungscode eingelöst wird. */
+  onJoinInstead: () => void;
+}
+
+export function Onboarding({ onJoinInstead }: OnboardingProps) {
   const { addBaby } = useStore();
   const [name, setName] = useState('');
   const [sex, setSex] = useState<Sex>('girl');
@@ -37,6 +42,20 @@ export function Onboarding() {
           alle Daten bleiben auf deinem Gerät.
         </p>
       </div>
+
+      <div className="card stack stack--tight">
+        <h2 className="card__title">Wurdest du eingeladen?</h2>
+        <p className="muted small">
+          Wenn dir jemand einen Einladungscode geschickt hat, leg hier <strong>kein</strong> neues
+          Profil an - sonst hast du ein zweites Kind neben dem, zu dem du eingeladen wurdest. Geh
+          stattdessen direkt zum Code.
+        </p>
+        <button type="button" className="btn btn--block" onClick={onJoinInstead}>
+          Ich habe einen Einladungscode
+        </button>
+      </div>
+
+      <h2 className="section-title">Oder neu anfangen</h2>
 
       <div className="card stack">
         <h2 className="card__title">Profil anlegen</h2>

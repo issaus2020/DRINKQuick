@@ -55,23 +55,27 @@ export function App() {
     );
   }
 
-  if (!activeBaby) return <Onboarding />;
+  // Wer eingeladen wurde, hat noch kein Kind - und braucht trotzdem als
+  // Erstes den Konto-Bildschirm. Deshalb steht er vor dem Anlegen eines
+  // Profils zur Verfügung, sonst müsste die Person ein Kind erfinden, das
+  // hinterher als Dublette im geteilten Bereich landet.
+  if (showAccount) {
+    return (
+      <div className="app">
+        <main className="app__main">
+          <AccountScreen onBack={() => setShowAccount(false)} />
+        </main>
+      </div>
+    );
+  }
+
+  if (!activeBaby) return <Onboarding onJoinInstead={() => setShowAccount(true)} />;
 
   if (showReport) {
     return (
       <div className="app">
         <main className="app__main">
           <ReportScreen baby={activeBaby} onBack={() => setShowReport(false)} />
-        </main>
-      </div>
-    );
-  }
-
-  if (showAccount) {
-    return (
-      <div className="app">
-        <main className="app__main">
-          <AccountScreen onBack={() => setShowAccount(false)} />
         </main>
       </div>
     );
