@@ -7,6 +7,7 @@
  * kurzer Verzögerung und sonst einmal pro Minute.
  */
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { useStore } from '../store-context';
 import type { Account } from '../types';
 import { getClient, isSyncConfigured } from './client';
@@ -174,10 +175,16 @@ export function SyncProvider({ children }: { children: ReactNode }) {
         const { data: familyId, error: failure } = await requireClient().rpc('create_family', {
           family_name: name,
         });
-        if (failure) throw new Error(failure.message);
+        if (failure) throw new Error(translateAuthError(failure.message));
         const current = latest.current.account;
         if (!current) throw new Error('Nicht angemeldet');
-        setAccount({ ...current, familyId: familyId as string, familyName: name });
+        setAccount({
+          ...current,
+          familyId: familyId as string,
+          familyName: name.trim() || 'Familie',
+          syncCursor: undefined,
+          lastPushedAt: undefined,
+        });
       },
 
       createInvite: async () => {
@@ -186,23 +193,30 @@ export function SyncProvider({ children }: { children: ReactNode }) {
         const { data: code, error: failure } = await requireClient().rpc('create_invite', {
           target: current.familyId,
         });
-        if (failure) throw new Error(failure.message);
+        if (failure) throw new Error(translateAuthError(failure.message));
         return code as string;
       },
 
       joinFamily: async (code) => {
-        const { data: familyId, error: failure } = await requireClient().rpc('redeem_invite', {
+        const client = requireClient();
+        const { data: familyId, error: failure } = await client.rpc('redeem_invite', {
           invite_code: code.trim().toUpperCase(),
         });
-        if (failure) throw new Error(failure.message);
+        if (failure) throw new Error(translateAuthError(failure.message));
         const current = latest.current.account;
         if (!current) throw new Error('Nicht angemeldet');
-        // Der Zeiger startet neu, damit der gesamte Bestand des Bereichs kommt.
+
         setAccount({
           ...current,
           familyId: familyId as string,
-          familyName: 'Familie',
+          familyName: await readFamilyName(client, familyId as string),
+          // Beide Zeiger zurücksetzen: der Lesezeiger, damit der gesamte
+          // Bestand des Bereichs hereinkommt - und der Schreibzeiger, damit
+          // die eigenen Einträge dieses Geräts im neuen Bereich landen. Ohne
+          // das zweite blieben sie liegen, weil sie als "längst hochgeladen"
+          // gelten würden.
           syncCursor: undefined,
+          lastPushedAt: undefined,
         });
       },
 
@@ -211,6 +225,12 @@ export function SyncProvider({ children }: { children: ReactNode }) {
   }, [status, error, account?.lastSyncedAt, pending, sync, setAccount]);
 
   return <SyncContext.Provider value={api}>{children}</SyncContext.Provider>;
+}
+
+/** Den echten Namen des Bereichs holen, statt "Familie" zu raten. */
+async function readFamilyName(client: SupabaseClient, familyId: string): Promise<string> {
+  const { data } = await client.from('families').select('name').eq('id', familyId).maybeSingle();
+  return (data?.name as string | undefined)?.trim() || 'Familie';
 }
 
 /** Die Meldungen von Supabase sind englisch und technisch - die häufigsten übersetzen. */
@@ -227,5 +247,26 @@ function translateAuthError(message: string): string {
     return 'Bitte bestätige zuerst die E-Mail, die dir Supabase geschickt hat.';
   }
   if (lower.includes('unable to validate email')) return 'Diese E-Mail-Adresse sieht ungültig aus.';
+  if (lower.includes('invalid path specified')) {
+    return 'Die hinterlegte Projekt-Adresse stimmt nicht (VITE_SUPABASE_URL). Sie muss genau https://<projekt>.supabase.co lauten - ohne Pfad und ohne Schrägstrich am Ende. Nach dem Ändern neu deployen.';
+  }
+  if (lower.includes('invalid api key') || lower.includes('no api key')) {
+    return 'Der hinterlegte Schlüssel stimmt nicht (VITE_SUPABASE_ANON_KEY). Nimm den Publishable key bzw. den anon key aus den API-Einstellungen - nicht den secret key. Nach dem Ändern neu deployen.';
+  }
+  if (lower.includes('code unbekannt')) {
+    return 'Diesen Einladungscode gibt es nicht. Achte auf Tippfehler - er besteht aus 8 Zeichen.';
+  }
+  if (lower.includes('bereits eingelöst')) {
+    return 'Der Code wurde schon benutzt. Lass dir einen neuen erzeugen - jeder Code gilt einmal.';
+  }
+  if (lower.includes('abgelaufen')) {
+    return 'Der Code ist abgelaufen (er gilt sieben Tage). Lass dir einen neuen erzeugen.';
+  }
+  if (lower.includes('could not find the function') || lower.includes('schema cache')) {
+    return 'Die Datenbankfunktionen fehlen im Supabase-Projekt. Führe supabase/schema.sql im SQL-Editor aus.';
+  }
+  if (lower.includes('failed to fetch') || lower.includes('networkerror')) {
+    return 'Der Server ist gerade nicht erreichbar. Prüfe die Verbindung - die App arbeitet solange lokal weiter.';
+  }
   return message;
 }
