@@ -20,9 +20,15 @@ const SIDE_TEXT: Record<Side, string> = {
 
 interface BreastTimerProps {
   babyId: string;
+  /**
+   * Ob die Startknöpfe gezeigt werden. Auf "Heute" stehen sie nicht - dort
+   * zählt die schnelle Mengeneingabe -, ein laufender Timer bleibt aber
+   * überall sichtbar, damit er nie verloren geht.
+   */
+  showStart?: boolean;
 }
 
-export function BreastTimer({ babyId }: BreastTimerProps) {
+export function BreastTimer({ babyId, showStart = true }: BreastTimerProps) {
   const { setTimer, addFeed } = useStore();
   const { timer, elapsed, running } = useActiveTimer(babyId);
 
@@ -75,6 +81,7 @@ export function BreastTimer({ babyId }: BreastTimerProps) {
   const discard = () => setTimer(babyId, undefined);
 
   if (!timer) {
+    if (!showStart) return null;
     return (
       <div className="stack stack--tight">
         <span className="field__label">Stillen starten</span>

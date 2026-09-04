@@ -209,3 +209,94 @@ export function feedingHeatmap(
   }
   return rows;
 }
+
+/** Zeitraum, aus dem die Schnellvorschläge lernen. */
+const SUGGESTION_LOOKBACK_DAYS = 21;
+/** Wie weit um die aktuelle Stunde herum gesucht wird (in Stunden). */
+const SUGGESTION_HOUR_WINDOW = 2;
+/** Ab so vielen Einträgen ist ein Vorschlag mehr als geraten. */
+const SUGGESTION_MIN_SAMPLES = 3;
+
+export interface AmountSuggestion {
+  /** Vorgeschlagene Mengen in ml, aufsteigend, auf 5 ml gerundet. */
+  amounts: number[];
+  /**
+   * Woher die Vorschläge stammen:
+   * 'hour'   - aus Flaschen um diese Uhrzeit,
+   * 'day'    - aus allen Flaschen der letzten Wochen,
+   * 'target' - noch keine Historie, abgeleitet vom Richtwert.
+   */
+  basis: 'hour' | 'day' | 'target';
+  /** Anzahl der zugrunde liegenden Einträge. */
+  sampleSize: number;
+}
+
+const roundTo5 = (value: number) => Math.max(5, Math.round(value / 5) * 5);
+
+/** Abstand zweier Uhrzeiten über Mitternacht hinweg. */
+function hourDistance(a: number, b: number): number {
+  const diff = Math.abs(a - b);
+  return Math.min(diff, 24 - diff);
+}
+
+/** Wert an der Perzentile p (0-1) einer sortierten Liste. */
+function quantile(sorted: number[], p: number): number {
+  if (sorted.length === 0) return 0;
+  const index = Math.round(p * (sorted.length - 1));
+  return sorted[Math.min(sorted.length - 1, Math.max(0, index))];
+}
+
+/**
+ * Mengenvorschläge für die Schnelleingabe.
+ *
+ * Grundlage sind die Flaschen, die das Kind in den letzten Wochen um diese
+ * Uhrzeit bekommen hat - nachts trinken Babys anders als am Nachmittag, und
+ * genau diese Gewohnheit soll der Knopf treffen. Gibt es dafür zu wenige
+ * Einträge, weitet sich der Blick auf den ganzen Tag; ganz am Anfang bleibt
+ * der Richtwert aus Gewicht und Lebenstag.
+ */
+export function suggestBottleAmounts(
+  feeds: Feed[],
+  fallbackPerMealMl: number,
+  now: Date = new Date(),
+): AmountSuggestion {
+  const since = now.getTime() - SUGGESTION_LOOKBACK_DAYS * MS_PER_DAY;
+  const bottles = feeds.filter(
+    (feed) =>
+      feed.kind === 'bottle' &&
+      typeof feed.amountMl === 'number' &&
+      feed.amountMl > 0 &&
+      new Date(feed.startedAt).getTime() >= since,
+  );
+
+  const hour = now.getHours();
+  const nearby = bottles.filter(
+    (feed) => hourDistance(new Date(feed.startedAt).getHours(), hour) <= SUGGESTION_HOUR_WINDOW,
+  );
+
+  const pool = nearby.length >= SUGGESTION_MIN_SAMPLES ? nearby : bottles;
+  const basis: AmountSuggestion['basis'] =
+    nearby.length >= SUGGESTION_MIN_SAMPLES ? 'hour' : 'day';
+
+  if (pool.length < SUGGESTION_MIN_SAMPLES) {
+    const middle = roundTo5(fallbackPerMealMl);
+    return {
+      amounts: [...new Set([Math.max(5, middle - 20), middle, middle + 20])].sort((a, b) => a - b),
+      basis: 'target',
+      sampleSize: pool.length,
+    };
+  }
+
+  // Etwas weniger / wie üblich / etwas mehr - so trifft einer der Knöpfe
+  // fast immer, ohne dass die Auswahl unübersichtlich wird.
+  const sorted = pool.map((feed) => feed.amountMl as number).sort((a, b) => a - b);
+  const candidates = [quantile(sorted, 0.25), quantile(sorted, 0.5), quantile(sorted, 0.8)].map(
+    roundTo5,
+  );
+  const amounts = [...new Set(candidates)].sort((a, b) => a - b);
+
+  // Fallen die drei Werte zusammen, ergänzt eine Stufe nach oben die Auswahl.
+  if (amounts.length === 1) amounts.push(amounts[0] + 10);
+
+  return { amounts, basis, sampleSize: pool.length };
+}

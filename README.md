@@ -19,9 +19,17 @@ Netz benutzen kann.
 
 ### Trinkverhalten und Menge
 
-- **Still-Timer**, der aus Zeitstempeln rechnet: läuft weiter, wenn das Display aus
-  ist, die App im Hintergrund liegt oder das Telefon neu startet. Mit Pause,
-  Seitenwechsel und Verwerfen.
+- **Schnelleintrag der Trinkmenge** auf dem Startbildschirm: drei große Knöpfe mit
+  den Mengen, die das Kind um diese Uhrzeit sonst trinkt – ein Tipp, fertig.
+  Die Vorschläge stammen aus den Flaschen der letzten drei Wochen im Zeitfenster
+  ±2 Stunden um jetzt (etwas weniger / wie üblich / etwas mehr); reichen die
+  Einträge dort nicht, weitet sich der Blick auf den ganzen Tag, und am Anfang
+  steht der Richtwert aus Gewicht und Lebenstag. Jeder Eintrag lässt sich
+  direkt danach zurücknehmen.
+- **Still-Timer** auf dem Trinken-Tab, der aus Zeitstempeln rechnet: läuft weiter,
+  wenn das Display aus ist, die App im Hintergrund liegt oder das Telefon neu
+  startet. Mit Pause, Seitenwechsel und Verwerfen. Ein laufender Timer bleibt
+  auch auf dem Startbildschirm sichtbar.
 - **Flasche** in 5-ml-Schritten, mit Voreinstellungen und Inhalt (Muttermilch,
   Pre, Folgemilch).
 - **Abpumpen** getrennt erfasst – es zählt nicht als Mahlzeit des Kindes.
