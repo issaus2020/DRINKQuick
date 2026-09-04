@@ -1,7 +1,7 @@
 /** Der Trink-Tab: Verlauf, Rhythmus und die vollständige Liste aller Mahlzeiten. */
 import { useMemo, useState } from 'react';
 import { FeedingHeatmap } from '../components/charts/FeedingHeatmap';
-import { IntakeChart, type IntakeMetric } from '../components/charts/IntakeChart';
+import { IntakeChart, type IntakeMetric, type IntakeView } from '../components/charts/IntakeChart';
 import { FeedSheet } from '../components/entry/FeedSheet';
 import { Icon } from '../components/ui/Icon';
 import { Segmented } from '../components/ui/Segmented';
@@ -24,6 +24,7 @@ export function FeedingScreen({ baby }: FeedingScreenProps) {
   const [metric, setMetric] = useState<IntakeMetric>(
     baby.feedingMode === 'breast' ? 'meals' : 'ml',
   );
+  const [view, setView] = useState<IntakeView>('bars');
   const [editing, setEditing] = useState<Feed | null>(null);
   // Die Liste wächst schnell auf hunderte Einträge - deshalb tageweise nachladen.
   const [visibleDays, setVisibleDays] = useState(3);
@@ -125,8 +126,18 @@ export function FeedingScreen({ baby }: FeedingScreenProps) {
             { value: 'breastMinutes', label: 'Stillzeit' },
           ]}
         />
+        <div style={{ marginTop: 10 }}>
+          <Segmented
+            value={view}
+            onChange={setView}
+            options={[
+              { value: 'bars', label: 'Balken' },
+              { value: 'line', label: 'Kurve' },
+            ]}
+          />
+        </div>
         <div style={{ marginTop: 12 }}>
-          <IntakeChart days={series} metric={metric} target={target?.dailyMl} />
+          <IntakeChart days={series} metric={metric} view={view} target={target?.dailyMl} />
         </div>
       </div>
 

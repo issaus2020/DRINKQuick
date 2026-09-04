@@ -22,15 +22,18 @@ Netz benutzen kann.
 - **Still-Timer**, der aus Zeitstempeln rechnet: läuft weiter, wenn das Display aus
   ist, die App im Hintergrund liegt oder das Telefon neu startet. Mit Pause,
   Seitenwechsel und Verwerfen.
-- **Flasche** in 10-ml-Schritten, mit Voreinstellungen und Inhalt (Muttermilch,
+- **Flasche** in 5-ml-Schritten, mit Voreinstellungen und Inhalt (Muttermilch,
   Pre, Folgemilch).
 - **Abpumpen** getrennt erfasst – es zählt nicht als Mahlzeit des Kindes.
 - **Soll-Trinkmenge** aus aktuellem Gewicht und Lebenstag, siehe unten.
 - **Tagesbilanz**: Menge, Mahlzeiten, Ø Abstand, längste Pause, Nachtmahlzeiten,
   Zeit seit der letzten Mahlzeit.
-- **Diagramme**: Menge/Mahlzeiten/Stillzeit pro Tag über 7, 14 oder 30 Tage sowie
-  eine Heatmap „wann getrunken wird“ (Tage × Stunden), die Cluster-Feeding und
-  Nachtblöcke sichtbar macht.
+- **Diagramme**: Menge/Mahlzeiten/Stillzeit pro Tag über 7, 14 oder 30 Tage,
+  wahlweise als Balken (einzelne Tage) oder als Kurve (Verlauf), sowie eine
+  Heatmap „wann getrunken wird“ (Tage × Stunden), die Cluster-Feeding und
+  Nachtblöcke sichtbar macht. In der Kurve bleiben Tage ohne Eintrag eine Lücke
+  statt einer Null – ein vergessener Eintrag soll sich nicht als „nichts
+  getrunken“ lesen.
 
 ### Gewichtsüberwachung
 

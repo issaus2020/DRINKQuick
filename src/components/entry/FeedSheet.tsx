@@ -10,6 +10,9 @@ import type { BottleContent, Feed, FeedKind, Side } from '../../lib/types';
 
 const BOTTLE_PRESETS = [30, 60, 90, 120];
 
+/** Flaschen werden in 5-ml-Schritten eingestellt - Babywaagen und Skalen sind so fein. */
+const AMOUNT_STEP_ML = 5;
+
 interface FeedSheetProps {
   onClose: () => void;
   babyId: string;
@@ -74,7 +77,7 @@ export function FeedSheet({ onClose, babyId, kind, existing }: FeedSheetProps) {
           <AmountStepper
             value={amount}
             onChange={setAmount}
-            step={10}
+            step={AMOUNT_STEP_ML}
             max={500}
             presets={isBottle ? BOTTLE_PRESETS : [50, 100, 150]}
           />
@@ -117,7 +120,13 @@ export function FeedSheet({ onClose, babyId, kind, existing }: FeedSheetProps) {
       {isBreast && (
         <div className="field">
           <span className="field__label">Menge (optional, z. B. per Stillwaage)</span>
-          <AmountStepper value={amount} onChange={setAmount} step={10} max={300} presets={[0, 40, 80]} />
+          <AmountStepper
+            value={amount}
+            onChange={setAmount}
+            step={AMOUNT_STEP_ML}
+            max={300}
+            presets={[0, 40, 80]}
+          />
           <span className="field__hint">0 ml bedeutet: keine Menge erfasst.</span>
         </div>
       )}
