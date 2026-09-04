@@ -227,5 +227,14 @@ function translateAuthError(message: string): string {
     return 'Bitte bestätige zuerst die E-Mail, die dir Supabase geschickt hat.';
   }
   if (lower.includes('unable to validate email')) return 'Diese E-Mail-Adresse sieht ungültig aus.';
+  if (lower.includes('invalid path specified')) {
+    return 'Die hinterlegte Projekt-Adresse stimmt nicht (VITE_SUPABASE_URL). Sie muss genau https://<projekt>.supabase.co lauten - ohne Pfad und ohne Schrägstrich am Ende. Nach dem Ändern neu deployen.';
+  }
+  if (lower.includes('invalid api key') || lower.includes('no api key')) {
+    return 'Der hinterlegte Schlüssel stimmt nicht (VITE_SUPABASE_ANON_KEY). Nimm den Publishable key bzw. den anon key aus den API-Einstellungen - nicht den secret key. Nach dem Ändern neu deployen.';
+  }
+  if (lower.includes('failed to fetch') || lower.includes('networkerror')) {
+    return 'Der Server ist gerade nicht erreichbar. Prüfe die Verbindung - die App arbeitet solange lokal weiter.';
+  }
   return message;
 }
