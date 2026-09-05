@@ -13,7 +13,7 @@ import { NextFeedCard } from '../components/NextFeedCard';
 import { QuickAmounts } from '../components/entry/QuickAmounts';
 import { Icon } from '../components/ui/Icon';
 import { MetricTile } from '../components/ui/MetricTile';
-import { LiquidVessel } from '../components/ui/LiquidVessel';
+import { BellyBaby } from '../components/ui/BellyBaby';
 import { buildAlerts, type AlertLevel } from '../lib/alerts';
 import { ageInDays, formatDurationShort, formatSince, formatTime, startOfDay } from '../lib/date';
 import { FEED_KIND_LABELS, SIDE_LABELS } from '../lib/export';
@@ -132,21 +132,19 @@ export function TodayScreen({ baby }: TodayScreenProps) {
       <div className="card">
         <div className="hero">
           <div className="hero__figure">
+            {/* Die Zahlen stehen schon in der Überschrift darüber - die Figur
+                zeigt denselben Stand, ohne ihn ein zweites Mal zu beziffern. */}
             {primaryIsMl && target ? (
-              <LiquidVessel
+              <BellyBaby
                 value={stats.today.ml}
                 target={target.dailyMl}
-                label={`${stats.today.ml}`}
-                sublabel={`von ${target.dailyMl} ml`}
-                description={`Heute ${stats.today.ml} von etwa ${target.dailyMl} Millilitern getrunken.`}
+                unitLabel="Millilitern"
               />
             ) : (
-              <LiquidVessel
+              <BellyBaby
                 value={stats.today.meals}
                 target={target?.mealsPerDay ?? 8}
-                label={`${stats.today.meals}`}
-                sublabel={`von ca. ${target?.mealsPerDay ?? 8}`}
-                description={`Heute ${stats.today.meals} Mahlzeiten von etwa ${target?.mealsPerDay ?? 8} erwarteten.`}
+                unitLabel="Mahlzeiten"
               />
             )}
           </div>

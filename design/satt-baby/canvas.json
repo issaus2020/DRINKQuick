@@ -1,0 +1,24 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "title": "Baby · Regler", "x": 0, "y": 0, "w": 390, "h": 560 },
+    { "file": "Zustaende.dc.html", "title": "Züge über den Tag", "x": 470, "y": 0, "w": 820, "h": 400 },
+    { "file": "Heute.dc.html", "title": "Im Zusammenhang", "x": 0, "y": 680, "w": 390, "h": 844 }
+  ],
+  "annotations": [
+    {
+      "id": "skala",
+      "x": -440,
+      "y": 0,
+      "w": 380,
+      "text": "DIE SKALA GEHT NICHT INS UNGLÜCKLICHE\n\nGewünscht war: je voller der Magen, desto fröhlicher. Gebaut ist das – aber die untere Stufe ist RUHIG, nicht traurig.\n\nDer Grund: um neun Uhr morgens ist der Magen zwangsläufig leer. Ein trauriges Baby wäre dann ein Vorwurf an die Mutter, und genau das vermeidet die App sonst überall („Hunger geht vor Uhrzeit\", „ein einzelner Tag unter dem Richtwert ist unauffällig\").\n\nRuhig → Zufrieden → Fröhlich → Satt. Der Mund geht nie nach unten."
+    },
+    {
+      "id": "mechanik",
+      "x": -440,
+      "y": 400,
+      "w": 380,
+      "text": "WIE ES GEBAUT IST\n\nLinienzeichnung im Vokabular eures Icon-Sets (2,4 px Strich, runde Enden). Kein Hautton: gefüllt ist nur der Bauch – was man an Farbe sieht, ist ausschließlich die Trinkmenge.\n\nStufenlos mit dem Füllstand: Mundbogen, Wangenröte, leichte Kopfneigung.\nIn Stufen: die Augen wechseln bei 72 % von offen zu lachend, über dem Ziel zu zufrieden geschlossen.\n\nÜber dem Ziel wird die Flüssigkeit grün, genau wie das heutige Gefäß es macht."
+    }
+  ],
+  "launch": { "view": "canvas" }
+}

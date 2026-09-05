@@ -894,89 +894,62 @@ button {
   }
 }
 
-/* --- Füllstand ------------------------------------------------------------ */
+/* --- Füllstand: das Baby ---------------------------------------------------
+   Linienzeichnung im Strich des Icon-Sets. Gefüllt ist nur der Bauch - was an
+   Farbe zu sehen ist, ist ausschließlich die Trinkmenge. Kein Hautton: das
+   "Papier" ist die Kartenfläche, hell wie dunkel. */
 
-.vessel {
-  position: relative;
-  flex-shrink: 0;
-  border-radius: 50% 50% 30% 30% / 34% 34% 12% 12%;
-  overflow: hidden;
-  background: var(--glass);
-  border: 1px solid var(--glass-border);
-  box-shadow: 0 14px 34px rgb(23 23 15 / 9%), inset 0 1px 0 rgb(255 255 255 / 70%);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
-}
-
-.vessel__liquid {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  background: linear-gradient(
-    to bottom,
-    color-mix(in oklab, var(--accent) 66%, var(--surface-2)),
-    color-mix(in oklab, var(--accent) 40%, var(--surface-2))
-  );
-  transition: height 900ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.vessel--over .vessel__liquid {
-  background: linear-gradient(
-    to bottom,
-    color-mix(in oklab, var(--good) 58%, var(--surface-2)),
-    color-mix(in oklab, var(--good) 34%, var(--surface-2))
-  );
-}
-
-.vessel__surface {
-  position: absolute;
-  top: -11px;
-  left: 0;
+.belly {
   display: block;
-  width: 200%;
-  height: 14px;
-  fill: color-mix(in oklab, var(--accent) 66%, var(--surface-2));
-  animation: vessel-flow 9s linear infinite;
+  flex-shrink: 0;
+  overflow: visible;
 }
 
-.vessel--over .vessel__surface {
+.belly__ink {
+  fill: none;
+  stroke: var(--text-secondary);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.belly__paper {
+  fill: var(--surface-2);
+}
+
+.belly__face {
+  fill: none;
+  stroke: var(--text-primary);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.belly__blush {
+  fill: color-mix(in oklab, var(--series-2) 62%, var(--surface-2));
+}
+
+.belly__liquid {
+  fill: color-mix(in oklab, var(--accent) 66%, var(--surface-2));
+  transition: fill 600ms ease;
+}
+
+.belly--over .belly__liquid {
   fill: color-mix(in oklab, var(--good) 58%, var(--surface-2));
 }
 
-.vessel__surface--back {
-  top: -8px;
+.belly__wave {
+  animation: belly-flow 9s linear infinite;
+}
+
+.belly__wave--back {
   opacity: 0.55;
-  animation: vessel-flow 14s linear infinite reverse;
+  animation: belly-flow 14s linear infinite reverse;
 }
 
-@keyframes vessel-flow {
+@keyframes belly-flow {
   to {
-    transform: translateX(-50%);
+    transform: translateX(-50px);
   }
-}
-
-.vessel__read {
-  position: absolute;
-  top: 14px;
-  right: 0;
-  left: 0;
-  text-align: center;
-  text-shadow: 0 1px 3px color-mix(in srgb, var(--surface-2) 85%, transparent);
-}
-
-.vessel__value {
-  font-family: var(--font-display);
-  font-size: 2.25rem;
-  line-height: 1;
-  letter-spacing: -0.02em;
-  color: var(--text-primary);
-}
-
-.vessel__sub {
-  margin-top: 3px;
-  font-size: 0.75rem;
-  color: var(--text-secondary);
 }
 
 /* --- Vorhersage und Tagesplan --------------------------------------------- */
