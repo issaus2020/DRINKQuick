@@ -1,0 +1,215 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+    a { color: #6da7ec; } a:hover { color: #9ec5f4; }
+
+    @keyframes rk-spin { to { transform: rotate(360deg); } }
+    .rk-ring { animation: rk-spin 48s linear infinite; transform-origin: 160px 226px; }
+    .rk-ring-back { animation: rk-spin 72s linear infinite reverse; transform-origin: 160px 226px; }
+
+    /* Die oberste gefüllte Zelle pulst - dort ist gerade Bewegung. */
+    @keyframes rk-live { 0%,100% { opacity: .55; } 50% { opacity: 1; } }
+    .rk-live { animation: rk-live 2.6s ease-in-out infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .rk-ring, .rk-ring-back, .rk-live { animation: none; }
+    }
+  </style>
+</helmet>
+
+<div style="position: relative; width: 100%; height: 100%; background: #08090b; overflow: hidden; display: flex; flex-direction: column;
+            background-image: radial-gradient(rgba(109,167,236,.10) 1px, transparent 1px); background-size: 22px 22px;">
+
+  <div style="position: absolute; left: 50%; top: 44%; width: 560px; height: 560px; transform: translate(-50%,-50%); background: radial-gradient(closest-side, rgba(25,158,112,.14), transparent 68%); pointer-events: none;"></div>
+
+  <div style="position: relative; flex-grow: 1; display: flex; align-items: center; justify-content: center;">
+    <svg viewBox="0 0 320 400" width="404" height="505" style="display: block; overflow: visible;">
+      <defs>
+        <filter id="rkGlow" x="-60%" y="-60%" width="220%" height="220%">
+          <feGaussianBlur stdDeviation="3.5" result="b"/>
+          <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+        <clipPath id="rkBelly">
+          <path d="M160 168 C 108 168, 82 200, 82 242 C 82 288, 116 314, 160 314 C 204 314, 238 288, 238 242 C 238 200, 212 168, 160 168 Z"/>
+        </clipPath>
+      </defs>
+
+      <!-- Zwei Ringe, gegenläufig und langsam: das Instrument läuft. -->
+      <g fill="none" stroke="#256abf" opacity=".38">
+        <circle class="rk-ring" cx="160" cy="226" r="146" stroke-width="1" stroke-dasharray="3 13"/>
+        <circle class="rk-ring-back" cx="160" cy="226" r="132" stroke-width="1" stroke-dasharray="26 90"/>
+      </g>
+
+      <!-- Eckwinkel: der Rahmen, der ein Messbild ausmacht. -->
+      <g stroke="#199e70" stroke-width="1.6" fill="none" opacity=".7">
+        <path d="M22 96 L22 74 L44 74"/>
+        <path d="M298 96 L298 74 L276 74"/>
+        <path d="M22 356 L22 378 L44 378"/>
+        <path d="M298 356 L298 378 L276 378"/>
+      </g>
+
+      <!-- Bauchkammer: leere Zellen, dann die gefüllten darüber. -->
+      <path d="M160 168 C 108 168, 82 200, 82 242 C 82 288, 116 314, 160 314 C 204 314, 238 288, 238 242 C 238 200, 212 168, 160 168 Z"
+            fill="#0c1420" stroke="#256abf" stroke-width="1.6"/>
+
+      <g clip-path="url(#rkBelly)">
+        <!-- Die Menge ist abzählbar: zwölf Zellen, jede rund 50 ml. -->
+        <sc-for list="{{ cells }}" as="cell" hint-placeholder-count="12">
+          <rect x="70" y="{{ cell.y }}" width="180" height="{{ cell.h }}"
+                fill="{{ cell.fill }}" opacity="{{ cell.opacity }}" class="{{ cell.cls }}"/>
+        </sc-for>
+        <!-- Trennfugen zwischen den Zellen -->
+        <sc-for list="{{ seams }}" as="seam" hint-placeholder-count="11">
+          <rect x="70" y="{{ seam.y }}" width="180" height="1.6" fill="#08090b" opacity=".85"/>
+        </sc-for>
+      </g>
+
+      <path d="M160 168 C 108 168, 82 200, 82 242 C 82 288, 116 314, 160 314 C 204 314, 238 288, 238 242 C 238 200, 212 168, 160 168 Z"
+            fill="none" stroke="#6da7ec" stroke-width="1.8"/>
+
+      <!-- Figur als Drahtmodell mit Konstruktionspunkten. -->
+      <g fill="none" stroke="#4d7fb8" stroke-width="1.8" stroke-linecap="round">
+        <ellipse cx="132" cy="322" rx="20" ry="10"/>
+        <ellipse cx="188" cy="322" rx="20" ry="10"/>
+        <path d="M92 206 C 70 214, 62 240, 70 262"/>
+        <path d="M228 206 C 250 214, 258 240, 250 262"/>
+        <circle cx="92" cy="116" r="14"/>
+        <circle cx="228" cy="116" r="14"/>
+        <circle cx="160" cy="108" r="62" stroke="#6da7ec" stroke-width="2"/>
+        <path d="M148 50 Q160 36 173 49"/>
+        <!-- Mittelachse und Querachse: die Konstruktion bleibt sichtbar. -->
+        <path d="M160 40 L160 60 M160 322 L160 336" stroke="#199e70" stroke-width="1" opacity=".6"/>
+        <path d="M60 242 L76 242 M244 242 L260 242" stroke="#199e70" stroke-width="1" opacity=".6"/>
+      </g>
+      <g fill="#199e70">
+        <circle cx="92" cy="206" r="2.4"/>
+        <circle cx="228" cy="206" r="2.4"/>
+        <circle cx="160" cy="168" r="2.4"/>
+        <circle cx="160" cy="314" r="2.4"/>
+      </g>
+
+      <!-- Gesicht -->
+      <g filter="url(#rkGlow)" stroke="#d8ecff" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="{{ eyes }}" stroke-width="{{ eyeWidth }}"/>
+        <path d="{{ mouth }}" stroke-width="3"/>
+      </g>
+
+      <!-- Skala rechts, in Millilitern beschriftet: das ist der Zweck dieser
+           Richtung - ablesen, nicht nur ahnen. -->
+      <g>
+        <path d="M252 168 L252 314" stroke="#24446e" stroke-width="1"/>
+        <sc-for list="{{ ticks }}" as="tick" hint-placeholder-count="4">
+          <path d="M250 {{ tick.y }} L264 {{ tick.y }}" stroke="#3a6da8" stroke-width="1.4"/>
+        </sc-for>
+      </g>
+      <path d="M244 {{ fillTop }} L280 {{ fillTop }}" stroke="#199e70" stroke-width="2" filter="url(#rkGlow)"/>
+    </svg>
+  </div>
+
+  <!-- Ableseleiste: drei Zahlen, monospaced, in fester Breite - sie springen
+       beim Zählen nicht. -->
+  <p style="position: relative; margin: 0 0 8px; text-align: center; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: #4d7fb8;">Marken rechts: ¼ · ½ · ¾ · Ziel</p>
+  <div style="position: relative; display: flex; justify-content: center; gap: 0; padding: 0 26px 26px;">
+    <div style="display: flex; align-items: stretch; gap: 1px; background: #1b2430; border: 1px solid #24344a; border-radius: 12px; overflow: hidden;">
+      <div style="padding: 9px 16px 10px; background: #0d141d; display: flex; flex-direction: column; gap: 2px; min-width: 92px;">
+        <span style="font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: #5f87b4;">Getrunken</span>
+        <span style="font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: 21px; color: #d8ecff;">{{ ml }} ml</span>
+      </div>
+      <div style="padding: 9px 16px 10px; background: #0d141d; display: flex; flex-direction: column; gap: 2px; min-width: 92px;">
+        <span style="font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: #5f87b4;">Ziel</span>
+        <span style="font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: 21px; color: #d8ecff;">{{ targetMl }} ml</span>
+      </div>
+      <div style="padding: 9px 16px 10px; background: #0d141d; display: flex; flex-direction: column; gap: 2px; min-width: 92px;">
+        <span style="font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: #5f87b4;">Zellen</span>
+        <span style="font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: 21px; color: #4bd39b;">{{ litCells }}/12</span>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+
+<script data-dc-script data-props='{
+  "fill": {"editor": "range", "default": 62, "min": 0, "max": 115, "step": 1, "unit": "%", "section": "Füllstand"},
+  "targetMl": {"editor": "int", "default": 605, "min": 100, "max": 1200, "step": 5, "section": "Füllstand"},
+  "$preview": {"width": 560, "height": 640}
+}'>
+class Component extends DCLogic {
+  renderVals() {
+    const TOP = 168;
+    const BOTTOM = 314;
+    const COUNT = 12;
+    const H = (BOTTOM - TOP) / COUNT;
+
+    const pct = Math.max(0, Math.min(115, this.props.fill ?? 62));
+    const ratio = pct / 100;
+    const clamped = Math.min(1, ratio);
+    const fillTop = BOTTOM - clamped * (BOTTOM - TOP);
+    const over = ratio > 1.02;
+    const target = this.props.targetMl ?? 605;
+
+    // Zellen von unten nach oben. Die oberste angebrochene bekommt nur ihren
+    // Anteil - sonst zeigte das Instrument mehr an, als da ist.
+    const exact = clamped * COUNT;
+    const full = Math.floor(exact);
+    const rest = exact - full;
+    const cells = [];
+    for (let i = 0; i < COUNT; i++) {
+      const bottom = BOTTOM - i * H;
+      let h = 0;
+      if (i < full) h = H;
+      else if (i === full) h = rest * H;
+      if (h <= 0.2) continue;
+      cells.push({
+        y: bottom - h,
+        h,
+        fill: over ? '#199e70' : '#256abf',
+        opacity: i === full || (i === COUNT - 1 && full >= COUNT) ? 1 : 0.82,
+        cls: i === full && rest > 0.05 ? 'rk-live' : '',
+      });
+    }
+
+    const seams = [];
+    for (let i = 1; i < COUNT; i++) seams.push({ y: BOTTOM - i * H - 0.8 });
+
+    // Vier beschriftete Marken statt zwölf: ablesbar, ohne zu wimmeln.
+    const ticks = [0.25, 0.5, 0.75, 1].map((share) => {
+      const y = BOTTOM - share * (BOTTOM - TOP);
+      return { y, labelY: y + 3.2, label: `${Math.round(target * share)}` };
+    });
+
+    const depth = 3 + clamped * 15;
+    const half = 13 + clamped * 6;
+    const mouth = `M${(160 - half).toFixed(1)} 134 Q160 ${(134 + depth).toFixed(1)} ${(160 + half).toFixed(1)} 134`;
+
+    const happy = clamped >= 0.72;
+    const eyes = over
+      ? 'M126 106 Q136 118 146 106 M174 106 Q184 118 194 106'
+      : happy
+        ? 'M126 112 Q136 98 146 112 M174 112 Q184 98 194 112'
+        : 'M136 108 L136 108 M184 108 L184 108';
+
+    return {
+      cells,
+      seams,
+      ticks,
+      fillTop,
+      mouth,
+      eyes,
+      eyeWidth: happy || over ? 3.4 : 9,
+      ml: Math.round(target * ratio),
+      targetMl: target,
+      litCells: Math.min(COUNT, Math.round(exact)),
+    };
+  }
+}
+</script>
+</body>
+</html>

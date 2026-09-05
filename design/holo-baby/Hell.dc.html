@@ -1,0 +1,165 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+    a { color: #1c5cab; } a:hover { color: #2a78d6; }
+
+    @keyframes hl-flow { to { transform: translateX(-160px); } }
+    .hl-wave  { animation: hl-flow 11s linear infinite; }
+    .hl-wave2 { animation: hl-flow 17s linear infinite reverse; opacity: .55; }
+    @media (prefers-reduced-motion: reduce) { .hl-wave, .hl-wave2 { animation: none; } }
+  </style>
+</helmet>
+
+<div style="position: relative; width: 100%; height: 100%; background: #f4f3f0; overflow: hidden; display: flex; flex-direction: column; justify-content: center; box-sizing: border-box; padding: 24px;">
+
+  <!-- Aurora im Hellmodus -->
+  <div style="position: absolute; left: -60px; top: -60px; width: 340px; height: 340px; border-radius: 50%; background: radial-gradient(closest-side, rgba(142,199,239,.55), transparent 70%); filter: blur(16px);"></div>
+  <div style="position: absolute; right: -70px; bottom: -60px; width: 380px; height: 380px; border-radius: 50%; background: radial-gradient(closest-side, rgba(242,201,168,.5), transparent 70%); filter: blur(18px);"></div>
+
+  <p style="position: relative; margin: 0 0 12px; font-size: 13px; line-height: 1.45; color: #52514e;">
+    Im Hellmodus bleibt die Bühne dunkel. Ein kinematisches Bild braucht einen Grund, der Licht abgibt – auf Papierweiß gäbe es kein Leuchten, nur eine blaue Fläche. Die Karte drumherum wechselt mit dem Design, die Kammer nicht.
+  </p>
+
+  <div style="position: relative; background: rgba(255,255,255,.62); border: 1px solid rgba(23,23,15,.07); border-radius: 22px; box-shadow: 0 8px 24px rgba(23,23,15,.06); backdrop-filter: blur(10px); padding: 16px; display: flex; flex-direction: column; gap: 14px;">
+
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <h2 style="margin: 0; font-family: ui-serif, 'Iowan Old Style', Palatino, Georgia, serif; font-size: 28px; font-weight: 400; letter-spacing: -0.02em; line-height: 1.1; color: #0b0b0b;">Noah</h2>
+      <figure style="margin: 0; padding-left: 12px; border-left: 2px solid rgba(42,120,214,.45);">
+        <blockquote style="margin: 0; font-family: ui-serif, 'Iowan Old Style', Palatino, Georgia, serif; font-size: 16px; font-style: italic; line-height: 1.45; color: #52514e;">Erziehung ist Beispiel und Liebe, sonst nichts.</blockquote>
+        <figcaption style="margin-top: 3px; font-size: 12px; color: #7c7a73;">Johann Heinrich Pestalozzi</figcaption>
+      </figure>
+    </div>
+
+    <div style="position: relative; border-radius: 16px; overflow: hidden; background: #0a0a0c; border: 1px solid rgba(23,23,15,.10); display: flex; align-items: center; gap: 8px; padding: 12px 16px 12px 8px;">
+      <div style="position: absolute; left: 26%; top: 46%; width: 320px; height: 320px; transform: translate(-50%,-50%); background: radial-gradient(closest-side, rgba(45,120,214,.34), rgba(45,120,214,.05) 58%, transparent 74%);"></div>
+
+      <svg viewBox="0 0 320 400" width="164" height="205" style="position: relative; display: block; flex: none;">
+        <defs>
+          <filter id="hlGlow" x="-60%" y="-60%" width="220%" height="220%">
+            <feGaussianBlur stdDeviation="5" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <filter id="hlSoft" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="2.4"/></filter>
+          <filter id="hlFar" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="1.6"/></filter>
+          <linearGradient id="hlMilk" gradientUnits="userSpaceOnUse" x1="160" y1="314" x2="160" y2="168">
+            <stop offset="0" stop-color="#0f2f5c"/>
+            <stop offset="0.5" stop-color="#2a78d6"/>
+            <stop offset="1" stop-color="#a8ecff"/>
+          </linearGradient>
+          <linearGradient id="hlShaft" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#bfe6ff" stop-opacity=".15"/>
+            <stop offset="1" stop-color="#bfe6ff" stop-opacity="0"/>
+          </linearGradient>
+          <linearGradient id="hlFloor" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#4fa0e8" stop-opacity="0"/>
+            <stop offset="1" stop-color="#4fa0e8" stop-opacity=".5"/>
+          </linearGradient>
+          <clipPath id="hlBelly">
+            <path d="M160 168 C 108 168, 82 200, 82 242 C 82 288, 116 314, 160 314 C 204 314, 238 288, 238 242 C 238 200, 212 168, 160 168 Z"/>
+          </clipPath>
+        </defs>
+
+        <g filter="url(#hlFar)" opacity=".5" stroke="url(#hlFloor)" stroke-width="1.4" fill="none">
+          <path d="M-40 392 L160 336 L360 392"/>
+          <path d="M10 374 L160 330 L310 374"/>
+          <path d="M60 358 L160 324 L260 358"/>
+          <path d="M-40 392 L360 392" opacity=".8"/>
+          <path d="M10 374 L310 374" opacity=".55"/>
+        </g>
+
+        <path d="M96 -30 L232 -30 L286 330 L44 330 Z" fill="url(#hlShaft)" filter="url(#hlSoft)"/>
+
+        <path d="M160 168 C 108 168, 82 200, 82 242 C 82 288, 116 314, 160 314 C 204 314, 238 288, 238 242 C 238 200, 212 168, 160 168 Z"
+              fill="rgba(120,190,255,.05)" stroke="rgba(150,205,255,.34)" stroke-width="1.6"/>
+
+        <g clip-path="url(#hlBelly)">
+          <rect x="70" y="{{ fillTop }}" width="180" height="150" fill="url(#hlMilk)" opacity=".92"/>
+          <g style="transform: translate(-40px, {{ fillTopPx }})">
+            <path class="hl-wave" d="M0 0 Q 20 -6, 40 0 T80 0 T120 0 T160 0 T200 0 T240 0 T280 0 T320 0 T360 0 T400 0 T440 0 T480 0 T520 0 T560 0 T600 0 T640 0" fill="none" stroke="#dff5ff" stroke-width="2.6" stroke-linecap="round" opacity=".85"/>
+            <path class="hl-wave2" d="M0 5 Q 20 -1, 40 5 T80 5 T120 5 T160 5 T200 5 T240 5 T280 5 T320 5 T360 5 T400 5 T440 5 T480 5 T520 5 T560 5 T600 5 T640 5" fill="none" stroke="#8fd8ff" stroke-width="2" stroke-linecap="round" opacity=".45"/>
+          </g>
+          <rect x="70" y="{{ fillTop }}" width="180" height="2" fill="#dff5ff" opacity=".9" filter="url(#hlSoft)"/>
+        </g>
+
+        <path d="M160 168 C 108 168, 82 200, 82 242 C 82 288, 116 314, 160 314 C 204 314, 238 288, 238 242 C 238 200, 212 168, 160 168 Z"
+              fill="none" stroke="#9fd6ff" stroke-width="1.8" opacity=".85"/>
+        <path d="M118 178 C 96 190, 84 214, 83 238" fill="none" stroke="#eaf8ff" stroke-width="2.2" stroke-linecap="round" opacity=".5" filter="url(#hlSoft)"/>
+
+        <ellipse cx="132" cy="322" rx="20" ry="10" fill="rgba(120,190,255,.06)" stroke="#7fc6f5" stroke-width="1.5"/>
+        <ellipse cx="188" cy="322" rx="20" ry="10" fill="rgba(120,190,255,.06)" stroke="#7fc6f5" stroke-width="1.5"/>
+        <path d="M92 206 C 70 214, 62 240, 70 262" fill="none" stroke="#7fc6f5" stroke-width="2.4" stroke-linecap="round"/>
+        <path d="M228 206 C 250 214, 258 240, 250 262" fill="none" stroke="#7fc6f5" stroke-width="2.4" stroke-linecap="round"/>
+        <circle cx="92" cy="116" r="14" fill="rgba(120,190,255,.05)" stroke="#7fc6f5" stroke-width="1.8"/>
+        <circle cx="228" cy="116" r="14" fill="rgba(120,190,255,.05)" stroke="#7fc6f5" stroke-width="1.8"/>
+        <circle cx="160" cy="108" r="62" fill="rgba(120,190,255,.05)" stroke="#9fd6ff" stroke-width="2" filter="url(#hlGlow)"/>
+        <path d="M112 72 C 122 58, 140 48, 158 46" fill="none" stroke="#f2fbff" stroke-width="2.6" stroke-linecap="round" opacity=".55" filter="url(#hlSoft)"/>
+        <path d="M148 50 Q160 36 173 49" fill="none" stroke="#7fc6f5" stroke-width="2.2" stroke-linecap="round"/>
+
+        <g filter="url(#hlGlow)" stroke="#ecf9ff" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path d="{{ eyes }}" stroke-width="{{ eyeWidth }}"/>
+          <path d="{{ mouth }}" stroke-width="3"/>
+        </g>
+      </svg>
+
+      <div style="position: relative; display: flex; flex-direction: column; gap: 14px; min-width: 0; flex-grow: 1;">
+        <div>
+          <div style="font-family: ui-serif, 'Iowan Old Style', Palatino, Georgia, serif; font-size: 27px; letter-spacing: -0.03em; line-height: 1.1; color: #ffffff;">vor 36 Min</div>
+          <div style="margin-top: 1px; font-size: 12px; line-height: 1.35; color: #a9c6e0;">14:28 · Flasche · 80 ml</div>
+        </div>
+        <div>
+          <div style="font-family: ui-serif, 'Iowan Old Style', Palatino, Georgia, serif; font-size: 27px; letter-spacing: -0.03em; line-height: 1.1; color: #ffffff;">5</div>
+          <div style="margin-top: 1px; font-size: 12px; line-height: 1.35; color: #a9c6e0;">Mahlzeiten, 2 davon nachts</div>
+        </div>
+        <div>
+          <div style="font-family: ui-serif, 'Iowan Old Style', Palatino, Georgia, serif; font-size: 27px; letter-spacing: -0.03em; line-height: 1.1; color: #ffffff;">2 Std 51 Min</div>
+          <div style="margin-top: 1px; font-size: 12px; line-height: 1.35; color: #a9c6e0;">Ø Abstand</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+
+<script data-dc-script data-props='{
+  "fill": {"editor": "range", "default": 63, "min": 0, "max": 115, "step": 1, "unit": "%", "section": "Füllstand"},
+  "$preview": {"width": 560, "height": 640}
+}'>
+class Component extends DCLogic {
+  renderVals() {
+    const TOP = 168;
+    const BOTTOM = 314;
+
+    const pct = Math.max(0, Math.min(115, this.props.fill ?? 63));
+    const ratio = pct / 100;
+    const clamped = Math.min(1, ratio);
+    const fillTop = BOTTOM - clamped * (BOTTOM - TOP);
+    const over = ratio > 1.02;
+
+    const depth = 3 + clamped * 15;
+    const half = 13 + clamped * 6;
+    const happy = clamped >= 0.72;
+
+    return {
+      fillTop,
+      fillTopPx: `${fillTop}px`,
+      mouth: `M${(160 - half).toFixed(1)} 134 Q160 ${(134 + depth).toFixed(1)} ${(160 + half).toFixed(1)} 134`,
+      eyes: over
+        ? 'M126 106 Q136 118 146 106 M174 106 Q184 118 194 106'
+        : happy
+          ? 'M126 112 Q136 98 146 112 M174 112 Q184 98 194 112'
+          : 'M136 108 L136 108 M184 108 L184 108',
+      eyeWidth: happy || over ? 3.4 : 9,
+    };
+  }
+}
+</script>
+</body>
+</html>

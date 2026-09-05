@@ -1,0 +1,55 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "title": "Heute – Holo-Kammer im Gerät", "x": 0, "y": 0, "w": 390, "h": 844 },
+    { "file": "HoloKammer.dc.html", "title": "A · Holo-Kammer", "x": 520, "y": 0, "w": 560, "h": 640 },
+    { "file": "Hell.dc.html", "title": "A im Hellmodus", "x": 1160, "y": 0, "w": 560, "h": 640 },
+    { "file": "Nebel.dc.html", "title": "B · Nebel", "x": 520, "y": 980, "w": 560, "h": 640 },
+    { "file": "Reaktor.dc.html", "title": "C · Reaktor", "x": 1160, "y": 980, "w": 560, "h": 640 },
+    { "file": "Stufen.dc.html", "title": "Füllstufen von A", "x": 520, "y": 1740, "w": 1200, "h": 470 }
+  ],
+  "annotations": [
+    {
+      "id": "brief",
+      "x": 0,
+      "y": -190,
+      "w": 470,
+      "text": "Das Baby als Füllstand – futuristisch und kinematisch.\n\nDrei Richtungen. A steht links im Gerät, weil es der Vorschlag ist; B und C stehen in derselben Größe darunter zum Vergleich. Alle drei rechnen den Bauch identisch: Oberkante 168, Unterkante 314, Füllhöhe = Anteil am Tagesziel."
+    },
+    {
+      "id": "note-a",
+      "x": 1770,
+      "y": 0,
+      "w": 300,
+      "text": "A · Holo-Kammer (Vorschlag)\n\nDas Kind steht in einem Lichtschacht, der Bauch ist eine Glaskammer mit Flüssigkeit: Meniskus, zwei Wellen, ein Messstrahl, der alle acht Sekunden hochwandert, und eine Skala rechts.\n\nDafür: Die Menge bleibt exakt ablesbar – der Meniskus sitzt auf dem Anteil, nicht ungefähr.\nDagegen: Von den dreien am kühlsten. Wer etwas Weiches erwartet, findet hier ein Instrument."
+    },
+    {
+      "id": "note-b",
+      "x": 1770,
+      "y": 980,
+      "w": 300,
+      "text": "B · Nebel\n\nDie Figur ist eine Silhouette, die Menge ist die Menge an Licht in ihr. Farben sind die drei Aurora-Töne der App. Der Schein auf dem Boden wächst mit.\n\nDafür: Am wärmsten, und es benutzt die Bildsprache, die die App ohnehin hat.\nDagegen: Ein Nebel hat keine Kante. Auf einen Blick sagt er „viel“ oder „wenig“, nicht 380 von 605."
+    },
+    {
+      "id": "note-c",
+      "x": 2110,
+      "y": 980,
+      "w": 300,
+      "text": "C · Reaktor\n\nZwölf Zellen zu je rund 50 ml, die von unten aufleuchten; die angebrochene pulst. Skala in Millilitern, Ableseleiste in fester Schriftbreite.\n\nDafür: Am genauesten – man kann die Zellen zählen.\nDagegen: Am kältesten. Ein Kind als Messgerät zu zeichnen ist eine Entscheidung, die zum Rest der App nicht selbstverständlich passt."
+    },
+    {
+      "id": "note-buehne",
+      "x": 1770,
+      "y": 400,
+      "w": 300,
+      "text": "Die Kammer bleibt in beiden Designs dunkel.\n\nKinematisch heißt: etwas gibt Licht ab. Auf dem hellen Papierweiß der App gäbe es kein Leuchten, nur eine blaue Fläche. Deshalb bekommt die Figur eine eigene dunkle Bühne in der Karte – die Karte drumherum wechselt mit dem Design, die Bühne nicht."
+    },
+    {
+      "id": "note-regeln",
+      "x": 0,
+      "y": 900,
+      "w": 470,
+      "text": "Zwei Regeln der jetzigen Figur bleiben:\n\nKein Hautton. Was an Farbe zu sehen ist, ist ausschließlich die Trinkmenge – bei einer Lichtzeichnung ergibt sich das von selbst.\n\nDie untere Stufe ist ruhig, nicht traurig. Morgens ist der Magen zwangsläufig leer; ein trauriges Gesicht wäre ein Vorwurf. Der Mund geht nie nach unten."
+    }
+  ],
+  "launch": { "view": "canvas" }
+}

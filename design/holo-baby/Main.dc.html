@@ -1,0 +1,261 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; }
+    a { color: #86b6ef; } a:hover { color: #9ec5f4; }
+
+    @keyframes mn-flow { to { transform: translateX(-160px); } }
+    .mn-wave  { animation: mn-flow 11s linear infinite; }
+    .mn-wave2 { animation: mn-flow 17s linear infinite reverse; opacity: .55; }
+
+    @keyframes mn-scan {
+      0%   { transform: translateY(150px); opacity: 0; }
+      12%  { opacity: .85; }
+      88%  { opacity: .85; }
+      100% { transform: translateY(-6px); opacity: 0; }
+    }
+    .mn-scan { animation: mn-scan 8s cubic-bezier(.4,0,.6,1) infinite; }
+
+    @media (prefers-reduced-motion: reduce) { .mn-wave, .mn-wave2, .mn-scan { animation: none; } }
+  </style>
+</helmet>
+
+<!-- Die App in Dunkel: dieselben Tokens wie in styles.css, nur hier
+     ausgeschrieben, weil ein Artboard keine Variablen der App kennt. -->
+<div style="position: relative; width: 100%; height: 100%; background: #121211; overflow: hidden; display: flex; flex-direction: column;">
+
+  <!-- Aurora, gedämpft wie im Nachtmodus -->
+  <div style="position: absolute; left: -70px; top: -50px; width: 340px; height: 340px; border-radius: 50%; background: radial-gradient(closest-side, rgba(47,111,158,.42), transparent 70%); filter: blur(14px);"></div>
+  <div style="position: absolute; right: -90px; top: 300px; width: 380px; height: 380px; border-radius: 50%; background: radial-gradient(closest-side, rgba(138,95,63,.30), transparent 70%); filter: blur(18px);"></div>
+  <div style="position: absolute; left: 40px; bottom: -140px; width: 400px; height: 400px; border-radius: 50%; background: radial-gradient(closest-side, rgba(87,74,140,.34), transparent 70%); filter: blur(16px);"></div>
+
+  <!-- Kopfzeile -->
+  <div style="position: relative; padding: 10px 16px 8px; background: rgba(18,18,17,.62); border-bottom: 1px solid rgba(255,255,255,.09); backdrop-filter: blur(14px); display: flex; align-items: center; gap: 12px; min-height: 44px; box-sizing: border-box;">
+    <span style="flex: none; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: #16233a;">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#3987e5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 20a7 7 0 1 0 0-14 7 7 0 0 0 0 14ZM9.5 11h.01M14.5 11h.01M9.5 15c.7.8 1.6 1.2 2.5 1.2s1.8-.4 2.5-1.2M12 6V3.5"/>
+      </svg>
+    </span>
+    <span style="min-width: 0;">
+      <span style="display: block; font-size: 17px; font-weight: 650; color: #ffffff; line-height: 1.25;">Heute</span>
+      <span style="display: block; font-size: 13px; font-weight: 450; color: #c3c2b7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">2 Wochen, 6 Tage · Lebenstag 21</span>
+    </span>
+  </div>
+
+  <!-- Seiteninhalt -->
+  <div style="position: relative; flex-grow: 1; min-height: 0; padding: 8px 16px 0; display: flex; flex-direction: column; gap: 16px;">
+
+    <!-- Kopf des Startbildschirms -->
+    <div style="padding: 4px 4px 0;">
+      <p style="margin: 0; font-size: 17px; font-weight: 650; color: #c3c2b7; letter-spacing: -0.01em;">Guten Abend, Papa</p>
+      <p style="margin: 2px 0 0; font-family: ui-serif, 'Iowan Old Style', Palatino, Georgia, serif; font-size: 28px; font-weight: 400; letter-spacing: -0.02em; line-height: 1.1; color: #ffffff; display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px;">
+        Noch <span style="font-family: ui-serif, 'Iowan Old Style', Palatino, Georgia, serif; font-size: 52px; letter-spacing: -0.03em; line-height: 1; color: #3987e5;">{{ remaining }}</span><span style="font-size: 20px; font-weight: 650; color: #3987e5;">ml</span>
+      </p>
+      <p style="margin: 6px 0 0; font-size: 13px; color: #c3c2b7;">{{ ml }} von {{ targetMl }} ml heute</p>
+    </div>
+
+    <!-- Heldenkarte -->
+    <div style="background: rgba(38,38,40,.62); border: 1px solid rgba(255,255,255,.09); border-radius: 22px; box-shadow: 0 10px 30px rgba(0,0,0,.38); backdrop-filter: blur(10px); padding: 16px; display: flex; flex-direction: column; gap: 14px;">
+
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <h2 style="margin: 0; font-family: ui-serif, 'Iowan Old Style', Palatino, Georgia, serif; font-size: 28px; font-weight: 400; letter-spacing: -0.02em; line-height: 1.1; color: #ffffff;">Noah</h2>
+        <figure style="margin: 0; padding-left: 12px; border-left: 2px solid rgba(57,135,229,.45);">
+          <blockquote style="margin: 0; font-family: ui-serif, 'Iowan Old Style', Palatino, Georgia, serif; font-size: 16px; font-style: italic; line-height: 1.45; color: #c3c2b7; text-wrap: pretty;">Erziehung ist Beispiel und Liebe, sonst nichts.</blockquote>
+          <figcaption style="margin-top: 3px; font-size: 12px; color: #94938a;">Johann Heinrich Pestalozzi</figcaption>
+        </figure>
+      </div>
+
+      <!-- Die Kammer: die Figur bekommt einen eigenen dunklen Grund. Ein
+           kinematisches Bild braucht Schwarz, das die Glaskarte nicht
+           hergibt - deshalb liegt hier eine Bühne in der Karte. -->
+      <div style="position: relative; border-radius: 16px; overflow: hidden; background: #08080a; border: 1px solid rgba(255,255,255,.07); display: flex; align-items: center; gap: 6px; padding: 10px 14px 10px 6px;">
+
+        <div style="position: absolute; left: 24%; top: 46%; width: 300px; height: 300px; transform: translate(-50%,-50%); background: radial-gradient(closest-side, rgba(45,120,214,.34), rgba(45,120,214,.05) 58%, transparent 74%); pointer-events: none;"></div>
+
+        <svg viewBox="0 0 320 400" width="152" height="190" style="position: relative; display: block; flex: none;">
+          <defs>
+            <filter id="mnGlow" x="-60%" y="-60%" width="220%" height="220%">
+              <feGaussianBlur stdDeviation="5" result="b"/>
+              <feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <filter id="mnSoft" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="2.4"/></filter>
+            <filter id="mnFar" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="1.6"/></filter>
+            <linearGradient id="mnMilk" gradientUnits="userSpaceOnUse" x1="160" y1="314" x2="160" y2="168">
+              <stop offset="0" stop-color="#0f2f5c"/>
+              <stop offset="0.5" stop-color="#2a78d6"/>
+              <stop offset="1" stop-color="#a8ecff"/>
+            </linearGradient>
+            <linearGradient id="mnShaft" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#bfe6ff" stop-opacity=".15"/>
+              <stop offset="1" stop-color="#bfe6ff" stop-opacity="0"/>
+            </linearGradient>
+            <linearGradient id="mnFloor" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#4fa0e8" stop-opacity="0"/>
+              <stop offset="1" stop-color="#4fa0e8" stop-opacity=".5"/>
+            </linearGradient>
+            <clipPath id="mnBelly">
+              <path d="M160 168 C 108 168, 82 200, 82 242 C 82 288, 116 314, 160 314 C 204 314, 238 288, 238 242 C 238 200, 212 168, 160 168 Z"/>
+            </clipPath>
+          </defs>
+
+          <g filter="url(#mnFar)" opacity=".5" stroke="url(#mnFloor)" stroke-width="1.4" fill="none">
+            <path d="M-40 392 L160 336 L360 392"/>
+            <path d="M10 374 L160 330 L310 374"/>
+            <path d="M60 358 L160 324 L260 358"/>
+            <path d="M-40 392 L360 392" opacity=".8"/>
+            <path d="M10 374 L310 374" opacity=".55"/>
+            <path d="M60 358 L260 358" opacity=".35"/>
+          </g>
+
+          <path d="M96 -30 L232 -30 L286 330 L44 330 Z" fill="url(#mnShaft)" filter="url(#mnSoft)"/>
+
+          <path d="M160 168 C 108 168, 82 200, 82 242 C 82 288, 116 314, 160 314 C 204 314, 238 288, 238 242 C 238 200, 212 168, 160 168 Z"
+                fill="rgba(120,190,255,.05)" stroke="rgba(150,205,255,.34)" stroke-width="1.6"/>
+
+          <g clip-path="url(#mnBelly)">
+            <rect x="70" y="{{ fillTop }}" width="180" height="150" fill="url(#mnMilk)" opacity=".92"/>
+            <g style="transform: translate(-40px, {{ fillTopPx }})">
+              <path class="mn-wave" d="M0 0 Q 20 -6, 40 0 T80 0 T120 0 T160 0 T200 0 T240 0 T280 0 T320 0 T360 0 T400 0 T440 0 T480 0 T520 0 T560 0 T600 0 T640 0" fill="none" stroke="#dff5ff" stroke-width="2.6" stroke-linecap="round" opacity=".85"/>
+              <path class="mn-wave2" d="M0 5 Q 20 -1, 40 5 T80 5 T120 5 T160 5 T200 5 T240 5 T280 5 T320 5 T360 5 T400 5 T440 5 T480 5 T520 5 T560 5 T600 5 T640 5" fill="none" stroke="#8fd8ff" stroke-width="2" stroke-linecap="round" opacity=".45"/>
+            </g>
+            <rect x="70" y="{{ fillTop }}" width="180" height="2" fill="#dff5ff" opacity=".9" filter="url(#mnSoft)"/>
+            <rect class="mn-scan" x="70" y="168" width="180" height="1.2" fill="#bfe9ff" opacity=".8"/>
+          </g>
+
+          <path d="M160 168 C 108 168, 82 200, 82 242 C 82 288, 116 314, 160 314 C 204 314, 238 288, 238 242 C 238 200, 212 168, 160 168 Z"
+                fill="none" stroke="#9fd6ff" stroke-width="1.8" opacity=".85"/>
+          <path d="M118 178 C 96 190, 84 214, 83 238" fill="none" stroke="#eaf8ff" stroke-width="2.2" stroke-linecap="round" opacity=".5" filter="url(#mnSoft)"/>
+
+          <ellipse cx="132" cy="322" rx="20" ry="10" fill="rgba(120,190,255,.06)" stroke="#7fc6f5" stroke-width="1.5"/>
+          <ellipse cx="188" cy="322" rx="20" ry="10" fill="rgba(120,190,255,.06)" stroke="#7fc6f5" stroke-width="1.5"/>
+          <path d="M92 206 C 70 214, 62 240, 70 262" fill="none" stroke="#7fc6f5" stroke-width="2.4" stroke-linecap="round"/>
+          <path d="M228 206 C 250 214, 258 240, 250 262" fill="none" stroke="#7fc6f5" stroke-width="2.4" stroke-linecap="round"/>
+          <circle cx="92" cy="116" r="14" fill="rgba(120,190,255,.05)" stroke="#7fc6f5" stroke-width="1.8"/>
+          <circle cx="228" cy="116" r="14" fill="rgba(120,190,255,.05)" stroke="#7fc6f5" stroke-width="1.8"/>
+          <circle cx="160" cy="108" r="62" fill="rgba(120,190,255,.05)" stroke="#9fd6ff" stroke-width="2" filter="url(#mnGlow)"/>
+          <path d="M112 72 C 122 58, 140 48, 158 46" fill="none" stroke="#f2fbff" stroke-width="2.6" stroke-linecap="round" opacity=".55" filter="url(#mnSoft)"/>
+          <path d="M148 50 Q160 36 173 49" fill="none" stroke="#7fc6f5" stroke-width="2.2" stroke-linecap="round"/>
+
+          <g filter="url(#mnGlow)" stroke="#ecf9ff" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path d="{{ eyes }}" stroke-width="{{ eyeWidth }}"/>
+            <path d="{{ mouth }}" stroke-width="3"/>
+          </g>
+        </svg>
+
+        <!-- Die drei Kennzahlen wie bisher, nur auf dem dunklen Grund. -->
+        <div style="position: relative; display: flex; flex-direction: column; gap: 13px; min-width: 0; flex-grow: 1;">
+          <div>
+            <div style="font-family: ui-serif, 'Iowan Old Style', Palatino, Georgia, serif; font-size: 26px; font-weight: 400; letter-spacing: -0.03em; line-height: 1.1; color: #ffffff;">vor 36 Min</div>
+            <div style="margin-top: 1px; font-size: 12px; line-height: 1.35; color: #c3c2b7;">14:28 · Flasche · 80 ml</div>
+          </div>
+          <div>
+            <div style="font-family: ui-serif, 'Iowan Old Style', Palatino, Georgia, serif; font-size: 26px; font-weight: 400; letter-spacing: -0.03em; line-height: 1.1; color: #ffffff;">5</div>
+            <div style="margin-top: 1px; font-size: 12px; line-height: 1.35; color: #c3c2b7;">Mahlzeiten, 2 davon nachts</div>
+          </div>
+          <div>
+            <div style="font-family: ui-serif, 'Iowan Old Style', Palatino, Georgia, serif; font-size: 26px; font-weight: 400; letter-spacing: -0.03em; line-height: 1.1; color: #ffffff;">2 Std 51 Min</div>
+            <div style="margin-top: 1px; font-size: 12px; line-height: 1.35; color: #c3c2b7;">Ø Abstand</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Schnelleingabe, angeschnitten wie auf dem echten Bildschirm -->
+    <div style="background: rgba(38,38,40,.62); border: 1px solid rgba(255,255,255,.09); border-radius: 22px; box-shadow: 0 10px 30px rgba(0,0,0,.38); backdrop-filter: blur(10px); padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="min-width: 0; flex-grow: 1;">
+          <div style="display: flex; align-items: baseline; gap: 4px;">
+            <span style="font-family: ui-serif, 'Iowan Old Style', Palatino, Georgia, serif; font-size: 34px; line-height: 1; color: #3987e5;">75</span>
+            <span style="font-size: 15px; font-weight: 650; color: #3987e5;">ml</span>
+          </div>
+          <div style="margin-top: 4px; font-size: 13px; color: #c3c2b7;">Flasche · üblich um diese Uhrzeit</div>
+        </div>
+        <span style="flex: none; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(255,255,255,.09); background: rgba(38,38,40,.62);">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#c3c2b7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17zM14.5 6.5l3 3"/></svg>
+        </span>
+        <span style="flex: none; padding: 13px 22px; border-radius: 999px; background: #3987e5; color: #ffffff; font-size: 16px; font-weight: 650;">Eintragen</span>
+      </div>
+      <div style="position: relative; height: 22px; display: flex; align-items: center;">
+        <div style="position: absolute; left: 0; right: 0; height: 6px; border-radius: 999px; background: #33332f;"></div>
+        <div style="position: absolute; left: 0; width: 52%; height: 6px; border-radius: 999px; background: #3987e5;"></div>
+        <div style="position: absolute; left: 52%; width: 26px; height: 26px; margin-left: -13px; border-radius: 50%; background: #3987e5; border: 2px solid #232322; box-shadow: 0 1px 2px rgba(0,0,0,.4), 0 4px 14px rgba(0,0,0,.3);"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leiste -->
+  <div style="position: relative; flex: none; margin: 0 12px 12px; padding: 6px; border-radius: 999px; background: rgba(44,44,46,.90); border: 1px solid rgba(255,255,255,.09); box-shadow: 0 12px 34px rgba(0,0,0,.45); backdrop-filter: blur(10px); display: flex;">
+    <sc-for list="{{ tabs }}" as="tab" hint-placeholder-count="5">
+      <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 7px 0 6px; border-radius: 999px; background: {{ tab.bg }};">
+        <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="{{ tab.color }}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="{{ tab.icon }}"/></svg>
+        <span style="font-size: 11px; font-weight: 650; color: {{ tab.color }};">{{ tab.label }}</span>
+      </div>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+
+<script data-dc-script data-props='{
+  "fill": {"editor": "range", "default": 63, "min": 0, "max": 115, "step": 1, "unit": "%", "section": "Füllstand"},
+  "targetMl": {"editor": "int", "default": 605, "min": 100, "max": 1200, "step": 5, "section": "Füllstand"},
+  "$preview": {"width": 390, "height": 844}
+}'>
+class Component extends DCLogic {
+  renderVals() {
+    const TOP = 168;
+    const BOTTOM = 314;
+
+    const pct = Math.max(0, Math.min(115, this.props.fill ?? 63));
+    const ratio = pct / 100;
+    const clamped = Math.min(1, ratio);
+    const fillTop = BOTTOM - clamped * (BOTTOM - TOP);
+    const over = ratio > 1.02;
+    const target = this.props.targetMl ?? 605;
+    const ml = Math.round(target * ratio);
+
+    const depth = 3 + clamped * 15;
+    const half = 13 + clamped * 6;
+    const mouth = `M${(160 - half).toFixed(1)} 134 Q160 ${(134 + depth).toFixed(1)} ${(160 + half).toFixed(1)} 134`;
+
+    const happy = clamped >= 0.72;
+    const eyes = over
+      ? 'M126 106 Q136 118 146 106 M174 106 Q184 118 194 106'
+      : happy
+        ? 'M126 112 Q136 98 146 112 M174 112 Q184 98 194 112'
+        : 'M136 108 L136 108 M184 108 L184 108';
+
+    const tabs = [
+      { label: 'Heute', icon: 'M3 10.5 12 3l9 7.5M5.5 9.5V20h13V9.5M9.5 20v-5.5h5V20', active: true },
+      { label: 'Trinken', icon: 'M9 2h6M9.5 5h5M8 8.5h8v11a2.5 2.5 0 0 1-2.5 2.5h-3A2.5 2.5 0 0 1 8 19.5zM8 5.5h8M11 12v4' },
+      { label: 'Gewicht', icon: 'M4 7h16l1.5 13.5H2.5zM8.5 11.5a3.5 3.5 0 0 0 7 0M12 7V4M9 4h6' },
+      { label: 'Gesundheit', icon: 'M12 20.5s-7.5-4.6-7.5-9.7A4.3 4.3 0 0 1 12 8a4.3 4.3 0 0 1 7.5 2.8c0 5.1-7.5 9.7-7.5 9.7Z' },
+      { label: 'Mehr', icon: 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM12 3.6v1.2M12 19.2v1.2M4.6 12H3.4M20.6 12h-1.2M6.8 6.8 6 6M18 18l-.8-.8M6.8 17.2 6 18M18 6l-.8.8' },
+    ].map((tab) => ({
+      ...tab,
+      color: tab.active ? '#3987e5' : '#94938a',
+      bg: tab.active ? '#16233a' : 'transparent',
+    }));
+
+    return {
+      fillTop,
+      fillTopPx: `${fillTop}px`,
+      mouth,
+      eyes,
+      eyeWidth: happy || over ? 3.4 : 9,
+      ml,
+      targetMl: target,
+      remaining: Math.max(0, target - ml),
+      tabs,
+    };
+  }
+}
+</script>
+</body>
+</html>
