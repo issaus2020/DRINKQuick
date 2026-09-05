@@ -1,4 +1,5 @@
 import { createContext, useContext } from 'react';
+import type { FamilyRole } from '../types';
 
 export type SyncStatus =
   /** Kein Server hinterlegt - die App läuft rein lokal. */
@@ -29,8 +30,13 @@ export interface SyncApi {
   signOut(): Promise<void>;
   /** Legt einen Familien-Bereich an und verbindet dieses Gerät damit. */
   createFamily(name: string): Promise<void>;
-  /** Erzeugt einen Einladungscode für den aktuellen Bereich. */
-  createInvite(): Promise<string>;
+  /**
+   * Erzeugt einen Einladungscode für den aktuellen Bereich.
+   *
+   * Mit 'viewer' entsteht ein Beobachter-Link: Wer ihn einlöst, sieht alles,
+   * kann aber nichts eintragen oder ändern.
+   */
+  createInvite(role?: FamilyRole): Promise<string>;
   /** Tritt über einen Code einem bestehenden Bereich bei. */
   joinFamily(code: string): Promise<void>;
   syncNow(): Promise<void>;

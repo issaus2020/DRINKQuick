@@ -33,7 +33,7 @@ const TITLES: Record<Tab, string> = {
 };
 
 export function App() {
-  const { ready, activeBaby, data } = useStore();
+  const { ready, activeBaby, data, canEdit } = useStore();
   const sync = useSync();
   const [tab, setTab] = useState<Tab>('today');
   const [showReport, setShowReport] = useState(false);
@@ -164,6 +164,15 @@ export function App() {
           <h1 className="topbar__title">
             {TITLES[tab]}
             <span className="topbar__sub">
+              {/* Ein Beobachter soll auf jedem Tab wissen, warum nirgends ein
+                  Eintragen-Knopf steht - nicht erst, wenn er ihn sucht. Das
+                  Kennzeichen steht in der Unterzeile und nicht daneben, sonst
+                  bliebe für Alter und Lebenstag kein Platz mehr. */}
+              {!canEdit && (
+                <span className="topbar__badge">
+                  <Icon name="eye" size={13} /> Nur Ansicht
+                </span>
+              )}
               {/* Auf "Heute" begrüßt der Kopfbereich darunter schon mit Namen -
                   hier wäre er ein zweites Mal direkt untereinander. */}
               {tab !== 'today' && `${activeBaby.name} · `}

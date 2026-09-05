@@ -22,7 +22,7 @@ interface RestCardProps {
 }
 
 export function RestCard({ feeds, sleeps, ageDays, now }: RestCardProps) {
-  const { removeSleep } = useStore();
+  const { canEdit, removeSleep } = useStore();
   const rest = restOfDay(feeds, sleeps, now);
   const reference = sleepReference(ageDays);
   const dayStart = startOfDay(now).getTime();
@@ -86,14 +86,16 @@ export function RestCard({ feeds, sleeps, ageDays, now }: RestCardProps) {
                   {phase.endedAt ? formatTime(phase.endedAt) : 'läuft'}
                 </div>
               </div>
-              <button
-                type="button"
-                className="icon-btn"
-                aria-label="Schlafphase löschen"
-                onClick={() => removeSleep(phase.id)}
-              >
-                <Icon name="trash" size={17} />
-              </button>
+              {canEdit && (
+                <button
+                  type="button"
+                  className="icon-btn"
+                  aria-label="Schlafphase löschen"
+                  onClick={() => removeSleep(phase.id)}
+                >
+                  <Icon name="trash" size={17} />
+                </button>
+              )}
             </li>
           ))}
         </ul>

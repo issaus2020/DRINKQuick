@@ -51,7 +51,7 @@ interface TodayScreenProps {
 }
 
 export function TodayScreen({ baby }: TodayScreenProps) {
-  const { data } = useStore();
+  const { data, canEdit } = useStore();
   const now = useNow(30_000);
   const [feedSheet, setFeedSheet] = useState<{ kind: Feed['kind']; existing?: Feed } | null>(null);
   const [diaperOpen, setDiaperOpen] = useState(false);
@@ -230,25 +230,32 @@ export function TodayScreen({ baby }: TodayScreenProps) {
         </div>
       </div>
 
-      <BreastTimer babyId={baby.id} showStart={false} />
+      {/* Alles, was einträgt, entfällt für Beobachter - sie sollen keine
+          Knöpfe sehen, die der Server ohnehin abweist. */}
+      {canEdit && (
+        <>
+          <BreastTimer babyId={baby.id} showStart={false} />
 
-      {sleeps.some((entry) => !entry.endedAt) && (
-        <SleepToggle
-          babyId={baby.id}
-          sleeps={sleeps}
-          now={now}
-          onOpenSheet={() => setSleepOpen(true)}
-        />
+          {sleeps.some((entry) => !entry.endedAt) && (
+            <SleepToggle
+              babyId={baby.id}
+              sleeps={sleeps}
+              now={now}
+              onOpenSheet={() => setSleepOpen(true)}
+            />
+          )}
+
+          <QuickAmounts
+            babyId={baby.id}
+            feeds={feeds}
+            fallbackPerMealMl={target?.perMealMl ?? 70}
+            defaultContent={lastBottleContent}
+            onOpenSheet={() => setFeedSheet({ kind: 'bottle' })}
+          />
+        </>
       )}
 
-      <QuickAmounts
-        babyId={baby.id}
-        feeds={feeds}
-        fallbackPerMealMl={target?.perMealMl ?? 70}
-        defaultContent={lastBottleContent}
-        onOpenSheet={() => setFeedSheet({ kind: 'bottle' })}
-      />
-
+      {canEdit && (
       <div className="quick-grid">
         <button type="button" className="quick" onClick={() => setDiaperOpen(true)}>
           <Icon name="diaper" className="quick__icon" />
@@ -278,6 +285,7 @@ export function TodayScreen({ baby }: TodayScreenProps) {
           />
         )}
       </div>
+      )}
 
       <NextFeedCard
         feeds={feeds}
@@ -376,14 +384,16 @@ export function TodayScreen({ baby }: TodayScreenProps) {
                   </div>
                 </div>
                 <span className="list__value">{feed.amountMl ? `${feed.amountMl} ml` : ''}</span>
-                <button
-                  type="button"
-                  className="icon-btn"
-                  aria-label="Eintrag bearbeiten"
-                  onClick={() => setFeedSheet({ kind: feed.kind, existing: feed })}
-                >
-                  <Icon name="edit" size={17} />
-                </button>
+                {canEdit && (
+                  <button
+                    type="button"
+                    className="icon-btn"
+                    aria-label="Eintrag bearbeiten"
+                    onClick={() => setFeedSheet({ kind: feed.kind, existing: feed })}
+                  >
+                    <Icon name="edit" size={17} />
+                  </button>
+                )}
               </li>
             ))}
           </ul>

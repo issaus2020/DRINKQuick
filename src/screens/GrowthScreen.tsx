@@ -28,7 +28,7 @@ interface GrowthScreenProps {
 }
 
 export function GrowthScreen({ baby }: GrowthScreenProps) {
-  const { data } = useStore();
+  const { data, canEdit } = useStore();
   const [indicator, setIndicator] = useState<WeightIndicator>('weight');
   const [editing, setEditing] = useState<Measurement | null>(null);
   const [adding, setAdding] = useState(false);
@@ -184,9 +184,15 @@ export function GrowthScreen({ baby }: GrowthScreenProps) {
       <div className="card">
         <div className="card__head">
           <h2 className="card__title">Verlauf mit WHO-Perzentilen</h2>
-          <button type="button" className="btn btn--sm btn--primary" onClick={() => setAdding(true)}>
-            <Icon name="plus" size={16} /> Wiegen
-          </button>
+          {canEdit && (
+            <button
+              type="button"
+              className="btn btn--sm btn--primary"
+              onClick={() => setAdding(true)}
+            >
+              <Icon name="plus" size={16} /> Wiegen
+            </button>
+          )}
         </div>
 
         <Segmented
@@ -249,14 +255,16 @@ export function GrowthScreen({ baby }: GrowthScreenProps) {
                       {entry.note ? ` · ${entry.note}` : ''}
                     </div>
                   </div>
-                  <button
-                    type="button"
-                    className="icon-btn"
-                    aria-label="Messung bearbeiten"
-                    onClick={() => setEditing(entry)}
-                  >
-                    <Icon name="edit" size={17} />
-                  </button>
+                  {canEdit && (
+                    <button
+                      type="button"
+                      className="icon-btn"
+                      aria-label="Messung bearbeiten"
+                      onClick={() => setEditing(entry)}
+                    >
+                      <Icon name="edit" size={17} />
+                    </button>
+                  )}
                 </li>
               );
             })}

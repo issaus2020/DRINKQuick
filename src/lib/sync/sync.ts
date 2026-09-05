@@ -86,6 +86,13 @@ export async function runSync(
   familyId: string,
   cursor?: string,
   lastPushedAt?: string,
+  /**
+   * Darf dieses Gerät hochladen? Für Beobachter nicht - die holen nur. Der
+   * Server würde ihre Einträge ohnehin abweisen; ohne diese Bremse liefe der
+   * Abgleich bei jedem Durchgang in denselben Fehler und meldete "Abgleich
+   * fehlgeschlagen", obwohl alles in Ordnung ist.
+   */
+  canPush = true,
 ): Promise<SyncOutcome> {
   // Der Zeitpunkt wird VOR dem Hochladen genommen. Was währenddessen
   // eingetragen wird, gilt dann beim nächsten Mal als offen - lieber einmal
@@ -121,7 +128,7 @@ export async function runSync(
 
   // --- 3. hochladen ---------------------------------------------------------
   const outgoing: EntryUpload[] = [];
-  for (const collection of SYNCED_COLLECTIONS) {
+  for (const collection of canPush ? SYNCED_COLLECTIONS : []) {
     for (const item of pendingChanges<Syncable>(merged[collection], lastPushedAt)) {
       outgoing.push(toRow(item, familyId, COLLECTION_KIND[collection]));
     }

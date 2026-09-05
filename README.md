@@ -316,10 +316,29 @@ etwa zehn Minuten; danach läuft es von selbst.
 7. In der App anmelden, unter *Mehr* → *Konto & Teilen* einen Bereich anlegen
    und den Einladungslink verschicken.
 
+#### Zwei Arten von Einladungslink
+
+Unter *Konto & Teilen* gibt es den Link in zwei Ausführungen:
+
+- **Zum Mitschreiben** – für die Person, die das Kind mit betreut. Sie sieht
+  alles und trägt selbst ein.
+- **Nur zum Ansehen** – für Großeltern, Hebamme oder Kinderärztin. Sie sehen
+  jeden Eintrag, können aber nichts anlegen, ändern oder löschen.
+
+Der Unterschied steht in der Datenbank, nicht in der Anzeige: Die
+Mitgliedschaft trägt eine Rolle (`editor` oder `viewer`), und die
+Row-Level-Security lässt für `viewer` nur `select` zu. Auch mit selbstgebauten
+Anfragen kommt ein Beobachter also nicht ans Schreiben. Die App blendet ihm die
+Eingabemöglichkeiten zusätzlich aus und lädt nichts hoch – sonst liefe jeder
+Abgleich in einen abgewiesenen Schreibversuch.
+
+Einladen darf nur, wer selbst schreiben darf. Sonst könnte sich ein Beobachter
+Mitschreibende dazuholen und die Beschränkung damit umgehen.
+
 Zum Zugriffsschutz: der publishable- bzw. `anon`-Key darf öffentlich sein. Der
 Schutz steckt in den Row-Level-Security-Regeln – jede Zeile ist nur für
-Mitglieder genau der Familie lesbar und schreibbar, zu der sie gehört. Wer den
-Key hat, aber in keiner Familie ist, sieht nichts.
+Mitglieder genau der Familie lesbar, und schreibbar nur für die mit der Rolle
+`editor`. Wer den Key hat, aber in keiner Familie ist, sieht nichts.
 
 Die Einträge liegen serverseitig in einer einzigen Tabelle mit einer
 `jsonb`-Spalte. Der Server ist hier nur Briefkasten zwischen den Geräten –

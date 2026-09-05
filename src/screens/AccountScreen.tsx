@@ -11,11 +11,12 @@ import { formatSince } from '../lib/date';
 import { useStore } from '../lib/store-context';
 import { useSync } from '../lib/sync/sync-context';
 import { inviteLink } from '../lib/sync/invite';
+import type { FamilyRole } from '../lib/types';
 
 type Mode = 'signin' | 'signup';
 
 export function AccountScreen({ onBack }: { onBack: () => void }) {
-  const { data } = useStore();
+  const { data, canEdit } = useStore();
   // Ohne eigenes Kind ist diese Person mit hoher Wahrscheinlichkeit
   // eingeladen worden - dann führt der Code, nicht das Anlegen.
   const invitedFirst = data.babies.length === 0;
@@ -25,7 +26,9 @@ export function AccountScreen({ onBack }: { onBack: () => void }) {
   const [password, setPassword] = useState('');
   const [familyName, setFamilyName] = useState('Familie');
   const [joinCode, setJoinCode] = useState('');
-  const [invite, setInvite] = useState<string | null>(null);
+  // Der erzeugte Code samt seiner Rolle - der Text darunter muss sagen, was
+  // der Link kann, sonst verschickt jemand versehentlich Schreibrechte.
+  const [invite, setInvite] = useState<{ code: string; role: FamilyRole } | null>(null);
   const [guestEmail, setGuestEmail] = useState('');
   const [guestPassword, setGuestPassword] = useState('');
   const [busy, setBusy] = useState(false);
@@ -244,7 +247,9 @@ export function AccountScreen({ onBack }: { onBack: () => void }) {
               {sync.lastSyncedAt
                 ? `Zuletzt abgeglichen ${formatSince(sync.lastSyncedAt)}.`
                 : 'Noch kein Abgleich gelaufen.'}
-              {sync.pending > 0 && ` ${sync.pending} Einträge warten aufs Hochladen.`}
+              {/* Ein Beobachter lädt nie etwas hoch - für ihn wäre die Zahl
+                  eine Warteschlange, die sich nie leert. */}
+              {canEdit && sync.pending > 0 && ` ${sync.pending} Einträge warten aufs Hochladen.`}
             </p>
             {sync.status === 'error' && sync.error && (
               <p className="muted small">
@@ -261,64 +266,112 @@ export function AccountScreen({ onBack }: { onBack: () => void }) {
             </button>
           </div>
 
-          <div className="card stack stack--tight">
-            <h2 className="card__title">Kind teilen</h2>
-            <p className="muted small">
-              Wer den Link öffnet, sieht dasselbe Kind und kann selbst Einträge anlegen. Der Link
-              gilt sieben Tage und lässt sich einmal einlösen.
-            </p>
-            {invite ? (
-              <>
-                <p className="muted small">Link zum Verschicken:</p>
-                <div className="invite-link">{inviteLink(invite)}</div>
-                <div className="row row--wrap">
+          {canEdit ? (
+            <div className="card stack stack--tight">
+              <h2 className="card__title">Kind teilen</h2>
+              <p className="muted small">
+                Jeder Link gilt sieben Tage und lässt sich einmal einlösen. Es gibt ihn in zwei
+                Ausführungen – die Wahl trifft, wer teilt.
+              </p>
+              {invite ? (
+                <>
+                  <p className="muted small">
+                    {invite.role === 'viewer'
+                      ? 'Beobachter-Link zum Verschicken – wer ihn öffnet, sieht alles, kann aber nichts eintragen oder ändern:'
+                      : 'Link zum Mitschreiben – wer ihn öffnet, kann selbst Einträge anlegen:'}
+                  </p>
+                  <div className="invite-link">{inviteLink(invite.code)}</div>
+                  <div className="row row--wrap">
+                    <button
+                      type="button"
+                      className="btn btn--primary"
+                      onClick={() =>
+                        run(async () => {
+                          const link = inviteLink(invite.code);
+                          const text =
+                            invite.role === 'viewer'
+                              ? `Du kannst bei ${baby} in DRINKQuick mitschauen: ${link}`
+                              : `Ich teile ${baby} mit dir in DRINKQuick: ${link}`;
+                          // Auf dem Telefon öffnet das die gewohnte Teilen-Auswahl
+                          // (WhatsApp, Signal, Mail); sonst bleibt die Zwischenablage.
+                          if (navigator.share) {
+                            await navigator.share({ title: 'DRINKQuick', text, url: link });
+                            return;
+                          }
+                          await navigator.clipboard?.writeText(link);
+                          setMessage('Link kopiert - jetzt einfügen und verschicken.');
+                        })
+                      }
+                    >
+                      <Icon name="upload" size={18} /> Link teilen
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn--sm"
+                      onClick={() => {
+                        void navigator.clipboard?.writeText(inviteLink(invite.code));
+                        setMessage('Link kopiert.');
+                      }}
+                    >
+                      Kopieren
+                    </button>
+                    <button type="button" className="btn btn--sm" onClick={() => setInvite(null)}>
+                      Anderen Link
+                    </button>
+                  </div>
+                  <p className="muted small">
+                    Falls ein Link nicht ankommt, geht auch der Code von Hand:
+                  </p>
+                  <div className="invite-code">{invite.code}</div>
+                </>
+              ) : (
+                <>
                   <button
                     type="button"
-                    className="btn btn--primary"
+                    className="btn btn--primary btn--block"
+                    disabled={busy}
                     onClick={() =>
-                      run(async () => {
-                        const link = inviteLink(invite);
-                        const text = `Ich teile ${baby} mit dir in DRINKQuick: ${link}`;
-                        // Auf dem Telefon öffnet das die gewohnte Teilen-Auswahl
-                        // (WhatsApp, Signal, Mail); sonst bleibt die Zwischenablage.
-                        if (navigator.share) {
-                          await navigator.share({ title: 'DRINKQuick', text, url: link });
-                          return;
-                        }
-                        await navigator.clipboard?.writeText(link);
-                        setMessage('Link kopiert - jetzt einfügen und verschicken.');
-                      })
+                      run(async () =>
+                        setInvite({ code: await sync.createInvite('editor'), role: 'editor' }),
+                      )
                     }
                   >
-                    <Icon name="upload" size={18} /> Link teilen
+                    <Icon name="plus" size={18} /> Zum Mitschreiben einladen
                   </button>
+                  <p className="muted small">
+                    Für die Person, die das Kind mit betreut: Sie sieht alles und trägt selbst ein.
+                  </p>
+
                   <button
                     type="button"
-                    className="btn btn--sm"
-                    onClick={() => {
-                      void navigator.clipboard?.writeText(inviteLink(invite));
-                      setMessage('Link kopiert.');
-                    }}
+                    className="btn btn--block"
+                    disabled={busy}
+                    onClick={() =>
+                      run(async () =>
+                        setInvite({ code: await sync.createInvite('viewer'), role: 'viewer' }),
+                      )
+                    }
                   >
-                    Kopieren
+                    <Icon name="eye" size={18} /> Nur zum Ansehen einladen
                   </button>
-                </div>
-                <p className="muted small">
-                  Falls ein Link nicht ankommt, geht auch der Code von Hand:
-                </p>
-                <div className="invite-code">{invite}</div>
-              </>
-            ) : (
-              <button
-                type="button"
-                className="btn btn--primary btn--block"
-                disabled={busy}
-                onClick={() => run(async () => setInvite(await sync.createInvite()))}
-              >
-                <Icon name="plus" size={18} /> Einladungslink erzeugen
-              </button>
-            )}
-          </div>
+                  <p className="muted small">
+                    Für Großeltern, Hebamme oder Kinderärztin: Sie sehen jeden Eintrag, können aber
+                    nichts anlegen, ändern oder löschen. Das ist in der Datenbank festgelegt, nicht
+                    nur in der Anzeige.
+                  </p>
+                </>
+              )}
+            </div>
+          ) : (
+            <div className="card stack stack--tight">
+              <h2 className="card__title">Nur zum Ansehen</h2>
+              <p className="muted small">
+                Du bist als Beobachter in diesem Bereich. Du siehst jeden Eintrag zu {baby}, sobald
+                er abgeglichen ist – eintragen, ändern und löschen kann nur, wer das Kind mit
+                betreut. Wer dich eingeladen hat, kann dir einen Link zum Mitschreiben schicken.
+              </p>
+            </div>
+          )}
 
           {account.isGuest && (
             <div className="card stack stack--tight">

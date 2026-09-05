@@ -33,7 +33,7 @@ interface HealthScreenProps {
 }
 
 export function HealthScreen({ baby }: HealthScreenProps) {
-  const { data, toggleCheckup, removeDiaper, removeHealth } = useStore();
+  const { data, canEdit, toggleCheckup, removeDiaper, removeHealth } = useStore();
   const [diaperSheet, setDiaperSheet] = useState<DiaperKind | null>(null);
   const [healthSheet, setHealthSheet] = useState<HealthKind | null>(null);
 
@@ -71,6 +71,7 @@ export function HealthScreen({ baby }: HealthScreenProps) {
 
   return (
     <div className="page">
+      {canEdit && (
       <div className="quick-grid">
         <button type="button" className="quick" onClick={() => setDiaperSheet('wet')}>
           <Icon name="diaper" className="quick__icon" />
@@ -96,6 +97,7 @@ export function HealthScreen({ baby }: HealthScreenProps) {
           <span className="quick__meta">tägliche Gabe abhaken</span>
         </button>
       </div>
+      )}
 
       <GasCard babyId={baby.id} feeds={feeds} health={health} />
 
@@ -150,14 +152,16 @@ export function HealthScreen({ baby }: HealthScreenProps) {
                   <div className="list__title">{DIAPER_LABELS[diaper.kind]}</div>
                   <div className="list__meta">{formatTime(diaper.at)}</div>
                 </div>
-                <button
-                  type="button"
-                  className="icon-btn"
-                  aria-label="Windel löschen"
-                  onClick={() => removeDiaper(diaper.id)}
-                >
-                  <Icon name="trash" size={17} />
-                </button>
+                {canEdit && (
+                  <button
+                    type="button"
+                    className="icon-btn"
+                    aria-label="Windel löschen"
+                    onClick={() => removeDiaper(diaper.id)}
+                  >
+                    <Icon name="trash" size={17} />
+                  </button>
+                )}
               </li>
             ))}
           </ul>
@@ -182,21 +186,25 @@ export function HealthScreen({ baby }: HealthScreenProps) {
               <span className={`badge ${CHECKUP_BADGE[checkup.status]}`}>
                 {CHECKUP_TEXT[checkup.status]}
               </span>
-              <button
-                type="button"
-                className="icon-btn"
-                aria-label={checkup.status === 'done' ? 'Als offen markieren' : 'Als erledigt markieren'}
-                onClick={() =>
-                  toggleCheckup({
-                    id: newId(),
-                    babyId: baby.id,
-                    key: checkup.key,
-                    doneAt: new Date().toISOString(),
-                  })
-                }
-              >
-                <Icon name="check" size={17} />
-              </button>
+              {canEdit && (
+                <button
+                  type="button"
+                  className="icon-btn"
+                  aria-label={
+                    checkup.status === 'done' ? 'Als offen markieren' : 'Als erledigt markieren'
+                  }
+                  onClick={() =>
+                    toggleCheckup({
+                      id: newId(),
+                      babyId: baby.id,
+                      key: checkup.key,
+                      doneAt: new Date().toISOString(),
+                    })
+                  }
+                >
+                  <Icon name="check" size={17} />
+                </button>
+              )}
             </li>
           ))}
         </ul>
@@ -205,13 +213,15 @@ export function HealthScreen({ baby }: HealthScreenProps) {
       <div className="card card--flush">
         <div className="day-header">
           <span>Gesundheitseinträge</span>
-          <button
-            type="button"
-            className="btn btn--sm btn--ghost"
-            onClick={() => setHealthSheet('symptom')}
-          >
-            <Icon name="plus" size={16} /> Neu
-          </button>
+          {canEdit && (
+            <button
+              type="button"
+              className="btn btn--sm btn--ghost"
+              onClick={() => setHealthSheet('symptom')}
+            >
+              <Icon name="plus" size={16} /> Neu
+            </button>
+          )}
         </div>
         {recentEntries.length === 0 ? (
           <p className="empty">Noch nichts eingetragen.</p>
@@ -253,14 +263,16 @@ export function HealthScreen({ baby }: HealthScreenProps) {
                       {entry.note ? ` · ${entry.note}` : ''}
                     </div>
                   </div>
-                  <button
-                    type="button"
-                    className="icon-btn"
-                    aria-label="Eintrag löschen"
-                    onClick={() => removeHealth(entry.id)}
-                  >
-                    <Icon name="trash" size={17} />
-                  </button>
+                  {canEdit && (
+                    <button
+                      type="button"
+                      className="icon-btn"
+                      aria-label="Eintrag löschen"
+                      onClick={() => removeHealth(entry.id)}
+                    >
+                      <Icon name="trash" size={17} />
+                    </button>
+                  )}
                 </li>
               );
             })}

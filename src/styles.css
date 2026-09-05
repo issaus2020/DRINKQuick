@@ -302,8 +302,13 @@ button {
   background-size: 3px 3px;
 }
 
+/* Die Spalte wird ausdrücklich auf 0 als Mindestmaß gesetzt. Ohne das nimmt
+   ein Raster als Mindestbreite den Inhalt seiner Zeilen - eine einzige lange,
+   nicht umbrechbare Zeile im Kopf würde dann die ganze App breiter machen als
+   den Bildschirm und alles wäre seitlich verschiebbar. */
 .app {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   grid-template-rows: auto minmax(0, 1fr) auto;
   min-height: 100dvh;
 }
@@ -342,6 +347,23 @@ button {
   align-items: center;
   gap: 12px;
   min-height: 44px;
+}
+
+/* Kennzeichen für den Nur-Lese-Zugang. Steht im Kopf, weil es für jeden Tab
+   gilt - und nicht nur dort, wo gerade ein Knopf fehlt. */
+.topbar__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-right: 6px;
+  padding: 1px 8px 2px;
+  border-radius: var(--radius-pill);
+  font-size: 0.75rem;
+  font-weight: 650;
+  color: var(--text-primary);
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+  vertical-align: -2px;
 }
 
 .topbar__title {
@@ -719,6 +741,18 @@ button {
   background: var(--good-soft);
   border: 1px solid color-mix(in srgb, var(--good) 35%, transparent);
   font-size: 0.8125rem;
+}
+
+/* Ein Sammelfeld ohne eigene Optik - nur da, um mehrere Eingaben gemeinsam
+   sperren zu können. */
+.fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
 .invite-link {
@@ -1607,6 +1641,23 @@ button {
 .textarea {
   min-height: 80px;
   resize: vertical;
+}
+
+/* Gesperrte Felder sollen auch so aussehen - sonst tippt jemand hinein und
+   wundert sich, dass nichts passiert. Der Text bleibt gut lesbar: Er ist die
+   Information, um die es dem Beobachter geht. */
+.input:disabled,
+.select:disabled,
+.textarea:disabled,
+.segmented__option:disabled {
+  background: var(--surface-sunken);
+  border-color: var(--border);
+  color: var(--text-secondary);
+  cursor: default;
+}
+
+.segmented:has(.segmented__option:disabled) {
+  opacity: 0.75;
 }
 
 .field__hint {

@@ -23,6 +23,13 @@ export interface Store {
   rawData: AppData;
   /** Erst nach dem Laden aus IndexedDB true - vorher zeigt die App einen Ladezustand. */
   ready: boolean;
+  /**
+   * Darf auf diesem Gerät eingetragen werden? Falsch nur für Beobachter in
+   * einem geteilten Bereich. Die Oberfläche blendet danach die
+   * Eingabemöglichkeiten aus; verhindert wird das Schreiben zusätzlich im
+   * Store und - verbindlich - in der Datenbank.
+   */
+  canEdit: boolean;
   activeBaby?: Baby;
 
   setSettings(patch: Partial<Settings>): void;
