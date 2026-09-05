@@ -92,7 +92,7 @@ export function SyncProvider({ children }: { children: ReactNode }) {
     if (!client || !ready) return;
 
     let active = true;
-    const apply = (userId?: string, email?: string) => {
+    const apply = (userId?: string, email?: string, isGuest = false) => {
       if (!active) return;
       const current = latest.current.account;
       if (!userId) {
@@ -100,21 +100,34 @@ export function SyncProvider({ children }: { children: ReactNode }) {
         setStatus('signed_out');
         return;
       }
-      // Konto derselben Person: Familienbindung bleibt bestehen.
+      // Konto derselben Person: Familienbindung bleibt bestehen. Nur das
+      // Gast-Kennzeichen wird nachgeführt - es fällt weg, sobald ein Gast
+      // seinen Zugang mit E-Mail und Passwort gesichert hat.
       if (current?.userId === userId) {
+        if (current.isGuest !== isGuest || (email && current.email !== email)) {
+          actions.current.setAccount({ ...current, isGuest, email: email ?? current.email });
+        }
         setStatus('idle');
         return;
       }
-      actions.current.setAccount({ userId, email: email ?? '', familyId: '', familyName: '' });
+      actions.current.setAccount({
+        userId,
+        email: email ?? '',
+        isGuest,
+        familyId: '',
+        familyName: '',
+      });
       setStatus('idle');
     };
 
     void client.auth.getSession().then(({ data }) => {
-      apply(data.session?.user.id, data.session?.user.email ?? undefined);
+      const user = data.session?.user;
+      apply(user?.id, user?.email ?? undefined, Boolean(user?.is_anonymous));
     });
 
     const { data: listener } = client.auth.onAuthStateChange((_event, session) => {
-      apply(session?.user.id, session?.user.email ?? undefined);
+      const user = session?.user;
+      apply(user?.id, user?.email ?? undefined, Boolean(user?.is_anonymous));
     });
 
     return () => {
@@ -173,6 +186,19 @@ export function SyncProvider({ children }: { children: ReactNode }) {
           email,
           password,
         });
+        if (failure) throw new Error(translateAuthError(failure.message));
+      },
+
+      signInAsGuest: async () => {
+        const { error: failure } = await requireClient().auth.signInAnonymously();
+        if (failure) throw new Error(translateAuthError(failure.message));
+      },
+
+      secureGuestAccount: async (email, password) => {
+        // Supabase hängt E-Mail und Passwort an den bestehenden anonymen
+        // Nutzer an. Die Kennung bleibt dieselbe, also bleibt auch die
+        // Mitgliedschaft im Familien-Bereich und jeder Eintrag erhalten.
+        const { error: failure } = await requireClient().auth.updateUser({ email, password });
         if (failure) throw new Error(translateAuthError(failure.message));
       },
 
@@ -275,6 +301,9 @@ function translateAuthError(message: string): string {
   }
   if (lower.includes('could not find the function') || lower.includes('schema cache')) {
     return 'Die Datenbankfunktionen fehlen im Supabase-Projekt. Führe supabase/schema.sql im SQL-Editor aus.';
+  }
+  if (lower.includes('anonymous') && (lower.includes('disabled') || lower.includes('not enabled'))) {
+    return 'Gast-Zugänge sind im Supabase-Projekt nicht freigeschaltet. Einzuschalten unter Authentication -> Sign In / Providers -> Anonymous sign-ins. Bis dahin geht das Beitreten mit eigenem Konto.';
   }
   if (lower.includes('failed to fetch') || lower.includes('networkerror')) {
     return 'Der Server ist gerade nicht erreichbar. Prüfe die Verbindung - die App arbeitet solange lokal weiter.';

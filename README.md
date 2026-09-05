@@ -166,8 +166,11 @@ etwa zehn Minuten; danach läuft es von selbst.
    Umgebungsvariablen des Projekts. **Danach neu bauen bzw. neu deployen** –
    Vite backt die Werte beim Bauen ein, gespeicherte Variablen allein ändern
    eine schon gebaute Seite nicht.
-6. In der App unter *Mehr* → *Konto & Teilen* ein Konto anlegen, einen Bereich
-   erstellen und den Einladungscode weitergeben.
+6. Für Gast-Zugänge zusätzlich *Authentication* → *Sign In / Providers* →
+   **Anonymous sign-ins** einschalten. Ohne das funktioniert nur der Beitritt
+   mit eigenem Konto.
+7. In der App anmelden, unter *Mehr* → *Konto & Teilen* einen Bereich anlegen
+   und den Einladungslink verschicken.
 
 Zum Zugriffsschutz: der publishable- bzw. `anon`-Key darf öffentlich sein. Der
 Schutz steckt in den Row-Level-Security-Regeln – jede Zeile ist nur für

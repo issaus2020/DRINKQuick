@@ -22,6 +22,10 @@ export interface SyncApi {
 
   signUp(email: string, password: string): Promise<void>;
   signIn(email: string, password: string): Promise<void>;
+  /** Ohne E-Mail und Passwort anmelden - nur über einen Einladungslink sinnvoll. */
+  signInAsGuest(): Promise<void>;
+  /** Einem Gast nachträglich E-Mail und Passwort geben, ohne Datenverlust. */
+  secureGuestAccount(email: string, password: string): Promise<void>;
   signOut(): Promise<void>;
   /** Legt einen Familien-Bereich an und verbindet dieses Gerät damit. */
   createFamily(name: string): Promise<void>;

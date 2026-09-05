@@ -10,6 +10,7 @@ import { Segmented } from '../components/ui/Segmented';
 import { formatSince } from '../lib/date';
 import { useStore } from '../lib/store-context';
 import { useSync } from '../lib/sync/sync-context';
+import { inviteLink } from '../lib/sync/invite';
 
 type Mode = 'signin' | 'signup';
 
@@ -25,11 +26,14 @@ export function AccountScreen({ onBack }: { onBack: () => void }) {
   const [familyName, setFamilyName] = useState('Familie');
   const [joinCode, setJoinCode] = useState('');
   const [invite, setInvite] = useState<string | null>(null);
+  const [guestEmail, setGuestEmail] = useState('');
+  const [guestPassword, setGuestPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
 
   const account = data.account;
+  const baby = data.babies[0]?.name?.trim() || 'unser Kind';
 
   /** Eine Aktion ausführen und ihr Ergebnis anzeigen, statt sie still scheitern zu lassen. */
   const run = async (action: () => Promise<void>, success?: string) => {
@@ -258,36 +262,115 @@ export function AccountScreen({ onBack }: { onBack: () => void }) {
           </div>
 
           <div className="card stack stack--tight">
-            <h2 className="card__title">Jemanden einladen</h2>
+            <h2 className="card__title">Kind teilen</h2>
             <p className="muted small">
-              Der Code gilt sieben Tage und lässt sich einmal einlösen. Wer ihn einlöst, sieht und
-              bearbeitet dieselben Daten wie du.
+              Wer den Link öffnet, sieht dasselbe Kind und kann selbst Einträge anlegen. Der Link
+              gilt sieben Tage und lässt sich einmal einlösen.
             </p>
             {invite ? (
               <>
+                <p className="muted small">Link zum Verschicken:</p>
+                <div className="invite-link">{inviteLink(invite)}</div>
+                <div className="row row--wrap">
+                  <button
+                    type="button"
+                    className="btn btn--primary"
+                    onClick={() =>
+                      run(async () => {
+                        const link = inviteLink(invite);
+                        const text = `Ich teile ${baby} mit dir in DRINKQuick: ${link}`;
+                        // Auf dem Telefon öffnet das die gewohnte Teilen-Auswahl
+                        // (WhatsApp, Signal, Mail); sonst bleibt die Zwischenablage.
+                        if (navigator.share) {
+                          await navigator.share({ title: 'DRINKQuick', text, url: link });
+                          return;
+                        }
+                        await navigator.clipboard?.writeText(link);
+                        setMessage('Link kopiert - jetzt einfügen und verschicken.');
+                      })
+                    }
+                  >
+                    <Icon name="upload" size={18} /> Link teilen
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn--sm"
+                    onClick={() => {
+                      void navigator.clipboard?.writeText(inviteLink(invite));
+                      setMessage('Link kopiert.');
+                    }}
+                  >
+                    Kopieren
+                  </button>
+                </div>
+                <p className="muted small">
+                  Falls ein Link nicht ankommt, geht auch der Code von Hand:
+                </p>
                 <div className="invite-code">{invite}</div>
-                <button
-                  type="button"
-                  className="btn btn--sm"
-                  onClick={() => {
-                    void navigator.clipboard?.writeText(invite);
-                    setMessage('Code kopiert.');
-                  }}
-                >
-                  Code kopieren
-                </button>
               </>
             ) : (
               <button
                 type="button"
-                className="btn"
+                className="btn btn--primary btn--block"
                 disabled={busy}
                 onClick={() => run(async () => setInvite(await sync.createInvite()))}
               >
-                <Icon name="plus" size={18} /> Einladungscode erzeugen
+                <Icon name="plus" size={18} /> Einladungslink erzeugen
               </button>
             )}
           </div>
+
+          {account.isGuest && (
+            <div className="card stack stack--tight">
+              <h2 className="card__title">Zugang sichern</h2>
+              <p className="muted small">
+                Du bist als Gast unterwegs. Dein Zugang lebt nur in diesem Browser – löschst du die
+                Website-Daten oder wechselst das Gerät, kommst du nicht mehr an die Einträge. Mit
+                E-Mail und Passwort ist das behoben; es geht dabei nichts verloren, du bleibst
+                dieselbe Person im Bereich.
+              </p>
+              <div className="field">
+                <label className="field__label" htmlFor="g-email">
+                  E-Mail
+                </label>
+                <input
+                  id="g-email"
+                  className="input"
+                  type="email"
+                  autoComplete="email"
+                  value={guestEmail}
+                  onChange={(event) => setGuestEmail(event.target.value)}
+                />
+              </div>
+              <div className="field">
+                <label className="field__label" htmlFor="g-password">
+                  Passwort
+                </label>
+                <input
+                  id="g-password"
+                  className="input"
+                  type="password"
+                  autoComplete="new-password"
+                  value={guestPassword}
+                  onChange={(event) => setGuestPassword(event.target.value)}
+                />
+                <span className="field__hint">Mindestens 6 Zeichen.</span>
+              </div>
+              <button
+                type="button"
+                className="btn btn--primary"
+                disabled={busy || !guestEmail || guestPassword.length < 6}
+                onClick={() =>
+                  run(
+                    () => sync.secureGuestAccount(guestEmail, guestPassword),
+                    'Zugang gesichert. Falls Supabase eine Bestätigungs-Mail schickt, bestätige sie.',
+                  )
+                }
+              >
+                Zugang sichern
+              </button>
+            </div>
+          )}
 
           <div className="card stack stack--tight">
             <h2 className="card__title">Zu einem anderen Bereich wechseln</h2>
