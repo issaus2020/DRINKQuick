@@ -8,7 +8,9 @@
  * das auch.
  */
 import { DayBand } from './DayBand';
-import { formatDurationShort, formatTime } from '../lib/date';
+import { SleepTimeline } from './SleepTimeline';
+import { InfoDot } from './ui/InfoDot';
+import { formatTime } from '../lib/date';
 import { forecastNextFeed, planRestOfDay } from '../lib/rhythm';
 import type { Feed } from '../lib/types';
 
@@ -94,44 +96,44 @@ export function NextFeedCard({ feeds, remainingMl, usualPerMealMl, now }: NextFe
           </h3>
           <ul className="plan">
             {plan.slots.map((slot) => (
-              <li key={slot.at.toISOString()}>
-                {/* Zwischen den Mahlzeiten wird geschlafen - das ist der Teil
-                    des Plans, auf den es für alle Beteiligten ankommt, und
-                    deshalb steht er hier und nicht nur zwischen den Zeilen. */}
-                {slot.sleepBeforeMinutes >= 20 && (
-                  <p className={`plan__sleep${slot.night ? ' plan__sleep--night' : ''}`}>
-                    <span className="plan__sleep-rail" aria-hidden="true" />
-                    {formatDurationShort(slot.sleepBeforeMinutes * 60)} Schlaf
-                  </p>
-                )}
-                <div className="plan__item">
-                  <span className="plan__time">{formatTime(slot.at)}</span>
-                  {slot.amountMl ? <span className="plan__amount">{slot.amountMl} ml</span> : null}
-                  {slot.night && <span className="badge">Nacht</span>}
-                  {slot.nextDay && <span className="badge">morgen</span>}
-                </div>
+              <li key={slot.at.toISOString()} className="plan__item">
+                <span className="plan__time">{formatTime(slot.at)}</span>
+                {slot.amountMl ? <span className="plan__amount">{slot.amountMl} ml</span> : null}
+                {slot.night && <span className="badge">Nacht</span>}
+                {slot.nextDay && <span className="badge">morgen</span>}
               </li>
             ))}
           </ul>
-          {plan.sleepMinutes > 0 && (
-            <p className="muted small">
-              Dazwischen liegen etwa {formatDurationShort(plan.sleepMinutes * 60)} Schlaf bis zum
-              Morgen
-              {plan.nightSleepMinutes > 0
-                ? `, davon ${formatDurationShort(plan.nightSleepMinutes * 60)} nach 22 Uhr`
-                : ''}
-              .
-            </p>
-          )}
+          <h3 className="section-title" style={{ marginTop: 8 }}>
+            Schlaf bis zum Morgen
+            <InfoDot label="Schlaf bis zum Morgen">
+              Der Balken reicht von jetzt bis sechs Uhr früh. Die eingefärbte Fläche ist die Nacht
+              zwischen 22 und 6 Uhr, die Striche sind die geplanten Mahlzeiten, und die Flächen
+              dazwischen sind Schlafzeit. Für ein Neugeborenes ist das kein Loch im Plan, sondern
+              der Teil, auf den es für alle ankommt.
+            </InfoDot>
+          </h3>
+          <SleepTimeline slots={plan.slots} now={now} />
         </>
       )}
 
-      {plan.nightNote && <p className="muted small">{plan.nightNote}</p>}
-
-      {hasNextDay && (
+      {(plan.nightNote || hasNextDay) && (
         <p className="muted small">
-          Die Mahlzeiten nach Mitternacht zählen schon auf morgen. Dort steht deshalb eure gewohnte
-          Portion und nicht die offene Menge von heute.
+          {plan.nightSlots > 0 && (
+            <>
+              {plan.nightSlots === 1 ? 'Eine Mahlzeit' : `${plan.nightSlots} Mahlzeiten`} nach 22 Uhr
+              <InfoDot label="Mahlzeiten nach 22 Uhr">{plan.nightNote}</InfoDot>{' '}
+            </>
+          )}
+          {hasNextDay && (
+            <>
+              · Zeiten nach Mitternacht zählen auf morgen
+              <InfoDot label="Zeiten nach Mitternacht">
+                Die Mahlzeiten nach Mitternacht zählen schon auf morgen. Dort steht deshalb eure
+                gewohnte Portion und nicht die offene Menge von heute.
+              </InfoDot>
+            </>
+          )}
         </p>
       )}
 

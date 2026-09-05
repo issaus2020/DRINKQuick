@@ -985,32 +985,150 @@ button {
   gap: 6px;
 }
 
-.plan__sleep {
+/* --- Info-Punkt -----------------------------------------------------------
+   Erklärung ist beim ersten Mal nötig und beim fünfzigsten im Weg. Sie steckt
+   deshalb hinter einem kleinen "i" und klappt auf Tipp oder Zeigen auf. */
+
+.info {
+  position: relative;
+  display: inline-flex;
+  vertical-align: middle;
+}
+
+.info__dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-left: 5px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-strong);
+  color: var(--text-secondary);
+  font-family: var(--font);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  font-style: normal;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.info__dot:hover,
+.info__dot[aria-expanded='true'] {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+/* Der Kasten legt sich über den Inhalt, statt ihn zu verschieben - sonst
+   springt beim Aufklappen der halbe Bildschirm. */
+.info__body[hidden] {
+  display: none;
+}
+
+/* Auf dem Zeigegerät genügt das Zeigen - der Klick hält den Kasten dann
+   offen. Auf dem Telefon gibt es kein Zeigen, dort tippt man. */
+.info:hover .info__body {
+  display: block;
+}
+
+.info__body {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  z-index: 30;
+  display: block;
+  width: max(220px, 60vw);
+  max-width: 300px;
+  transform: translateX(-50%);
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--glass-border);
+  background: var(--surface-2);
+  box-shadow: var(--shadow-raised);
+  font-size: 0.8125rem;
+  font-weight: 400;
+  font-style: normal;
+  line-height: 1.45;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--text-secondary);
+}
+
+/* --- Schlaf als Strecke ---------------------------------------------------- */
+
+.sleepline {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.sleepline__track {
+  position: relative;
+  height: 38px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-sunken);
+  overflow: hidden;
+}
+
+/* Die Nacht als eigene Fläche - sie ist der Grund, aus dem der Balken
+   überhaupt hier steht. */
+.sleepline__night {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: color-mix(in srgb, var(--series-7) 20%, transparent);
+}
+
+.sleepline__sleep {
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin: 0;
-  padding: 5px 12px;
-  font-size: 0.75rem;
+  justify-content: center;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--accent) 26%, transparent);
+}
+
+.sleepline__sleep--longest {
+  background: color-mix(in srgb, var(--accent) 48%, transparent);
+}
+
+.sleepline__len {
+  font-size: 0.625rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+/* Die Mahlzeit schneidet die Strecke - genau das tut sie ja auch. */
+.sleepline__meal {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--text-primary);
+}
+
+.sleepline__axis {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.6875rem;
   color: var(--text-muted);
 }
 
-/* Eine senkrechte Spur zwischen den Mahlzeiten: die Schlafzeit als Strecke,
-   nicht als weitere Zeile mit einer Zahl. */
-.plan__sleep-rail {
-  width: 2px;
-  height: 14px;
-  border-radius: 1px;
-  background: color-mix(in srgb, var(--text-muted) 40%, transparent);
+.sleepline__lead {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
 }
 
-.plan__sleep--night .plan__sleep-rail {
-  height: 20px;
-  background: color-mix(in srgb, var(--series-7) 65%, transparent);
-}
-
-.plan__sleep--night {
-  color: color-mix(in srgb, var(--series-7) 75%, var(--text-secondary));
+.sleepline__lead strong {
+  color: var(--text-primary);
+  font-weight: 650;
 }
 
 .plan__item {
