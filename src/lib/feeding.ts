@@ -229,6 +229,12 @@ export interface AmountSuggestion {
   basis: 'hour' | 'day' | 'target';
   /** Anzahl der zugrunde liegenden Einträge. */
   sampleSize: number;
+  /**
+   * Die gewohnte Menge - der Median, nicht die mittlere der drei Zahlen.
+   * Fallen zwei Vorschläge zusammen, wäre die mittlere Zahl der größere Wert
+   * und der Regler stünde zu hoch.
+   */
+  usualMl: number;
 }
 
 const roundTo5 = (value: number) => Math.max(5, Math.round(value / 5) * 5);
@@ -313,6 +319,7 @@ export function suggestBottleAmounts(
       amounts: [...new Set([Math.max(5, middle - 20), middle, middle + 20])].sort((a, b) => a - b),
       basis: 'target',
       sampleSize: pool.length,
+      usualMl: middle,
     };
   }
 
@@ -327,5 +334,5 @@ export function suggestBottleAmounts(
   // Fallen die drei Werte zusammen, ergänzt eine Stufe nach oben die Auswahl.
   if (amounts.length === 1) amounts.push(amounts[0] + 10);
 
-  return { amounts, basis, sampleSize: pool.length };
+  return { amounts, basis, sampleSize: pool.length, usualMl: roundTo5(quantile(sorted, 0.5)) };
 }
