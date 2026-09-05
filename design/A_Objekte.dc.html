@@ -1,0 +1,307 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+  <style>
+    body { margin: 0; }
+    a { color: #6fb0ff; }
+    a:hover { color: #a7d0ff; }
+
+    .root {
+      position: relative;
+      width: 880px;
+      height: 560px;
+      overflow: hidden;
+      background: #0a0c10;
+      color: #eef2f7;
+      font-family: 'Space Grotesk', system-ui, sans-serif;
+      padding: 22px 24px;
+      box-sizing: border-box;
+      display: flex; flex-direction: column; gap: 16px;
+    }
+    .is-paused, .is-paused * { animation-play-state: paused !important; }
+
+    .cap {
+      font-family: 'IBM Plex Mono', ui-monospace, monospace;
+      font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: #7c8798;
+    }
+    .head { display: flex; align-items: baseline; gap: 10px; }
+    .head__title { font-size: 17px; font-weight: 700; letter-spacing: 0.02em; }
+    .head__spacer { flex-grow: 1; }
+
+    .glowfield {
+      position: absolute; inset: -20%;
+      background: radial-gradient(30% 30% at 20% 20%, color-mix(in oklab, var(--a) 34%, transparent), transparent 70%),
+                  radial-gradient(28% 28% at 85% 80%, color-mix(in oklab, var(--a2) 26%, transparent), transparent 72%);
+      filter: blur(34px); opacity: 0.4; pointer-events: none;
+      animation: drift 20s ease-in-out infinite alternate;
+    }
+    @keyframes drift { from { transform: translate(-12px, -8px); } to { transform: translate(14px, 10px); } }
+
+    .grid {
+      position: relative; z-index: 2;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .cell {
+      display: flex; flex-direction: column; gap: 8px;
+      padding: 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.03);
+      min-height: 200px;
+    }
+    .cell__stage {
+      flex-grow: 1;
+      display: flex; align-items: center; justify-content: center;
+      position: relative;
+      min-height: 108px;
+    }
+    .cell__name { font-size: 13px; font-weight: 600; }
+    .cell__use { font-size: 11px; color: #93a0b2; line-height: 1.4; }
+
+    /* 1 Zifferblatt */
+    .dial { position: relative; width: 96px; height: 96px; }
+    .dial__ring { position: absolute; inset: 0; border-radius: 50%; border: 1px solid rgba(255,255,255,0.12); }
+    .tick { position: absolute; left: 50%; top: 50%; width: 1px; background: #fff; transform-origin: 50% 0; }
+
+    /* 2 Radarschweif */
+    .radar { position: relative; width: 96px; height: 96px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.1); overflow: hidden; }
+    .radar__sweep {
+      position: absolute; inset: 0; border-radius: 50%;
+      background: conic-gradient(from 0deg, transparent 0deg 290deg,
+        color-mix(in oklab, var(--a) 30%, transparent) 348deg,
+        color-mix(in oklab, var(--a) 70%, transparent) 359deg, transparent 360deg);
+      animation: spin 5s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* 3 Pulsknoten */
+    .beacon { position: relative; width: 18px; height: 18px; }
+    .beacon__core {
+      position: absolute; inset: 5px; border-radius: 50%;
+      background: var(--a2);
+      box-shadow: 0 0 10px color-mix(in oklab, var(--a2) 80%, transparent);
+    }
+    .beacon__ring {
+      position: absolute; inset: 0; border-radius: 50%;
+      border: 1.5px solid var(--a2);
+      animation: beat 2s ease-out infinite;
+    }
+    .beacon__ring--b { animation-delay: 0.66s; }
+    @keyframes beat {
+      0%   { transform: scale(0.6); opacity: 0.9; }
+      100% { transform: scale(3); opacity: 0; }
+    }
+
+    /* 4 Scanline-Chip */
+    .chip {
+      position: relative; width: 92px; height: 72px; overflow: hidden;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      border-radius: 14px;
+      border: 1px solid color-mix(in oklab, var(--a) 45%, transparent);
+      background: color-mix(in oklab, var(--a) 14%, transparent);
+      font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    }
+    .chip__value { font-size: 22px; font-weight: 600; }
+    .chip::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.18) 50%, transparent 60%);
+      transform: translateX(-120%);
+      animation: sweep 3s ease-in-out infinite;
+    }
+    @keyframes sweep { 0%, 55% { transform: translateX(-120%); } 100% { transform: translateX(120%); } }
+
+    /* 5 Heatmap */
+    .heat { display: grid; grid-template-columns: repeat(6, 14px); gap: 3px; }
+    .heat span {
+      width: 14px; height: 14px; border-radius: 4px;
+      background: var(--a); opacity: 0;
+      animation: pop 0.6s ease-out forwards, glowcycle 6s ease-in-out infinite;
+    }
+    @keyframes pop { from { opacity: 0; transform: scale(0.4); } to { opacity: var(--o); transform: scale(1); } }
+    @keyframes glowcycle { 0%, 100% { filter: none; } 50% { filter: brightness(1.5); } }
+
+    /* 6 Instrumentbalken */
+    .gauge { width: 100%; display: flex; flex-direction: column; gap: 9px; }
+    .gauge__track { height: 4px; border-radius: 3px; background: rgba(255,255,255,0.09); overflow: hidden; }
+    .gauge__fill {
+      height: 100%; width: 0; border-radius: 3px;
+      background: linear-gradient(90deg, color-mix(in oklab, var(--a) 45%, transparent), var(--a));
+      animation: fill 2.2s cubic-bezier(0.22, 1, 0.36, 1) infinite alternate;
+    }
+    @keyframes fill { to { width: var(--w); } }
+
+    /* 7 Prognosebalken */
+    .bars { display: flex; align-items: flex-end; gap: 6px; height: 84px; }
+    .bar { flex-grow: 1; border-radius: 4px 4px 2px 2px; background: linear-gradient(to top, color-mix(in oklab, var(--a) 25%, transparent), var(--a)); }
+    .bar--ghost {
+      background: repeating-linear-gradient(45deg, color-mix(in oklab, var(--a2) 55%, transparent) 0 3px, transparent 3px 6px);
+      border: 1px solid color-mix(in oklab, var(--a2) 45%, transparent);
+      animation: flicker 2.4s ease-in-out infinite;
+    }
+    @keyframes flicker { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+
+    /* 8 Tab-Glow */
+    .tabstrip { position: relative; width: 100%; height: 54px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; }
+    .tabstrip__glow {
+      position: absolute; top: -1px; left: 0; width: 34%; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--a), transparent);
+      animation: slide 4s ease-in-out infinite alternate;
+    }
+    @keyframes slide { from { transform: translateX(0); } to { transform: translateX(180%); } }
+    .tabstrip__item { flex-grow: 1; display: flex; justify-content: center; color: #6b7686; }
+    .tabstrip__item--on { color: var(--a); }
+  </style>
+</helmet>
+
+<div class="root {{pause}}" style="--a: {{accent}}; --a2: {{accent2}}">
+  <div class="glowfield"></div>
+
+  <div class="head" style="position: relative; z-index: 2">
+    <span class="head__title">Variante A · Orbit</span>
+    <span class="cap">Animierte Objekte</span>
+    <span class="head__spacer"></span>
+    <span class="cap">Dunkel · Instrument · datendicht</span>
+  </div>
+
+  <div class="grid">
+    <div class="cell">
+      <div class="cell__stage">
+        <div class="dial">
+          <div class="dial__ring"></div>
+          <sc-for list="{{ticks}}" as="t" hint-placeholder-count="24">
+            <div class="tick" style="height: {{t.len}}px; width: {{t.w}}px; opacity: {{t.o}}; transform: rotate({{t.deg}}deg) translateY(-46px)"></div>
+          </sc-for>
+        </div>
+      </div>
+      <span class="cell__name">Zifferblatt 24 Std</span>
+      <span class="cell__use">Der ganze Tag auf einen Blick – jede Mahlzeit sitzt an ihrer Uhrzeit.</span>
+    </div>
+
+    <div class="cell">
+      <div class="cell__stage">
+        <div class="radar"><div class="radar__sweep"></div></div>
+      </div>
+      <span class="cell__name">Radarschweif</span>
+      <span class="cell__use">Zeigt, dass die App mitläuft und mitzählt, ohne eine Zahl zu behaupten.</span>
+    </div>
+
+    <div class="cell">
+      <div class="cell__stage">
+        <div class="beacon">
+          <div class="beacon__ring"></div>
+          <div class="beacon__ring beacon__ring--b"></div>
+          <div class="beacon__core"></div>
+        </div>
+      </div>
+      <span class="cell__name">Pulsknoten</span>
+      <span class="cell__use">Markiert die nächste erwartete Mahlzeit – ein Fenster, kein Befehl.</span>
+    </div>
+
+    <div class="cell">
+      <div class="cell__stage">
+        <div class="chip"><span class="chip__value">75</span><span class="cap">ml</span></div>
+      </div>
+      <span class="cell__name">Scanline-Taste</span>
+      <span class="cell__use">Schnelleintrag der üblichen Menge; der Schimmer sagt „antippbar“.</span>
+    </div>
+
+    <div class="cell">
+      <div class="cell__stage">
+        <div class="heat">
+          <sc-for list="{{heat}}" as="c" hint-placeholder-count="18">
+            <span style="--o: {{c.o}}; animation-delay: {{c.delay}}, {{c.delay}}"></span>
+          </sc-for>
+        </div>
+      </div>
+      <span class="cell__name">Heatmap-Zelle</span>
+      <span class="cell__use">Tage × Stunden: macht Cluster-Feeding und Nachtblöcke sichtbar.</span>
+    </div>
+
+    <div class="cell">
+      <div class="cell__stage">
+        <div class="gauge">
+          <span class="gauge__track"><span class="gauge__fill" style="--w: 78%"></span></span>
+          <span class="gauge__track"><span class="gauge__fill" style="--w: 46%; animation-delay: 0.2s"></span></span>
+          <span class="gauge__track"><span class="gauge__fill" style="--w: 63%; animation-delay: 0.4s"></span></span>
+        </div>
+      </div>
+      <span class="cell__name">Instrumentbalken</span>
+      <span class="cell__use">Mahlzeiten, Windeln, Zunahme – drei Sollwerte in einer Reihe.</span>
+    </div>
+
+    <div class="cell">
+      <div class="cell__stage">
+        <div class="bars">
+          <div class="bar" style="height: 58%"></div>
+          <div class="bar" style="height: 72%"></div>
+          <div class="bar" style="height: 64%"></div>
+          <div class="bar bar--ghost" style="height: 66%"></div>
+          <div class="bar bar--ghost" style="height: 66%"></div>
+        </div>
+      </div>
+      <span class="cell__name">Prognosebalken</span>
+      <span class="cell__use">Gestrichelt = geplant, nicht gemessen. Der Unterschied bleibt sichtbar.</span>
+    </div>
+
+    <div class="cell">
+      <div class="cell__stage">
+        <div class="tabstrip">
+          <div class="tabstrip__glow"></div>
+          <div class="tabstrip__item tabstrip__item--on">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5M5.5 9.5V20h13V9.5M9.5 20v-5.5h5V20"></path></svg>
+          </div>
+          <div class="tabstrip__item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2h6M9.5 5h5M8 8.5h8v11a2.5 2.5 0 0 1-2.5 2.5h-3A2.5 2.5 0 0 1 8 19.5zM8 5.5h8M11 12v4"></path></svg>
+          </div>
+          <div class="tabstrip__item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16l1.5 13.5H2.5zM8.5 11.5a3.5 3.5 0 0 0 7 0M12 7V4M9 4h6"></path></svg>
+          </div>
+        </div>
+      </div>
+      <span class="cell__name">Tab-Glow</span>
+      <span class="cell__use">Die aktive Ebene leuchtet; das Licht wandert beim Wechsel mit.</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+
+<script data-dc-script data-props='{"accent":{"editor":"color","default":"#3d8cf0","options":["#3d8cf0","#33d6b0","#a78bfa","#f2994a"],"section":"Farbe"},"accent2":{"editor":"color","default":"#33d6b0","options":["#33d6b0","#f2994a","#a78bfa","#3d8cf0"],"section":"Farbe"},"motion":{"editor":"boolean","default":true,"section":"Bewegung"},"$preview":{"width":880,"height":560}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const ticks = [];
+    for (let h = 0; h < 24; h++) {
+      const major = h % 6 === 0;
+      ticks.push({ deg: (h / 24) * 360, len: major ? 11 : 6, w: major ? 2 : 1, o: major ? 0.55 : 0.22 });
+    }
+
+    const heat = [];
+    for (let i = 0; i < 18; i++) {
+      const near = i % 3;
+      const base = near === 0 ? 0.9 : near === 1 ? 0.34 : 0.12;
+      heat.push({
+        o: Math.round(Math.min(1, base + ((i * 11) % 5) / 26) * 100) / 100,
+        delay: i * 55 + 'ms',
+      });
+    }
+
+    return {
+      ticks,
+      heat,
+      accent: this.props.accent ?? '#3d8cf0',
+      accent2: this.props.accent2 ?? '#33d6b0',
+      pause: this.props.motion === false ? 'is-paused' : '',
+    };
+  }
+}
+</script>
+</body>
+</html>

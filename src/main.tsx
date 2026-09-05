@@ -1,12 +1,14 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';
+import { AuroraBackground } from './components/AuroraBackground';
 import { StoreProvider } from './lib/store';
 import { SyncProvider } from './lib/sync/SyncProvider';
 import './styles.css';
 
 createRoot(document.getElementById('root') as HTMLElement).render(
   <StrictMode>
+    <AuroraBackground />
     <StoreProvider>
       <SyncProvider>
         <App />

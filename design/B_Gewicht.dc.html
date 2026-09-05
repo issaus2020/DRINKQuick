@@ -1,0 +1,294 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600&display=swap">
+  <style>
+    body { margin: 0; }
+    a { color: #2f6fb5; }
+    a:hover { color: #1f4f85; }
+
+    .root {
+      position: relative;
+      width: 390px;
+      height: 844px;
+      overflow: hidden;
+      background: #faf8f5;
+      color: #17170f;
+      font-family: 'Outfit', system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+    }
+    .is-paused, .is-paused * { animation-play-state: paused !important; }
+
+    .serif { font-family: 'Instrument Serif', Georgia, 'Times New Roman', serif; font-weight: 400; }
+    .muted { color: #7c7a73; }
+    .tiny { font-size: 11px; letter-spacing: 0.06em; }
+
+    .bloom { position: absolute; border-radius: 50%; filter: blur(46px); pointer-events: none; }
+    .bloom--1 {
+      width: 300px; height: 280px; top: -60px; right: -90px;
+      background: radial-gradient(circle, color-mix(in oklab, var(--cool) 58%, transparent), transparent 68%);
+      animation: float1 24s ease-in-out infinite alternate;
+    }
+    .bloom--2 {
+      width: 320px; height: 300px; bottom: 120px; left: -110px;
+      background: radial-gradient(circle, color-mix(in oklab, var(--tint) 58%, transparent), transparent 70%);
+      animation: float2 28s ease-in-out infinite alternate;
+    }
+    @keyframes float1 { from { transform: translate(0, 0) scale(1); } to { transform: translate(-38px, 34px) scale(1.12); } }
+    @keyframes float2 { from { transform: translate(0, 0) scale(1.06); } to { transform: translate(42px, -30px) scale(1); } }
+
+    .grain {
+      position: absolute; inset: 0; pointer-events: none; opacity: 0.5;
+      background-image: radial-gradient(rgba(23,23,15,0.05) 0.6px, transparent 0.7px);
+      background-size: 3px 3px;
+    }
+
+    .stack { position: relative; z-index: 2; display: flex; flex-direction: column; gap: 16px; padding: 18px 20px 0; }
+
+    .top { display: flex; align-items: center; gap: 9px; }
+    .top__spacer { flex-grow: 1; }
+
+    .lede { display: flex; align-items: flex-end; gap: 12px; }
+    .lede__value { font-size: 46px; line-height: 0.95; letter-spacing: -0.02em; }
+    .lede__side { display: flex; flex-direction: column; gap: 2px; padding-bottom: 4px; }
+    .pill {
+      align-self: flex-start;
+      padding: 3px 10px 4px;
+      border-radius: 999px;
+      font-size: 11px;
+      background: color-mix(in oklab, var(--good) 26%, transparent);
+      color: #23502f;
+    }
+
+    .glass {
+      border-radius: 22px;
+      padding: 16px;
+      background: rgba(255,255,255,0.6);
+      border: 1px solid rgba(23,23,15,0.07);
+      box-shadow: 0 10px 28px rgba(23,23,15,0.06);
+      backdrop-filter: blur(8px);
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .glass__head { display: flex; align-items: baseline; gap: 8px; }
+    .glass__spacer { flex-grow: 1; }
+
+    /* --- Wachstumskurve --- */
+    .growth { display: block; width: 100%; height: 190px; }
+    .band-outer { fill: color-mix(in oklab, var(--cool) 34%, transparent); }
+    .band-inner { fill: color-mix(in oklab, var(--cool) 52%, transparent); }
+    .median {
+      fill: none; stroke: rgba(23,23,15,0.22); stroke-width: 1.2; stroke-dasharray: 3 5;
+    }
+    .curve {
+      fill: none;
+      stroke: color-mix(in oklab, var(--tint) 96%, #000);
+      stroke-width: 2.6; stroke-linecap: round;
+      stroke-dasharray: 340;
+      animation: draw 2.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+    @keyframes draw { from { stroke-dashoffset: 340; } to { stroke-dashoffset: 0; } }
+    .mark { fill: color-mix(in oklab, var(--tint) 96%, #000); }
+    .mark--halo {
+      fill: color-mix(in oklab, var(--tint) 70%, transparent);
+      transform-origin: center; transform-box: fill-box;
+      animation: halo 3s ease-out infinite;
+    }
+    @keyframes halo {
+      0%   { transform: scale(0.7); opacity: 0.8; }
+      100% { transform: scale(3.2); opacity: 0; }
+    }
+    .legend { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .legend__key { display: flex; align-items: center; gap: 5px; }
+    .legend__swatch { width: 14px; height: 8px; border-radius: 3px; }
+
+    /* --- Tagesmengen als Röhren --- */
+    .tubes { display: flex; align-items: flex-end; gap: 8px; height: 112px; }
+    .tube {
+      position: relative;
+      flex-grow: 1;
+      height: 100%;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.55);
+      border: 1px solid rgba(23,23,15,0.07);
+      overflow: hidden;
+    }
+    .tube__fill {
+      position: absolute; left: 0; right: 0; bottom: 0;
+      height: 0;
+      background: linear-gradient(to bottom,
+        color-mix(in oklab, var(--tint) 70%, transparent),
+        color-mix(in oklab, var(--tint) 98%, #ffffff));
+      animation: fill 1.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+    @keyframes fill { to { height: var(--h); } }
+    .tube__cap {
+      position: absolute; left: -20%; right: -20%;
+      height: 14px;
+      border-radius: 50%;
+      background: color-mix(in oklab, var(--tint) 55%, #ffffff);
+      top: -7px;
+      animation: bob 4.5s ease-in-out infinite;
+    }
+    @keyframes bob {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50%      { transform: translateY(-2px) rotate(2deg); }
+    }
+    .tubes__axis { display: flex; gap: 8px; }
+    .tubes__axis span { flex-grow: 1; text-align: center; }
+
+    .note {
+      border-radius: 20px;
+      padding: 14px 16px;
+      background: color-mix(in oklab, var(--warm) 26%, rgba(255,255,255,0.6));
+      border: 1px solid rgba(23,23,15,0.06);
+      font-size: 13px; line-height: 1.5;
+    }
+
+    .dock {
+      position: absolute; left: 20px; right: 20px; bottom: 18px; z-index: 3;
+      display: flex; align-items: center;
+      padding: 7px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.72);
+      border: 1px solid rgba(23,23,15,0.07);
+      box-shadow: 0 12px 34px rgba(23,23,15,0.12);
+      backdrop-filter: blur(14px);
+    }
+    .dock__item {
+      flex-grow: 1;
+      display: flex; align-items: center; justify-content: center;
+      height: 46px;
+      color: #8b897f;
+      position: relative;
+    }
+    .dock__blob {
+      position: absolute; left: 143px; top: 7px;
+      width: 66px; height: 46px;
+      border-radius: 999px;
+      background: color-mix(in oklab, var(--tint) 40%, #ffffff);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.9);
+      animation: morph 7s ease-in-out infinite;
+    }
+    @keyframes morph {
+      0%, 100% { border-radius: 999px; transform: scaleX(1); }
+      50%      { border-radius: 40% 60% 55% 45% / 50%; transform: scaleX(1.06); }
+    }
+    .dock__item--on { color: #17170f; }
+  </style>
+</helmet>
+
+<div class="root {{pause}}" style="--tint: {{tint}}; --warm: {{warm}}; --cool: {{cool}}; --good: #7fd39a">
+  <div class="bloom bloom--1"></div>
+  <div class="bloom bloom--2"></div>
+  <div class="grain"></div>
+
+  <div class="stack">
+    <div class="top">
+      <span class="tiny muted">Noah · Gewicht</span>
+      <span class="top__spacer"></span>
+      <span class="tiny muted">zuletzt vorgestern</span>
+    </div>
+
+    <div class="lede">
+      <span class="lede__value serif">4020 g</span>
+      <span class="lede__side">
+        <span class="pill">+42 g pro Tag</span>
+        <span class="tiny muted">Erwartet: 20–40 g</span>
+      </span>
+    </div>
+
+    <div class="glass">
+      <div class="glass__head">
+        <span class="tiny muted">Gewicht für Alter</span>
+        <span class="glass__spacer"></span>
+        <span class="tiny muted">WHO · Junge</span>
+      </div>
+      <svg class="growth" viewBox="0 0 318 190" preserveAspectRatio="none">
+        <path class="band-outer" d="M0 118 C 80 96, 180 66, 318 22 L 318 122 C 180 142, 80 152, 0 160 Z"></path>
+        <path class="band-inner" d="M0 130 C 80 110, 180 82, 318 44 L 318 104 C 180 130, 80 142, 0 152 Z"></path>
+        <path class="median" d="M0 141 C 80 126, 180 100, 318 74"></path>
+        <path class="curve" d="M4 143 C 18 153, 30 151, 48 144 C 96 126, 180 104, 292 84"></path>
+        <circle class="mark--halo" cx="292" cy="84" r="5"></circle>
+        <circle class="mark" cx="292" cy="84" r="4.5"></circle>
+        <circle class="mark" cx="4" cy="143" r="3"></circle>
+        <circle class="mark" cx="48" cy="144" r="3"></circle>
+      </svg>
+      <div class="legend">
+        <span class="legend__key"><span class="legend__swatch" style="background: color-mix(in oklab, var(--cool) 34%, transparent)"></span><span class="tiny muted">P3–P97</span></span>
+        <span class="legend__key"><span class="legend__swatch" style="background: color-mix(in oklab, var(--cool) 52%, transparent)"></span><span class="tiny muted">P15–P85</span></span>
+        <span class="glass__spacer"></span>
+        <span class="tiny muted">Noah liegt auf Perzentile 41</span>
+      </div>
+    </div>
+
+    <div class="glass">
+      <div class="glass__head">
+        <span class="tiny muted">Menge je Tag</span>
+        <span class="glass__spacer"></span>
+        <span class="tiny muted">letzte 7 Tage</span>
+      </div>
+      <div class="tubes">
+        <div class="tube"><div class="tube__fill" style="--h: 74%; animation-delay: 0.05s"><div class="tube__cap"></div></div></div>
+        <div class="tube"><div class="tube__fill" style="--h: 81%; animation-delay: 0.12s"><div class="tube__cap"></div></div></div>
+        <div class="tube"><div class="tube__fill" style="--h: 69%; animation-delay: 0.19s"><div class="tube__cap"></div></div></div>
+        <div class="tube"><div class="tube__fill" style="--h: 88%; animation-delay: 0.26s"><div class="tube__cap"></div></div></div>
+        <div class="tube"><div class="tube__fill" style="--h: 84%; animation-delay: 0.33s"><div class="tube__cap"></div></div></div>
+        <div class="tube"><div class="tube__fill" style="--h: 93%; animation-delay: 0.4s"><div class="tube__cap"></div></div></div>
+        <div class="tube"><div class="tube__fill" style="--h: 63%; animation-delay: 0.47s"><div class="tube__cap"></div></div></div>
+      </div>
+      <div class="tubes__axis">
+        <span class="tiny muted">Sa</span>
+        <span class="tiny muted">So</span>
+        <span class="tiny muted">Mo</span>
+        <span class="tiny muted">Di</span>
+        <span class="tiny muted">Mi</span>
+        <span class="tiny muted">Do</span>
+        <span class="tiny muted">Heute</span>
+      </div>
+    </div>
+
+    <p class="note" style="margin: 0">Das Geburtsgewicht war an Tag 9 wieder erreicht. Seitdem nimmt Noah gleichmäßig zu und bleibt auf seiner Kurve.</p>
+  </div>
+
+  <div class="dock">
+    <div class="dock__blob"></div>
+    <div class="dock__item">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5M5.5 9.5V20h13V9.5M9.5 20v-5.5h5V20"></path></svg>
+    </div>
+    <div class="dock__item">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2h6M9.5 5h5M8 8.5h8v11a2.5 2.5 0 0 1-2.5 2.5h-3A2.5 2.5 0 0 1 8 19.5zM8 5.5h8M11 12v4"></path></svg>
+    </div>
+    <div class="dock__item dock__item--on">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16l1.5 13.5H2.5zM8.5 11.5a3.5 3.5 0 0 0 7 0M12 7V4M9 4h6"></path></svg>
+    </div>
+    <div class="dock__item">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.5s-7.5-4.6-7.5-9.7A4.3 4.3 0 0 1 12 8a4.3 4.3 0 0 1 7.5 2.8c0 5.1-7.5 9.7-7.5 9.7Z"></path></svg>
+    </div>
+    <div class="dock__item">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"></path><path d="M19.4 14.5a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-2.9 1.2v.2a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-3-1.2l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0-1.2-2.9H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.2-3l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 2.9-1.2V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 2.9 1.2l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0 1.2 2.9h.2a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.6 1.2Z"></path></svg>
+    </div>
+  </div>
+</div>
+</x-dc>
+
+<script data-dc-script data-props='{"tint":{"editor":"color","default":"#8ec7ef","options":["#8ec7ef","#a8dcc6","#e3b6c6","#c9bff0"],"section":"Farbe"},"warm":{"editor":"color","default":"#f2c9a8","options":["#f2c9a8","#e3b6c6","#f0dfa8","#c9bff0"],"section":"Farbe"},"cool":{"editor":"color","default":"#c9bff0","options":["#c9bff0","#a8dcc6","#8ec7ef","#e3b6c6"],"section":"Farbe"},"motion":{"editor":"boolean","default":true,"section":"Bewegung"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      tint: this.props.tint ?? '#8ec7ef',
+      warm: this.props.warm ?? '#f2c9a8',
+      cool: this.props.cool ?? '#c9bff0',
+      pause: this.props.motion === false ? 'is-paused' : '',
+    };
+  }
+}
+</script>
+</body>
+</html>

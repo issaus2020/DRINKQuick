@@ -164,6 +164,33 @@ physiologisch, das Geburtsgewicht sollte nach rund zwei Wochen wieder erreicht s
 Tag; ab Tag 6 sind es dauerhaft etwa 6. Das ist im Alltag der verlässlichste
 Hinweis darauf, dass genug ankommt.
 
+## Gestaltung
+
+Die Oberfläche folgt der Richtung **Aurora**: heller, warmer Grund mit drei
+weichen Lichtwolken, die sich über 30 bis 50 Sekunden bewegen, ein feines Korn
+darüber, und Karten aus mattem Glas, die auf dieser Fläche liegen statt sie
+zuzudecken. Die eine große Zahl je Bildschirm steht in einer Serife
+(`--font-display`), alles Übrige in der System-Schrift; Tabellen und Listen
+behalten die tabellarischen Ziffern.
+
+Bewusste Festlegungen:
+
+- **Keine geladene Webschrift.** Die Entwürfe verwendeten Instrument Serif und
+  Outfit von Google Fonts. In der App steht dort eine System-Serife: Die App
+  überträgt keine Daten an Dritte und muss offline vollständig funktionieren –
+  eine Schrift von einem fremden Server verträgt sich mit beidem nicht. Wer die
+  Originalschnitte will, legt die woff2-Dateien nach `public/fonts/` und ergänzt
+  `@font-face`.
+- **Der Tagesfortschritt ist ein Füllstand**, kein Ring: `LiquidVessel` füllt
+  sich mit der Tagesmenge, die Wasserlinie sitzt exakt auf dem Anteil. Über dem
+  Richtwert färbt sich die Flüssigkeit um, statt weiter zu steigen.
+- **Die Navigation schwebt** als Pille am unteren Rand; die Auswahl wandert als
+  weiche Form mit (`--tab-index` aus React, der Rest in CSS).
+- **Bewegung ist Schmuck.** Bei `prefers-reduced-motion: reduce` steht alles
+  still – Lichtwolken, Füllstand, Marker. Das Bild bleibt dasselbe.
+- **Dunkel ist kein Nachgedanke:** dieselben Farben als Dämmerung, gedämpfte
+  Lichtwolken, dunkles Glas. Nachts um drei ist das der häufigere Fall.
+
 ## Technik
 
 - React 19 + TypeScript, Vite, keine Laufzeit-Abhängigkeiten außer React.
