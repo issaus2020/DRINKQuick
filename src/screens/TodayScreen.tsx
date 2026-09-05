@@ -10,6 +10,7 @@ import { DiaperSheet } from '../components/entry/DiaperSheet';
 import { FeedSheet } from '../components/entry/FeedSheet';
 import { MeasurementSheet } from '../components/entry/MeasurementSheet';
 import { NextFeedCard } from '../components/NextFeedCard';
+import { RestCard } from '../components/RestCard';
 import { QuickAmounts } from '../components/entry/QuickAmounts';
 import { Icon } from '../components/ui/Icon';
 import { MetricTile } from '../components/ui/MetricTile';
@@ -231,6 +232,8 @@ export function TodayScreen({ baby }: TodayScreenProps) {
         usualPerMealMl={usualBottleMl(feeds, now) ?? target?.perMealMl}
         now={now}
       />
+
+      <RestCard feeds={feeds} ageDays={ageInDays(baby.birthedAt, now)} now={now} />
 
       <div className="tiles">
         <MetricTile

@@ -592,58 +592,114 @@ button {
   color: var(--accent);
 }
 
-/* --- Schnelleintrag der Menge ---------------------------------------------- */
+/* --- Schnelleintrag der Menge ----------------------------------------------
+   Ein Regler statt einer Knopfreihe: eine Zeile statt dreier Kacheln, damit
+   das Baby ohne Scrollen sichtbar bleibt. Er steht auf der gewohnten Menge,
+   der häufige Fall bleibt also ein einziger Tipp. */
 
-.quick-amounts {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));
+.amount {
+  display: flex;
+  align-items: center;
   gap: 10px;
 }
 
-.quick-amount {
+.amount__read {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
   gap: 1px;
-  min-height: 78px;
-  padding: 8px 6px;
-  border-radius: var(--radius-lg);
-  border: 1px solid transparent;
-  background: linear-gradient(
-    160deg,
-    color-mix(in oklab, var(--accent) 88%, #ffffff),
-    var(--accent)
-  );
-  color: var(--text-on-accent);
-  box-shadow: 0 6px 16px color-mix(in oklab, var(--accent) 32%, transparent);
-  cursor: pointer;
-  transition: transform 0.08s ease;
+  flex-grow: 1;
+  min-width: 0;
 }
 
-.quick-amount:active {
-  transform: scale(0.96);
+.amount__figure {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
 }
 
-.quick-amount__value {
+.amount__value {
   font-family: var(--font-display);
-  font-size: 1.75rem;
-  font-weight: 400;
-  line-height: 1.1;
+  font-size: 2.25rem;
+  line-height: 1;
+  letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
+  color: var(--accent);
 }
 
-.quick-amount__unit {
-  font-size: 0.75rem;
-  font-weight: 600;
-  opacity: 0.85;
+.amount__unit {
+  font-size: 0.875rem;
+  font-weight: 650;
+  color: var(--accent);
 }
 
-/* Der Ausweg für abweichende Mengen bleibt sichtbar, tritt aber zurück. */
-.quick-amount--more {
-  background: var(--surface-2);
-  border-color: var(--border-strong);
+.amount__hint {
+  font-size: 0.6875rem;
+  line-height: 1.35;
   color: var(--text-secondary);
+}
+
+.amount__slider {
+  width: 100%;
+  height: 30px;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+/* Die Spur zeigt den eingestellten Anteil - so ist auch ohne Blick auf die
+   Zahl zu sehen, ob es viel oder wenig ist. */
+.amount__slider::-webkit-slider-runnable-track {
+  height: 10px;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(
+    to right,
+    var(--accent) 0 var(--fill),
+    var(--surface-sunken) var(--fill) 100%
+  );
+}
+
+.amount__slider::-moz-range-track {
+  height: 10px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-sunken);
+}
+
+.amount__slider::-moz-range-progress {
+  height: 10px;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+}
+
+/* Der Griff ist bewusst groß: er wird mit dem Daumen bewegt, oft einhändig
+   und mit einem Kind auf dem Arm. */
+.amount__slider::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 30px;
+  height: 30px;
+  margin-top: -10px;
+  border-radius: 50%;
+  border: 2px solid var(--surface-2);
+  background: var(--accent);
+  box-shadow: var(--shadow-card);
+}
+
+.amount__slider::-moz-range-thumb {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid var(--surface-2);
+  background: var(--accent);
+  box-shadow: var(--shadow-card);
+}
+
+.amount__slider:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+  border-radius: var(--radius-pill);
 }
 
 .undo {
@@ -759,6 +815,42 @@ button {
   gap: 2px;
   padding-bottom: 3px;
   min-width: 0;
+}
+
+/* --- Ruhezeit -------------------------------------------------------------- */
+
+.rest__lead {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0;
+  flex-wrap: wrap;
+}
+
+.rest__value {
+  font-family: var(--font-display);
+  font-size: 2.25rem;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--series-7);
+}
+
+.rest__unit {
+  font-size: 0.9375rem;
+  color: var(--text-secondary);
+}
+
+.rest__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+
+.rest__row strong {
+  color: var(--text-primary);
+  font-weight: 650;
 }
 
 /* --- Kennzahl-Kacheln ------------------------------------------------------ */

@@ -34,13 +34,15 @@ anlegen und einen Familien-Bereich teilen – siehe unten.
   auch gestillt, steht dabei, dass Stillmahlzeiten in der Menge nicht stecken –
   lieber eine ehrliche Einschränkung als eine Zahl, die es so nicht gibt. Ohne
   Wägung führen die Mahlzeiten statt der Milliliter.
-- **Schnelleintrag der Trinkmenge** auf dem Startbildschirm: drei große Knöpfe mit
-  den Mengen, die das Kind um diese Uhrzeit sonst trinkt – ein Tipp, fertig.
-  Die Vorschläge stammen aus den Flaschen der letzten drei Wochen im Zeitfenster
-  ±2 Stunden um jetzt (etwas weniger / wie üblich / etwas mehr); reichen die
-  Einträge dort nicht, weitet sich der Blick auf den ganzen Tag, und am Anfang
-  steht der Richtwert aus Gewicht und Lebenstag. Jeder Eintrag lässt sich
-  direkt danach zurücknehmen.
+- **Schnelleintrag der Trinkmenge** auf dem Startbildschirm: ein Regler, der
+  schon auf der Menge steht, die das Kind um diese Uhrzeit sonst trinkt – der
+  häufige Fall bleibt damit ein einziger Tipp auf „Eintragen“, und die eine
+  Zeile spart gegenüber einer Knopfreihe so viel Platz, dass das Baby ohne
+  Scrollen sichtbar bleibt. Die gewohnte Menge ist der Median der Flaschen der
+  letzten drei Wochen im Zeitfenster ±2 Stunden um jetzt; reichen die Einträge
+  dort nicht, weitet sich der Blick auf den ganzen Tag, und am Anfang steht der
+  Richtwert aus Gewicht und Lebenstag. Jeder Eintrag lässt sich direkt danach
+  zurücknehmen.
 - **Still-Timer** auf dem Trinken-Tab, der aus Zeitstempeln rechnet: läuft weiter,
   wenn das Display aus ist, die App im Hintergrund liegt oder das Telefon neu
   startet. Mit Pause, Seitenwechsel und Verwerfen. Ein laufender Timer bleibt
@@ -66,6 +68,16 @@ anlegen und einen Familien-Bereich teilen – siehe unten.
   Nachtblöcke sichtbar macht. In der Kurve bleiben Tage ohne Eintrag eine Lücke
   statt einer Null – ein vergessener Eintrag soll sich nicht als „nichts
   getrunken“ lesen.
+
+- **Ruhe heute.** Vorn steht die längste zusammenhängende Phase – die macht im
+  Alltag den Unterschied –, daneben die Summe, die Zahl der Phasen über einer
+  Stunde und die Unterbrechungen der Nacht, dazu der Referenzbereich für das
+  Alter (0–3 Monate 14–17 Std, 4–11 Monate 12–15 Std, nach den Empfehlungen der
+  National Sleep Foundation). **Die App misst keinen Schlaf**: sie kennt nur
+  Mahlzeiten und rechnet, was dazwischen liegt, mit 30 Minuten angenommener
+  Wachzeit je Mahlzeit ohne erfasste Dauer. Die Summe ist deshalb ausdrücklich
+  eine Obergrenze und als solche beschriftet – wach im Bett und Schreien zählen
+  darin mit.
 
 ### Gewichtsüberwachung
 
