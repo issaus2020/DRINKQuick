@@ -69,7 +69,17 @@ anlegen und einen Familien-Bereich teilen – siehe unten.
   statt einer Null – ein vergessener Eintrag soll sich nicht als „nichts
   getrunken“ lesen.
 
-- **Ruhe heute.** Vorn steht die längste zusammenhängende Phase – die macht im
+- **Schlaf erfassen.** Ein Schalter auf „Heute“ startet und beendet eine
+  Schlafphase; wer nachts nicht zur App greift, trägt sie morgens von–bis nach.
+  Die laufende Phase ist ein Eintrag ohne Ende – dadurch braucht sie keinen
+  Zustand neben den Daten und wandert beim Abgleich aufs andere Gerät. Bleibt
+  ein Eintrag über zwölf Stunden offen, weist die App darauf hin, dass da
+  vermutlich das Aufwachen untergegangen ist.
+- **Ruhe bzw. Schlaf heute.** Sobald Schlaf erfasst ist, rechnet die Karte
+  damit und heißt „Schlaf heute“; eine Nacht über Mitternacht zählt nur mit
+  ihrem heutigen Teil, eine laufende Phase bis jetzt. Ohne erfassten Schlaf
+  schätzt sie aus den Mahlzeiten und heißt „Ruhe heute“. Vorn steht die längste
+  zusammenhängende Phase – die macht im
   Alltag den Unterschied –, daneben die Summe, die Zahl der Phasen über einer
   Stunde und die Unterbrechungen der Nacht, dazu der Referenzbereich für das
   Alter (0–3 Monate 14–17 Std, 4–11 Monate 12–15 Std, nach den Empfehlungen der

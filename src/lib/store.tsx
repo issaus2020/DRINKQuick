@@ -72,6 +72,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       diapers: alive(data.diapers),
       health: alive(data.health),
       checkups: alive(data.checkups),
+      sleeps: alive(data.sleeps),
     }),
     [data],
   );
@@ -113,6 +114,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             diapers: softDelete(d.diapers, byBaby),
             health: softDelete(d.health, byBaby),
             checkups: softDelete(d.checkups, byBaby),
+            sleeps: softDelete(d.sleeps, byBaby),
             timers: d.timers.filter((t) => t.babyId !== id),
             settings: {
               ...d.settings,
@@ -139,6 +141,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       addHealth: (entry) => update((d) => ({ ...d, health: [...d.health, stamp(entry)] })),
       removeHealth: (id) =>
         update((d) => ({ ...d, health: softDelete(d.health, (x) => x.id === id) })),
+
+      addSleep: (entry) => update((d) => ({ ...d, sleeps: [...d.sleeps, stamp(entry)] })),
+      updateSleep: (id, patch) => update((d) => ({ ...d, sleeps: patchIn(d.sleeps, id, patch) })),
+      removeSleep: (id) =>
+        update((d) => ({ ...d, sleeps: softDelete(d.sleeps, (s) => s.id === id) })),
 
       toggleCheckup: (entry) =>
         update((d) => {

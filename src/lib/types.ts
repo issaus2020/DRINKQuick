@@ -85,6 +85,20 @@ export interface Measurement extends Syncable {
   note?: string;
 }
 
+/**
+ * Eine Schlafphase. Ohne `endedAt` läuft sie noch - so braucht der laufende
+ * Schlaf keinen eigenen Zustand neben den Daten und wandert beim Abgleich
+ * mit aufs andere Gerät.
+ */
+export interface Sleep extends Syncable {
+  babyId: string;
+  /** Beginn (ISO). */
+  startedAt: string;
+  /** Ende (ISO). Fehlt, solange das Kind schläft. */
+  endedAt?: string;
+  note?: string;
+}
+
 export type DiaperKind = 'wet' | 'dirty' | 'both';
 /** Stuhlfarben, die in den ersten Wochen unterschieden werden. */
 export type StoolColor = 'meconium' | 'green' | 'yellow' | 'brown' | 'other';
@@ -178,6 +192,7 @@ export interface AppData {
   diapers: Diaper[];
   health: HealthEntry[];
   checkups: Checkup[];
+  sleeps: Sleep[];
   timers: ActiveTimer[];
   settings: Settings;
 }
@@ -190,6 +205,7 @@ export const EMPTY_DATA: AppData = {
   diapers: [],
   health: [],
   checkups: [],
+  sleeps: [],
   timers: [],
   settings: { theme: 'system', feedReminderHours: 4, onboarded: false },
 };

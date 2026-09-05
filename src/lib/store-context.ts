@@ -13,6 +13,7 @@ import type {
   Measurement,
   Settings,
   Syncable,
+  Sleep,
 } from './types';
 
 export interface Store {
@@ -44,6 +45,10 @@ export interface Store {
 
   addHealth(entry: Draft<HealthEntry>): void;
   removeHealth(id: string): void;
+
+  addSleep(entry: Draft<Sleep>): void;
+  updateSleep(id: string, patch: Partial<Draft<Sleep>>): void;
+  removeSleep(id: string): void;
 
   toggleCheckup(entry: Draft<Checkup>): void;
 

@@ -14,7 +14,7 @@
  */
 import { startOfDay } from './date';
 import { isIntake } from './feeding';
-import type { Feed } from './types';
+import type { Feed, Sleep } from './types';
 
 /** Wachzeit je Mahlzeit ohne erfasste Dauer: füttern, aufstoßen, wickeln. */
 export const ASSUMED_AWAKE_MIN = 30;
@@ -37,6 +37,11 @@ export interface RestDay {
   nightFeeds: number;
   /** Wie viel des Tages schon vergangen ist, in Minuten. */
   elapsedMinutes: number;
+  /**
+   * Beruht die Rechnung auf erfasstem Schlaf? Dann ist sie eine Messung.
+   * Sonst ist sie aus den Mahlzeiten geschätzt und eine Obergrenze.
+   */
+  measured: boolean;
 }
 
 /**
@@ -51,10 +56,45 @@ export function sleepReference(ageDays: number): { minHours: number; maxHours: n
   return { minHours: 11, maxHours: 14 };
 }
 
-/** Ruhezeit des laufenden Tages aus den Mahlzeiten. */
-export function restOfDay(feeds: Feed[], now: Date = new Date()): RestDay {
+/**
+ * Ruhezeit des laufenden Tages.
+ *
+ * Gibt es erfassten Schlaf, zählt der - dann ist die Zahl gemessen. Sonst
+ * wird aus den Mahlzeiten geschätzt, und die Oberfläche sagt das dazu.
+ */
+export function restOfDay(feeds: Feed[], sleeps: Sleep[], now: Date = new Date()): RestDay {
   const from = startOfDay(now).getTime();
   const to = now.getTime();
+
+  const nightFeedCount = feeds.filter(isIntake).filter((feed) => {
+    const at = new Date(feed.startedAt);
+    return (
+      at.getTime() >= from &&
+      at.getTime() <= to &&
+      (at.getHours() >= NIGHT_FROM || at.getHours() < NIGHT_TO)
+    );
+  }).length;
+
+  // Erfasste Phasen, auf den Tag beschnitten - eine Nacht reicht über
+  // Mitternacht, und der laufende Schlaf endet vorläufig jetzt.
+  const recorded = sleeps
+    .map((sleep) => ({
+      start: Math.max(from, new Date(sleep.startedAt).getTime()),
+      end: Math.min(to, sleep.endedAt ? new Date(sleep.endedAt).getTime() : to),
+    }))
+    .filter((phase) => phase.end > phase.start)
+    .map((phase) => (phase.end - phase.start) / 60_000);
+
+  if (recorded.length > 0) {
+    return {
+      totalMinutes: Math.round(recorded.reduce((sum, minutes) => sum + minutes, 0)),
+      longestMinutes: Math.round(recorded.reduce((best, minutes) => Math.max(best, minutes), 0)),
+      stretches: recorded.filter((minutes) => minutes >= STRETCH_MIN).length,
+      nightFeeds: nightFeedCount,
+      elapsedMinutes: Math.round((to - from) / 60_000),
+      measured: true,
+    };
+  }
 
   const today = feeds
     .filter(isIntake)
@@ -85,7 +125,8 @@ export function restOfDay(feeds: Feed[], now: Date = new Date()): RestDay {
     totalMinutes: Math.round(gaps.reduce((sum, minutes) => sum + minutes, 0)),
     longestMinutes: Math.round(gaps.reduce((best, minutes) => Math.max(best, minutes), 0)),
     stretches: gaps.filter((minutes) => minutes >= STRETCH_MIN).length,
-    nightFeeds: today.filter((entry) => entry.hour >= NIGHT_FROM || entry.hour < NIGHT_TO).length,
+    nightFeeds: nightFeedCount,
     elapsedMinutes: Math.round((to - from) / 60_000),
+    measured: false,
   };
 }

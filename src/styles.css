@@ -586,6 +586,13 @@ button {
   color: var(--text-secondary);
 }
 
+.quick__link {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
 .quick__icon {
   width: 24px;
   height: 24px;
