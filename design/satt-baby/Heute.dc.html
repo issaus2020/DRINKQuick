@@ -1,0 +1,267 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; }
+    a { color: #2a78d6; }
+    a:hover { color: #1c5cab; }
+
+    /* Werte aus src/styles.css der App: Papier #faf8f5, Glas 62 % Weiß,
+       Rand rgb(23 23 15 / 7%), Radius 22 px, Akzent #2a78d6. */
+    .root {
+      position: relative;
+      width: 390px;
+      height: 844px;
+      overflow: hidden;
+      background: #faf8f5;
+      color: #0b0b0b;
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      font-size: 16px;
+      line-height: 1.5;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .bloom { position: absolute; border-radius: 50%; filter: blur(60px); pointer-events: none; }
+    .bloom--1 {
+      width: 320px; height: 300px; top: -80px; left: -90px;
+      background: radial-gradient(circle, #8ec7ef, transparent 68%);
+      opacity: 0.6;
+    }
+    .bloom--2 {
+      width: 300px; height: 280px; top: 300px; right: -110px;
+      background: radial-gradient(circle, #f2c9a8, transparent 68%);
+      opacity: 0.6;
+    }
+    .bloom--3 {
+      width: 340px; height: 300px; bottom: -90px; left: -60px;
+      background: radial-gradient(circle, #c9bff0, transparent 70%);
+      opacity: 0.55;
+    }
+    .grain {
+      position: absolute; inset: 0; pointer-events: none; opacity: 0.5;
+      background-image: radial-gradient(rgb(23 23 15 / 5%) 0.6px, transparent 0.7px);
+      background-size: 3px 3px;
+    }
+
+    .topbar {
+      position: relative; z-index: 2;
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 16px 8px;
+      border-bottom: 1px solid rgb(23 23 15 / 7%);
+      background: rgb(250 248 245 / 62%);
+    }
+    .topbar__icon {
+      width: 34px; height: 34px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      background: #e7f0fd; color: #2a78d6; flex-shrink: 0;
+    }
+    .topbar__title { font-size: 1.0625rem; font-weight: 650; }
+    .topbar__sub { display: block; font-size: 0.8125rem; font-weight: 450; color: #52514e; }
+
+    .page {
+      position: relative; z-index: 2;
+      display: flex; flex-direction: column; gap: 16px;
+      padding: 8px 16px 0;
+    }
+
+    .goal { padding: 4px 4px 0; }
+    .goal__greeting { font-size: 1.0625rem; font-weight: 650; color: #52514e; letter-spacing: -0.01em; }
+    .goal__headline {
+      margin: 2px 0 0;
+      font-family: ui-serif, 'Iowan Old Style', Georgia, 'Times New Roman', serif;
+      font-size: 1.75rem; font-weight: 400; letter-spacing: -0.02em; line-height: 1.1;
+      display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px;
+    }
+    .goal__number {
+      font-family: ui-serif, 'Iowan Old Style', Georgia, 'Times New Roman', serif;
+      font-size: 3.25rem; font-weight: 400; letter-spacing: -0.03em; color: #2a78d6; line-height: 1;
+    }
+    .goal__unit { font-size: 1.25rem; font-weight: 650; color: #2a78d6; }
+    .goal__detail { margin: 6px 0 0; font-size: 0.8125rem; color: #52514e; }
+
+    .card {
+      background: rgb(255 255 255 / 62%);
+      border: 1px solid rgb(23 23 15 / 7%);
+      border-radius: 22px;
+      padding: 16px;
+      box-shadow: 0 8px 24px rgb(23 23 15 / 6%);
+    }
+
+    .hero { display: flex; align-items: center; gap: 18px; }
+    .hero__figure { flex: none; }
+    .hero__body { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+    .hero__value {
+      font-family: ui-serif, 'Iowan Old Style', Georgia, 'Times New Roman', serif;
+      font-size: 1.875rem; font-weight: 400; letter-spacing: -0.03em; line-height: 1.1;
+    }
+    .hero__label { margin-top: 1px; font-size: 0.75rem; line-height: 1.35; color: #52514e; }
+
+    .quick-amounts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+    .quick-amount {
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
+      min-height: 78px; padding: 8px 6px;
+      border-radius: 22px; border: 1px solid transparent;
+      background: linear-gradient(160deg, #5590de, #2a78d6);
+      color: #ffffff;
+      box-shadow: 0 6px 16px rgb(42 120 214 / 32%);
+    }
+    .quick-amount__value {
+      font-family: ui-serif, 'Iowan Old Style', Georgia, 'Times New Roman', serif;
+      font-size: 1.75rem; font-weight: 400; line-height: 1.1;
+    }
+    .quick-amount__unit { font-size: 0.75rem; font-weight: 600; opacity: 0.85; }
+    .quick-amount--more {
+      background: #ffffff; border-color: #c6c3b9; color: #52514e;
+      box-shadow: none; font-size: 0.8125rem;
+    }
+
+    .cap { font-size: 11px; letter-spacing: 0.06em; color: #7c7a73; }
+
+    .ink {
+      fill: none;
+      stroke: #3b3a35;
+      stroke-width: 2.4;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    /* Kein Hautton: die Figur ist eine Linienzeichnung auf Papier, gefüllt ist
+       nur der Bauch. Was man sieht, ist also ausschließlich die Trinkmenge. */
+    .paper { fill: #ffffff; }
+    .face {
+      fill: none;
+      stroke: #3b3a35;
+      stroke-width: 4;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .blush { fill: #e8836a; }
+    .wave { animation: flow 9s linear infinite; }
+    .wave--back { animation: flow 14s linear infinite reverse; opacity: 0.55; }
+    @keyframes flow { to { transform: translateX(-50px); } }
+    @media (prefers-reduced-motion: reduce) {
+      .wave { animation: none; }
+    }
+
+  </style>
+</helmet>
+
+<div class="root">
+  <div class="bloom bloom--1"></div>
+  <div class="bloom bloom--2"></div>
+  <div class="bloom bloom--3"></div>
+  <div class="grain"></div>
+
+  <div class="topbar">
+    <span class="topbar__icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20a7 7 0 1 0 0-14 7 7 0 0 0 0 14ZM9.5 11h.01M14.5 11h.01M9.5 15c.7.8 1.6 1.2 2.5 1.2s1.8-.4 2.5-1.2M12 6V3.5"></path></svg>
+    </span>
+    <span class="topbar__title">
+      Heute
+      <span class="topbar__sub">2 Wochen, 6 Tage · Lebenstag 21</span>
+    </span>
+  </div>
+
+  <div class="page">
+    <div class="goal">
+      <p class="goal__greeting" style="margin: 0">Hallo, Noah</p>
+      <p class="goal__headline">
+        Noch <span class="goal__number">225</span><span class="goal__unit">ml</span>
+      </p>
+      <p class="goal__detail">380 von 605 ml heute</p>
+    </div>
+
+    <div class="card">
+      <div class="hero">
+        <div class="hero__figure">
+          <svg class="baby" viewBox="0 0 140 190" style="width: 138px; height: 188px" role="img" aria-label="Baby, Magen zu 63 Prozent gefüllt">
+        <defs>
+          <clipPath id="bellyHeute">
+            <path d="M70 80 C 40 80, 26 100, 26 124 C 26 150, 44 166, 70 166 C 96 166, 114 150, 114 124 C 114 100, 100 80, 70 80 Z"></path>
+          </clipPath>
+        </defs>
+
+        <g style="transform: rotate(1.9deg); transform-origin: 70px 110px">
+          <ellipse class="ink paper" cx="54" cy="169" rx="12" ry="8"></ellipse>
+          <ellipse class="ink paper" cx="86" cy="169" rx="12" ry="8"></ellipse>
+
+          <path class="ink paper" d="M70 80 C 40 80, 26 100, 26 124 C 26 150, 44 166, 70 166 C 96 166, 114 150, 114 124 C 114 100, 100 80, 70 80 Z"></path>
+
+          <g clip-path="url(#bellyHeute)">
+            <rect x="20" y="111.8" width="100" height="120" fill="#72a6e4"></rect>
+            <g style="transform: translate(-10px, 111.8px)">
+              <g class="wave">
+                <path d="M0 0 Q 12.5 -6, 25 0 T 50 0 T 75 0 T 100 0 T 125 0 T 150 0 T 175 0 T 200 0 L200 60 L0 60 Z" fill="#72a6e4"></path>
+              </g>
+              <g class="wave wave--back">
+                <path d="M0 2 Q 12.5 -4, 25 2 T 50 2 T 75 2 T 100 2 T 125 2 T 150 2 T 175 2 T 200 2 L200 60 L0 60 Z" fill="#a3c6ee"></path>
+              </g>
+            </g>
+          </g>
+
+          <circle class="ink paper" cx="30" cy="52" r="8"></circle>
+          <circle class="ink paper" cx="110" cy="52" r="8"></circle>
+          <circle class="ink paper" cx="70" cy="48" r="38"></circle>
+          <path class="ink" d="M62 12 Q70 2 79 11"></path>
+
+          <ellipse class="blush" cx="42" cy="60" rx="7" ry="4.5" style="opacity: 0.16"></ellipse>
+          <ellipse class="blush" cx="98" cy="60" rx="7" ry="4.5" style="opacity: 0.16"></ellipse>
+
+          <path class="face" d="M56 47 L56 47 M84 47 L84 47" style="stroke-width: 8px"></path>
+          <path class="face" d="M58.5 64 Q70 72.9 81.5 64"></path>
+
+          <path class="ink" d="M34 100 C 20 106, 15 119, 21 129"></path>
+          <path class="ink" d="M106 100 C 120 106, 125 119, 119 129"></path>
+        </g>
+      </svg>
+        </div>
+        <div class="hero__body">
+          <div>
+            <div class="hero__value">vor 22 Min</div>
+            <div class="hero__label">14:10 · Flasche · 80 ml</div>
+          </div>
+          <div>
+            <div class="hero__value">5</div>
+            <div class="hero__label">Mahlzeiten, 3 davon nachts</div>
+          </div>
+          <div>
+            <div class="hero__value">2 Std 45 Min</div>
+            <div class="hero__label">Ø Abstand, längste Pause 2 Std 59 Min</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="display: flex; align-items: baseline; gap: 12px; margin-bottom: 12px">
+        <span style="font-size: 0.9375rem; font-weight: 650">Flasche schnell eintragen</span>
+        <span style="flex-grow: 1"></span>
+        <span class="cap">aus deinen Einträgen</span>
+      </div>
+      <div class="quick-amounts">
+        <div class="quick-amount">
+          <span class="quick-amount__value">70</span>
+          <span class="quick-amount__unit">ml</span>
+        </div>
+        <div class="quick-amount">
+          <span class="quick-amount__value">75</span>
+          <span class="quick-amount__unit">ml</span>
+        </div>
+        <div class="quick-amount">
+          <span class="quick-amount__value">80</span>
+          <span class="quick-amount__unit">ml</span>
+        </div>
+        <div class="quick-amount quick-amount--more">andere</div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>
