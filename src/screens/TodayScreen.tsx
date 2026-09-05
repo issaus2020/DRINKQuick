@@ -132,6 +132,14 @@ export function TodayScreen({ baby }: TodayScreenProps) {
 
       <BreastTimer babyId={baby.id} showStart={false} />
 
+      <QuickAmounts
+        babyId={baby.id}
+        feeds={feeds}
+        fallbackPerMealMl={target?.perMealMl ?? 70}
+        defaultContent={lastBottleContent}
+        onOpenSheet={() => setFeedSheet({ kind: 'bottle' })}
+      />
+
       <div className="card">
         <div className="hero__head">
           <h2 className="hero__name">{baby.name.trim() || 'Dein Baby'}</h2>
@@ -192,14 +200,6 @@ export function TodayScreen({ baby }: TodayScreenProps) {
           </div>
         </div>
       </div>
-
-      <QuickAmounts
-        babyId={baby.id}
-        feeds={feeds}
-        fallbackPerMealMl={target?.perMealMl ?? 70}
-        defaultContent={lastBottleContent}
-        onOpenSheet={() => setFeedSheet({ kind: 'bottle' })}
-      />
 
       <div className="quick-grid">
         <button type="button" className="quick" onClick={() => setDiaperOpen(true)}>

@@ -202,10 +202,19 @@ Auch der **Aufbau** der Bildschirme folgt den Entwürfen:
   Die Vorhersage trägt ein **Tagesband**: eine weiche Kurve, durchgezogen bis
   jetzt, gestrichelt weiter, mit einem Punkt je Mahlzeit und einem
   pulsierenden Ring für die erwartete nächste. Zwischen den geplanten
-  Mahlzeiten steht die **Schlafzeit** als eigene Zeile mit einer senkrechten
-  Spur – nachts eingefärbt – und darunter die Summe bis zum Morgen: Für ein
-  Neugeborenes ist die Zeit zwischen zwei Mahlzeiten kein Loch im Plan, sondern
-  der Teil, auf den es für alle Beteiligten ankommt. Statt einer Zahlenreihe
+  Mahlzeiten steht die **Schlafzeit** – als Balken von jetzt bis sechs Uhr früh,
+  mit eingefärbter Nacht, Strichen für die geplanten Mahlzeiten und den
+  Schlafstrecken dazwischen; die längste ist hervorgehoben und steht als Zahl
+  darunter. Für ein Neugeborenes ist die Zeit zwischen zwei Mahlzeiten kein Loch
+  im Plan, sondern der Teil, auf den es für alle Beteiligten ankommt.
+- **Erklärungen stecken hinter einem „i“.** Beim ersten Mal ist der Text nötig,
+  beim fünfzigsten steht er zwischen der Person und der Zahl, wegen der sie die
+  App geöffnet hat. Auf dem Zeigegerät genügt Zeigen, auf dem Telefon ein Tipp.
+  Sicherheitsrelevante Sätze bleiben sichtbar – „Hunger geht vor Uhrzeit“ steht
+  weiterhin ausgeschrieben da.
+- **Die Schnelleingabe steht oben**, direkt unter der Überschrift und über dem
+  Bild des Tages: Sie ist der häufigste Griff, und nachts um drei soll niemand
+  dafür scrollen müssen. Statt einer Zahlenreihe
   stehen darunter drei Glaskacheln mit der Richtung der letzten Tage.
 - **„Gewicht"** führt eine Leitzahl an – das aktuelle Gewicht – mit der
   Zunahme und dem Erwartungsbereich daneben; Perzentile und Bilanz zum
