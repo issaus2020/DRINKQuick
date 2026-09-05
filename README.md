@@ -173,6 +173,22 @@ zuzudecken. Die eine große Zahl je Bildschirm steht in einer Serife
 (`--font-display`), alles Übrige in der System-Schrift; Tabellen und Listen
 behalten die tabellarischen Ziffern.
 
+Auch der **Aufbau** der Bildschirme folgt den Entwürfen:
+
+- **„Heute"** beginnt mit der Frage, wo der Tag steht: Überschrift, dann das
+  Gefäß mit einer Kennzahlenspalte daneben (letzte Mahlzeit, Mahlzeiten,
+  Ø Abstand). Erst danach kommen Schnelleingabe und Schnellzugriffe – die
+  bleiben bewusst über der Falzkante, weil das nachts der häufigste Griff ist.
+  Die Vorhersage trägt ein **Tagesband**: eine weiche Kurve, durchgezogen bis
+  jetzt, gestrichelt weiter, mit einem Punkt je Mahlzeit und einem
+  pulsierenden Ring für die erwartete nächste. Statt einer Zahlenreihe stehen
+  darunter drei Glaskacheln mit der Richtung der letzten Tage.
+- **„Gewicht"** führt eine Leitzahl an – das aktuelle Gewicht – mit der
+  Zunahme und dem Erwartungsbereich daneben; Perzentile und Bilanz zum
+  Geburtsgewicht folgen als Kacheln.
+- Die **Sparklines** in den Kacheln entfallen unter drei Messpunkten. Aus zwei
+  Wägungen eine Richtung zu zeichnen wäre eine Behauptung, keine Beobachtung.
+
 Bewusste Festlegungen:
 
 - **Keine geladene Webschrift.** Die Entwürfe verwendeten Instrument Serif und
