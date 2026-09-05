@@ -13,75 +13,105 @@
   </style>
 </helmet>
 
-<div style="width: 100%; height: 100%; background: #08080a; display: flex; flex-direction: column; box-sizing: border-box; padding: 20px 24px 18px;">
+<div style="width: 100%; height: 100%; background: #08090c; display: flex; flex-direction: column; box-sizing: border-box; padding: 20px 24px 16px;">
 
-  <div style="display: flex; flex-direction: column; gap: 3px; margin-bottom: 6px;">
-    <span style="font-size: 15px; font-weight: 650; color: #ecf9ff;">Der Tag von leer bis über dem Ziel</span>
-    <span style="font-size: 13px; line-height: 1.4; color: #86b6ef;">Der Mund wandert stufenlos mit, die Augen in drei Stufen. Nach unten geht er nie – ein leerer Magen am Morgen ist kein Vorwurf. Über dem Ziel steigt die Füllung nicht weiter, sie färbt sich um.</span>
+  <div style="display: flex; flex-direction: column; gap: 3px; margin-bottom: 2px;">
+    <span style="font-size: 15px; font-weight: 650; color: #eef6ff;">Der Tag von leer bis über dem Ziel</span>
+    <span style="font-size: 13px; line-height: 1.4; color: #8fb6dd;">Die Oberfläche ist eine Ellipse und wird zur Mitte hin breiter – so liest man die Menge auch ohne Zahl. Der Mund wandert stufenlos mit, die Augen in drei Stufen; nach unten geht er nie.</span>
   </div>
 
-  <svg viewBox="0 0 1700 340" width="100%" style="display: block; flex-grow: 1; min-height: 0;" preserveAspectRatio="xMidYMid meet">
+  <svg viewBox="0 0 1700 400" width="100%" style="display: block; flex-grow: 1; min-height: 0;" preserveAspectRatio="xMidYMid meet">
     <defs>
-      <filter id="stGlow" x="-60%" y="-60%" width="220%" height="220%">
-        <feGaussianBlur stdDeviation="5" result="b"/>
-        <feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-      </filter>
-      <filter id="stSoft" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="2.4"/></filter>
-      <linearGradient id="stMilk" gradientUnits="userSpaceOnUse" x1="160" y1="314" x2="160" y2="168">
-        <stop offset="0" stop-color="#0f2f5c"/>
-        <stop offset="0.5" stop-color="#2a78d6"/>
-        <stop offset="1" stop-color="#a8ecff"/>
+      <radialGradient id="stShell" cx="34%" cy="26%" r="78%">
+        <stop offset="0"    stop-color="#3d4d63" stop-opacity=".55"/>
+        <stop offset="0.55" stop-color="#141a24" stop-opacity=".85"/>
+        <stop offset="1"    stop-color="#0b0e14" stop-opacity=".95"/>
+      </radialGradient>
+      <radialGradient id="stHead" cx="32%" cy="24%" r="80%">
+        <stop offset="0"    stop-color="#4a5a72"/>
+        <stop offset="0.55" stop-color="#1b222e"/>
+        <stop offset="1"    stop-color="#0d1118"/>
+      </radialGradient>
+      <linearGradient id="stMilk" gradientUnits="userSpaceOnUse" x1="160" y1="319" x2="160" y2="169">
+        <stop offset="0"    stop-color="#1d4d8a"/>
+        <stop offset="0.45" stop-color="#4e92d8"/>
+        <stop offset="0.85" stop-color="#bcdcf7"/>
+        <stop offset="1"    stop-color="#eaf4ff"/>
       </linearGradient>
-      <linearGradient id="stOver" gradientUnits="userSpaceOnUse" x1="160" y1="314" x2="160" y2="168">
-        <stop offset="0" stop-color="#0b3b23"/>
-        <stop offset="0.5" stop-color="#0ca30c"/>
-        <stop offset="1" stop-color="#b8f5c8"/>
+      <linearGradient id="stOver" gradientUnits="userSpaceOnUse" x1="160" y1="319" x2="160" y2="169">
+        <stop offset="0"    stop-color="#0d5b33"/>
+        <stop offset="0.45" stop-color="#2fae6c"/>
+        <stop offset="0.85" stop-color="#b8f0cd"/>
+        <stop offset="1"    stop-color="#e9fbf0"/>
       </linearGradient>
-      <clipPath id="stBelly">
-        <path d="M160 168 C 108 168, 82 200, 82 242 C 82 288, 116 314, 160 314 C 204 314, 238 288, 238 242 C 238 200, 212 168, 160 168 Z"/>
-      </clipPath>
+      <radialGradient id="stCaustic" cx="50%" cy="50%" r="50%">
+        <stop offset="0"   stop-color="#9fd0ff" stop-opacity=".55"/>
+        <stop offset="0.5" stop-color="#5f9ede" stop-opacity=".18"/>
+        <stop offset="1"   stop-color="#5f9ede" stop-opacity="0"/>
+      </radialGradient>
+      <filter id="stBlur" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="7"/></filter>
+      <filter id="stSoft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.6"/></filter>
+      <filter id="stFaint" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="1.2"/></filter>
+      <clipPath id="stOrb"><circle cx="160" cy="244" r="75"/></clipPath>
+      <clipPath id="stHeadClip"><circle cx="160" cy="104" r="60"/></clipPath>
     </defs>
 
     <sc-for list="{{ steps }}" as="step" hint-placeholder-count="5">
       <g transform="translate({{ step.x }} 0)">
+        <ellipse cx="160" cy="344" rx="112" ry="18" fill="#0d1017"/>
+        <ellipse cx="160" cy="342" rx="86" ry="13" fill="#000" opacity=".7" filter="url(#stBlur)"/>
+        <ellipse cx="160" cy="340" rx="{{ step.causticRx }}" ry="14" fill="url(#stCaustic)" opacity="{{ step.causticOpacity }}" filter="url(#stBlur)"/>
 
-        <path d="M160 168 C 108 168, 82 200, 82 242 C 82 288, 116 314, 160 314 C 204 314, 238 288, 238 242 C 238 200, 212 168, 160 168 Z"
-              fill="rgba(120,190,255,.05)" stroke="rgba(150,205,255,.30)" stroke-width="1.6"/>
+        <ellipse cx="128" cy="330" rx="21" ry="10" fill="#161c26"/>
+        <ellipse cx="192" cy="330" rx="21" ry="10" fill="#161c26"/>
+        <path d="M96 214 C 72 224, 64 254, 74 276" fill="none" stroke="#1a212c" stroke-width="15" stroke-linecap="round"/>
+        <path d="M224 214 C 248 224, 256 254, 246 276" fill="none" stroke="#1a212c" stroke-width="15" stroke-linecap="round"/>
+        <circle cx="94" cy="112" r="15" fill="#1a212c"/>
+        <circle cx="226" cy="112" r="15" fill="#1a212c"/>
 
-        <g clip-path="url(#stBelly)">
-          <rect x="70" y="{{ step.fillTop }}" width="180" height="150" fill="{{ step.paint }}" opacity=".92"/>
-          <rect x="70" y="{{ step.fillTop }}" width="180" height="2" fill="#dff5ff" opacity="{{ step.meniscus }}" filter="url(#stSoft)"/>
+        <circle cx="160" cy="244" r="75" fill="url(#stShell)"/>
+        <g clip-path="url(#stOrb)">
+          <rect x="80" y="{{ step.fillTop }}" width="160" height="160" fill="{{ step.paint }}"/>
+          <ellipse cx="160" cy="{{ step.fillTop }}" rx="{{ step.surfaceRx }}" ry="{{ step.surfaceRy }}" fill="{{ step.paint }}"/>
+          <ellipse cx="160" cy="{{ step.fillTop }}" rx="{{ step.surfaceRx }}" ry="{{ step.surfaceRy }}" fill="#e8f3ff" opacity="{{ step.surfaceOpacity }}"/>
+          <ellipse cx="160" cy="{{ step.fillTop }}" rx="{{ step.surfaceRx }}" ry="{{ step.surfaceRy }}" fill="none" stroke="#ffffff" stroke-width="1.4" opacity="{{ step.meniscusOpacity }}"/>
+          <ellipse cx="{{ step.sheenCx }}" cy="{{ step.fillTop }}" rx="{{ step.sheenRx }}" ry="{{ step.sheenRy }}" fill="#ffffff" opacity="{{ step.sheenOpacity }}" filter="url(#stSoft)"/>
         </g>
 
-        <path d="M160 168 C 108 168, 82 200, 82 242 C 82 288, 116 314, 160 314 C 204 314, 238 288, 238 242 C 238 200, 212 168, 160 168 Z"
-              fill="none" stroke="#9fd6ff" stroke-width="1.8" opacity=".85"/>
-        <path d="M118 178 C 96 190, 84 214, 83 238" fill="none" stroke="#eaf8ff" stroke-width="2.2" stroke-linecap="round" opacity=".45" filter="url(#stSoft)"/>
+        <!-- Glasschleier: echtes Glas dämpft, es deckt nicht zu. -->
+        <circle cx="160" cy="244" r="75" fill="#0e141d" opacity=".14"/>
+        <g clip-path="url(#stOrb)" fill="none" stroke-linecap="round">
+          <circle cx="160" cy="244" r="74" stroke="#7f95b4" stroke-width="1.6" opacity=".5"/>
+          <path d="M228 282 C 246 254, 242 214, 216 190" stroke="#ffd3a8" stroke-width="3.4" opacity=".7" filter="url(#stFaint)"/>
+          <path d="M104 196 C 88 214, 84 238, 88 262" stroke="#dceaff" stroke-width="3" opacity=".55" filter="url(#stFaint)"/>
+        </g>
+        <ellipse cx="126" cy="206" rx="17" ry="10" fill="#ffffff" opacity=".5" transform="rotate(-32 126 206)" filter="url(#stSoft)"/>
+        <ellipse cx="122" cy="202" rx="6" ry="3.4" fill="#ffffff" opacity=".85" transform="rotate(-32 122 202)"/>
 
-        <ellipse cx="132" cy="322" rx="20" ry="10" fill="rgba(120,190,255,.06)" stroke="#7fc6f5" stroke-width="1.5"/>
-        <ellipse cx="188" cy="322" rx="20" ry="10" fill="rgba(120,190,255,.06)" stroke="#7fc6f5" stroke-width="1.5"/>
-        <path d="M92 206 C 70 214, 62 240, 70 262" fill="none" stroke="#7fc6f5" stroke-width="2.4" stroke-linecap="round"/>
-        <path d="M228 206 C 250 214, 258 240, 250 262" fill="none" stroke="#7fc6f5" stroke-width="2.4" stroke-linecap="round"/>
-        <circle cx="92" cy="116" r="14" fill="rgba(120,190,255,.05)" stroke="#7fc6f5" stroke-width="1.8"/>
-        <circle cx="228" cy="116" r="14" fill="rgba(120,190,255,.05)" stroke="#7fc6f5" stroke-width="1.8"/>
-        <circle cx="160" cy="108" r="62" fill="rgba(120,190,255,.05)" stroke="#9fd6ff" stroke-width="2" filter="url(#stGlow)"/>
-        <path d="M112 72 C 122 58, 140 48, 158 46" fill="none" stroke="#f2fbff" stroke-width="2.6" stroke-linecap="round" opacity=".5" filter="url(#stSoft)"/>
-        <path d="M148 50 Q160 36 173 49" fill="none" stroke="#7fc6f5" stroke-width="2.2" stroke-linecap="round"/>
+        <circle cx="160" cy="104" r="60" fill="url(#stHead)"/>
+        <g clip-path="url(#stHeadClip)">
+          <ellipse cx="160" cy="176" rx="70" ry="26" fill="#8ec2f0" opacity="{{ step.bounceOpacity }}" filter="url(#stBlur)"/>
+          <circle cx="160" cy="104" r="59" fill="none" stroke="#8296b2" stroke-width="1.4" opacity=".45"/>
+          <path d="M110 66 C 122 50, 140 42, 158 40" fill="none" stroke="#e6f0ff" stroke-width="3" stroke-linecap="round" opacity=".55" filter="url(#stFaint)"/>
+          <path d="M214 138 C 224 118, 222 92, 206 74" fill="none" stroke="#ffd3a8" stroke-width="2.8" stroke-linecap="round" opacity=".5" filter="url(#stFaint)"/>
+        </g>
+        <path d="M148 46 Q160 32 173 45" fill="none" stroke="#2b3442" stroke-width="4" stroke-linecap="round"/>
+        <ellipse cx="160" cy="170" rx="52" ry="12" fill="#05070a" opacity=".65" filter="url(#stBlur)"/>
 
-        <g filter="url(#stGlow)" stroke="#ecf9ff" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <g stroke="#f4f9ff" fill="none" stroke-linecap="round" stroke-linejoin="round" filter="url(#stFaint)">
           <path d="{{ step.eyes }}" stroke-width="{{ step.eyeWidth }}"/>
-          <path d="{{ step.mouth }}" stroke-width="3"/>
+          <path d="{{ step.mouth }}" stroke-width="3.2"/>
         </g>
-
       </g>
     </sc-for>
   </svg>
 
   <!-- Beschriftung als HTML: Platzhalter in einem SVG-Textknoten bleiben leer. -->
-  <div style="display: flex; gap: 0; margin-top: 4px;">
+  <div style="display: flex; margin-top: 2px;">
     <sc-for list="{{ steps }}" as="step" hint-placeholder-count="5">
       <div style="flex-grow: 1; flex-basis: 0; display: flex; flex-direction: column; align-items: center; gap: 2px;">
         <span style="font-size: 17px; font-weight: 650; color: {{ step.labelColor }};">{{ step.ml }} ml</span>
-        <span style="font-size: 13px; color: #7ba7d4;">{{ step.mood }}</span>
+        <span style="font-size: 13px; color: #7d9fc0;">{{ step.mood }}</span>
       </div>
     </sc-for>
   </div>
@@ -91,14 +121,21 @@
 <script data-dc-script>
 class Component extends DCLogic {
   renderVals() {
-    const TOP = 168;
-    const BOTTOM = 314;
+    const CX = 160;
+    const CY = 244;
+    const R = 75;
+    const TOP = CY - R;
+    const BOTTOM = CY + R;
     const TARGET = 605;
 
     const steps = [0, 0.25, 0.55, 0.85, 1.1].map((ratio, index) => {
       const clamped = Math.min(1, ratio);
       const over = ratio > 1.02;
       const fillTop = BOTTOM - clamped * (BOTTOM - TOP);
+      const dy = fillTop - CY;
+      const cut = Math.sqrt(Math.max(0, R * R - dy * dy));
+      const surfaceRy = cut * 0.2;
+      const empty = clamped < 0.005;
 
       const depth = 3 + clamped * 15;
       const half = 13 + clamped * 6;
@@ -108,16 +145,26 @@ class Component extends DCLogic {
         x: index * 344,
         fillTop,
         paint: over ? 'url(#stOver)' : 'url(#stMilk)',
-        meniscus: ratio > 0.02 ? 0.9 : 0,
-        mouth: `M${(160 - half).toFixed(1)} 134 Q160 ${(134 + depth).toFixed(1)} ${(160 + half).toFixed(1)} 134`,
+        surfaceRx: cut.toFixed(1),
+        surfaceRy: surfaceRy.toFixed(1),
+        surfaceOpacity: empty ? 0 : 0.28,
+        meniscusOpacity: empty ? 0 : 0.5,
+        sheenCx: (CX - cut * 0.32).toFixed(1),
+        sheenRx: (cut * 0.42).toFixed(1),
+        sheenRy: (surfaceRy * 0.5).toFixed(1),
+        sheenOpacity: empty ? 0 : 0.5,
+        causticRx: (40 + clamped * 50).toFixed(0),
+        causticOpacity: (0.1 + clamped * 0.6).toFixed(2),
+        bounceOpacity: (clamped * 0.3).toFixed(2),
+        mouth: `M${(CX - half).toFixed(1)} 130 Q${CX} ${(130 + depth).toFixed(1)} ${(CX + half).toFixed(1)} 130`,
         eyes: over
-          ? 'M126 106 Q136 118 146 106 M174 106 Q184 118 194 106'
+          ? 'M126 102 Q136 114 146 102 M174 102 Q184 114 194 102'
           : happy
-            ? 'M126 112 Q136 98 146 112 M174 112 Q184 98 194 112'
-            : 'M136 108 L136 108 M184 108 L184 108',
+            ? 'M126 108 Q136 94 146 108 M174 108 Q184 94 194 108'
+            : 'M136 104 L136 104 M184 104 L184 104',
         eyeWidth: happy || over ? 3.4 : 9,
         ml: Math.round(TARGET * ratio),
-        labelColor: over ? '#7ce89a' : '#dff1ff',
+        labelColor: over ? '#8df0b6' : '#eef6ff',
         mood: over ? 'satt, Ziel überschritten' : happy ? 'fröhlich' : clamped >= 0.4 ? 'zufrieden' : clamped > 0 ? 'ruhig' : 'ruhig, Tag beginnt',
       };
     });

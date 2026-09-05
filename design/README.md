@@ -35,26 +35,30 @@ sollten:
 
 ## `holo-baby/` – die Figur futuristisch und kinematisch
 
-Drei Richtungen, den Bauch als Milchmenge zu zeigen. Alle rechnen ihn identisch:
-Oberkante 168, Unterkante 314 im Koordinatensystem der Zeichnung, Füllhöhe ist
-der Anteil am Tagesziel.
+Drei **Verfahren**, den Bauch als Milchmenge zu zeigen. Der erste Anlauf (drei
+Lichtstimmungen über derselben Strichzeichnung) ist verworfen worden: eine
+flache Füllung in einem flachen Kreis wird durch Licht drumherum nicht
+plastisch. Diese drei stellen die Figur jeweils anders her.
 
-- `HoloKammer.dc.html` – **A**, der Vorschlag: Lichtschacht, Bauch als Glaskammer
-  mit Meniskus, Kräuselung, Messstrahl und Skala. Am genauesten ablesbar.
-- `Nebel.dc.html` – **B**: Silhouette, die Menge ist die Menge an Licht, in den
-  drei Aurora-Tönen der App. Wärmer, aber ohne Kante.
-- `Reaktor.dc.html` – **C**: zwölf Zellen zu je rund 50 ml. Am genauesten, am
-  kältesten.
-- `Main.dc.html` – A im Gerät auf „Heute“.
-- `Hell.dc.html` – A im Hellmodus.
+- `Glas.dc.html` – **1**, der Vorschlag: der Bauch ist eine Glaskugel. Die
+  Oberfläche ist eine Ellipse, deren Breite aus dem Schnitt durch die Kugel
+  folgt; dazu Glanzlicht, Gegenlicht, Brechung unter der Oberfläche und
+  Kaustik am Boden.
+- `Schnitt.dc.html` – **2**: der Körper besteht nur aus waagerechten Schnitten,
+  die Form entsteht aus ihrer Länge. Milch sind die Schnitte unter der
+  Oberfläche.
+- `Punkte.dc.html` – **3**: nur Punkte. Dicht heißt Körper, hell heißt Milch;
+  die Streuung ist fest gerechnet, nicht zufällig.
+- `Main.dc.html` – die Glaskugel im Gerät auf „Heute“.
 - `Stufen.dc.html` – der Tag von leer bis über dem Ziel.
 
-Zwei Dinge, die beim Übernehmen mitkommen:
+Drei Dinge, die beim Übernehmen mitkommen:
 
-- **Die Figur bekommt eine eigene dunkle Bühne in der Karte.** Kinematisch heißt,
-  dass etwas Licht abgibt; auf dem hellen Papierweiß der App gäbe es kein
-  Leuchten, nur eine blaue Fläche. Die Karte wechselt mit dem Design, die Kammer
-  nicht.
+- **Das Glas liegt hinter der Milch, nicht darüber.** Als dunkle Fläche über der
+  Flüssigkeit schluckt es sie; über der Milch gehören nur Schleier, Kante und
+  Glanz.
+- **Die Figur bringt ihre eigene dunkle Bühne mit.** Auf dem hellen Papierweiß
+  der App gäbe es kein Leuchten, nur eine blaue Fläche.
 - **Platzhalter in einem SVG-Textknoten bleiben leer.** Beschriftungen deshalb
   als HTML neben oder unter dem Bild, nicht als `<text>` im SVG.
 

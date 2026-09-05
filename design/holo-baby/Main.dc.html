@@ -11,32 +11,22 @@
     body { margin: 0; font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; }
     a { color: #86b6ef; } a:hover { color: #9ec5f4; }
 
-    @keyframes mn-flow { to { transform: translateX(-160px); } }
-    .mn-wave  { animation: mn-flow 11s linear infinite; }
-    .mn-wave2 { animation: mn-flow 17s linear infinite reverse; opacity: .55; }
-
-    @keyframes mn-scan {
-      0%   { transform: translateY(150px); opacity: 0; }
-      12%  { opacity: .85; }
-      88%  { opacity: .85; }
-      100% { transform: translateY(-6px); opacity: 0; }
-    }
-    .mn-scan { animation: mn-scan 8s cubic-bezier(.4,0,.6,1) infinite; }
-
-    @media (prefers-reduced-motion: reduce) { .mn-wave, .mn-wave2, .mn-scan { animation: none; } }
+    @keyframes mn-tilt { 0%,100% { transform: rotate(-0.7deg); } 50% { transform: rotate(0.7deg); } }
+    .mn-surface { animation: mn-tilt 7s ease-in-out infinite; }
+    @keyframes mn-spec { 0%,100% { transform: translate(0,0); opacity: .85; } 50% { transform: translate(3px,-2px); opacity: 1; } }
+    .mn-spec { animation: mn-spec 9s ease-in-out infinite; }
+    @media (prefers-reduced-motion: reduce) { .mn-surface, .mn-spec { animation: none; } }
   </style>
 </helmet>
 
-<!-- Die App in Dunkel: dieselben Tokens wie in styles.css, nur hier
-     ausgeschrieben, weil ein Artboard keine Variablen der App kennt. -->
+<!-- Die App in Dunkel: dieselben Tokens wie in styles.css, hier ausgeschrieben,
+     weil ein Artboard die Variablen der App nicht kennt. -->
 <div style="position: relative; width: 100%; height: 100%; background: #121211; overflow: hidden; display: flex; flex-direction: column;">
 
-  <!-- Aurora, gedämpft wie im Nachtmodus -->
   <div style="position: absolute; left: -70px; top: -50px; width: 340px; height: 340px; border-radius: 50%; background: radial-gradient(closest-side, rgba(47,111,158,.42), transparent 70%); filter: blur(14px);"></div>
   <div style="position: absolute; right: -90px; top: 300px; width: 380px; height: 380px; border-radius: 50%; background: radial-gradient(closest-side, rgba(138,95,63,.30), transparent 70%); filter: blur(18px);"></div>
   <div style="position: absolute; left: 40px; bottom: -140px; width: 400px; height: 400px; border-radius: 50%; background: radial-gradient(closest-side, rgba(87,74,140,.34), transparent 70%); filter: blur(16px);"></div>
 
-  <!-- Kopfzeile -->
   <div style="position: relative; padding: 10px 16px 8px; background: rgba(18,18,17,.62); border-bottom: 1px solid rgba(255,255,255,.09); backdrop-filter: blur(14px); display: flex; align-items: center; gap: 12px; min-height: 44px; box-sizing: border-box;">
     <span style="flex: none; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: #16233a;">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#3987e5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -49,10 +39,8 @@
     </span>
   </div>
 
-  <!-- Seiteninhalt -->
   <div style="position: relative; flex-grow: 1; min-height: 0; padding: 8px 16px 0; display: flex; flex-direction: column; gap: 16px;">
 
-    <!-- Kopf des Startbildschirms -->
     <div style="padding: 4px 4px 0;">
       <p style="margin: 0; font-size: 17px; font-weight: 650; color: #c3c2b7; letter-spacing: -0.01em;">Guten Abend, Papa</p>
       <p style="margin: 2px 0 0; font-family: ui-serif, 'Iowan Old Style', Palatino, Georgia, serif; font-size: 28px; font-weight: 400; letter-spacing: -0.02em; line-height: 1.1; color: #ffffff; display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px;">
@@ -61,7 +49,6 @@
       <p style="margin: 6px 0 0; font-size: 13px; color: #c3c2b7;">{{ ml }} von {{ targetMl }} ml heute</p>
     </div>
 
-    <!-- Heldenkarte -->
     <div style="background: rgba(38,38,40,.62); border: 1px solid rgba(255,255,255,.09); border-radius: 22px; box-shadow: 0 10px 30px rgba(0,0,0,.38); backdrop-filter: blur(10px); padding: 16px; display: flex; flex-direction: column; gap: 14px;">
 
       <div style="display: flex; flex-direction: column; gap: 8px;">
@@ -72,102 +59,112 @@
         </figure>
       </div>
 
-      <!-- Die Kammer: die Figur bekommt einen eigenen dunklen Grund. Ein
-           kinematisches Bild braucht Schwarz, das die Glaskarte nicht
-           hergibt - deshalb liegt hier eine Bühne in der Karte. -->
-      <div style="position: relative; border-radius: 16px; overflow: hidden; background: #08080a; border: 1px solid rgba(255,255,255,.07); display: flex; align-items: center; gap: 6px; padding: 10px 14px 10px 6px;">
+      <!-- Die Bühne: eine gläserne Kugel braucht einen dunklen Grund und ein
+           gerichtetes Licht. Die Glaskarte gibt beides nicht her, deshalb
+           liegt hier eine eigene Fläche in der Karte. -->
+      <div style="position: relative; border-radius: 16px; overflow: hidden; background: #08090c; border: 1px solid rgba(255,255,255,.07); display: flex; align-items: center; gap: 4px; padding: 8px 14px 8px 4px;">
+        <div style="position: absolute; left: 16%; top: 6%; width: 260px; height: 260px; transform: translate(-50%,-50%); background: radial-gradient(closest-side, rgba(150,200,255,.20), transparent 70%);"></div>
+        <div style="position: absolute; right: -14%; top: 62%; width: 220px; height: 220px; transform: translate(0,-50%); background: radial-gradient(closest-side, rgba(255,196,140,.16), transparent 70%);"></div>
 
-        <div style="position: absolute; left: 24%; top: 46%; width: 300px; height: 300px; transform: translate(-50%,-50%); background: radial-gradient(closest-side, rgba(45,120,214,.34), rgba(45,120,214,.05) 58%, transparent 74%); pointer-events: none;"></div>
-
-        <svg viewBox="0 0 320 400" width="152" height="190" style="position: relative; display: block; flex: none;">
+        <svg viewBox="0 0 320 400" width="158" height="197" style="position: relative; display: block; flex: none;">
           <defs>
-            <filter id="mnGlow" x="-60%" y="-60%" width="220%" height="220%">
-              <feGaussianBlur stdDeviation="5" result="b"/>
-              <feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-            </filter>
-            <filter id="mnSoft" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="2.4"/></filter>
-            <filter id="mnFar" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="1.6"/></filter>
-            <linearGradient id="mnMilk" gradientUnits="userSpaceOnUse" x1="160" y1="314" x2="160" y2="168">
-              <stop offset="0" stop-color="#0f2f5c"/>
-              <stop offset="0.5" stop-color="#2a78d6"/>
-              <stop offset="1" stop-color="#a8ecff"/>
+            <radialGradient id="mnShell" cx="34%" cy="26%" r="78%">
+              <stop offset="0"    stop-color="#3d4d63" stop-opacity=".55"/>
+              <stop offset="0.55" stop-color="#141a24" stop-opacity=".85"/>
+              <stop offset="1"    stop-color="#0b0e14" stop-opacity=".95"/>
+            </radialGradient>
+            <radialGradient id="mnHead" cx="32%" cy="24%" r="80%">
+              <stop offset="0"    stop-color="#4a5a72"/>
+              <stop offset="0.55" stop-color="#1b222e"/>
+              <stop offset="1"    stop-color="#0d1118"/>
+            </radialGradient>
+            <linearGradient id="mnMilk" gradientUnits="userSpaceOnUse" x1="160" y1="319" x2="160" y2="169">
+              <stop offset="0"    stop-color="#1d4d8a"/>
+              <stop offset="0.45" stop-color="#4e92d8"/>
+              <stop offset="0.85" stop-color="#bcdcf7"/>
+              <stop offset="1"    stop-color="#eaf4ff"/>
             </linearGradient>
-            <linearGradient id="mnShaft" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#bfe6ff" stop-opacity=".15"/>
-              <stop offset="1" stop-color="#bfe6ff" stop-opacity="0"/>
-            </linearGradient>
-            <linearGradient id="mnFloor" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#4fa0e8" stop-opacity="0"/>
-              <stop offset="1" stop-color="#4fa0e8" stop-opacity=".5"/>
-            </linearGradient>
-            <clipPath id="mnBelly">
-              <path d="M160 168 C 108 168, 82 200, 82 242 C 82 288, 116 314, 160 314 C 204 314, 238 288, 238 242 C 238 200, 212 168, 160 168 Z"/>
-            </clipPath>
+            <radialGradient id="mnCaustic" cx="50%" cy="50%" r="50%">
+              <stop offset="0"   stop-color="#9fd0ff" stop-opacity=".55"/>
+              <stop offset="0.5" stop-color="#5f9ede" stop-opacity=".18"/>
+              <stop offset="1"   stop-color="#5f9ede" stop-opacity="0"/>
+            </radialGradient>
+            <filter id="mnBlur" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="7"/></filter>
+            <filter id="mnSoft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.6"/></filter>
+            <filter id="mnFaint" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="1.2"/></filter>
+            <clipPath id="mnOrb"><circle cx="160" cy="244" r="75"/></clipPath>
+            <clipPath id="mnHeadClip"><circle cx="160" cy="104" r="60"/></clipPath>
           </defs>
 
-          <g filter="url(#mnFar)" opacity=".5" stroke="url(#mnFloor)" stroke-width="1.4" fill="none">
-            <path d="M-40 392 L160 336 L360 392"/>
-            <path d="M10 374 L160 330 L310 374"/>
-            <path d="M60 358 L160 324 L260 358"/>
-            <path d="M-40 392 L360 392" opacity=".8"/>
-            <path d="M10 374 L310 374" opacity=".55"/>
-            <path d="M60 358 L260 358" opacity=".35"/>
-          </g>
+          <ellipse cx="160" cy="344" rx="126" ry="22" fill="#0d1017"/>
+          <ellipse cx="160" cy="342" rx="96" ry="15" fill="#000" opacity=".7" filter="url(#mnBlur)"/>
+          <ellipse cx="160" cy="340" rx="{{ causticRx }}" ry="16" fill="url(#mnCaustic)" opacity="{{ causticOpacity }}" filter="url(#mnBlur)"/>
 
-          <path d="M96 -30 L232 -30 L286 330 L44 330 Z" fill="url(#mnShaft)" filter="url(#mnSoft)"/>
+          <ellipse cx="128" cy="330" rx="21" ry="10" fill="#161c26"/>
+          <ellipse cx="192" cy="330" rx="21" ry="10" fill="#161c26"/>
+          <path d="M96 214 C 72 224, 64 254, 74 276" fill="none" stroke="#1a212c" stroke-width="15" stroke-linecap="round"/>
+          <path d="M224 214 C 248 224, 256 254, 246 276" fill="none" stroke="#1a212c" stroke-width="15" stroke-linecap="round"/>
+          <circle cx="94" cy="112" r="15" fill="#1a212c"/>
+          <circle cx="226" cy="112" r="15" fill="#1a212c"/>
 
-          <path d="M160 168 C 108 168, 82 200, 82 242 C 82 288, 116 314, 160 314 C 204 314, 238 288, 238 242 C 238 200, 212 168, 160 168 Z"
-                fill="rgba(120,190,255,.05)" stroke="rgba(150,205,255,.34)" stroke-width="1.6"/>
-
-          <g clip-path="url(#mnBelly)">
-            <rect x="70" y="{{ fillTop }}" width="180" height="150" fill="url(#mnMilk)" opacity=".92"/>
-            <g style="transform: translate(-40px, {{ fillTopPx }})">
-              <path class="mn-wave" d="M0 0 Q 20 -6, 40 0 T80 0 T120 0 T160 0 T200 0 T240 0 T280 0 T320 0 T360 0 T400 0 T440 0 T480 0 T520 0 T560 0 T600 0 T640 0" fill="none" stroke="#dff5ff" stroke-width="2.6" stroke-linecap="round" opacity=".85"/>
-              <path class="mn-wave2" d="M0 5 Q 20 -1, 40 5 T80 5 T120 5 T160 5 T200 5 T240 5 T280 5 T320 5 T360 5 T400 5 T440 5 T480 5 T520 5 T560 5 T600 5 T640 5" fill="none" stroke="#8fd8ff" stroke-width="2" stroke-linecap="round" opacity=".45"/>
+          <!-- Der leere Teil der Kugel: dunkles Glas, hinter der Milch. -->
+          <circle cx="160" cy="244" r="75" fill="url(#mnShell)"/>
+          <g clip-path="url(#mnOrb)">
+            <rect x="80" y="{{ fillTop }}" width="160" height="160" fill="url(#mnMilk)"/>
+            <ellipse cx="160" cy="{{ fillTop }}" rx="{{ surfaceRx }}" ry="{{ surfaceRy }}" fill="url(#mnMilk)"/>
+            <g class="mn-surface" style="transform-origin: 160px {{ fillTopPx }};">
+              <ellipse cx="160" cy="{{ fillTop }}" rx="{{ surfaceRx }}" ry="{{ surfaceRy }}" fill="#e8f3ff" opacity="{{ surfaceOpacity }}"/>
+              <ellipse cx="160" cy="{{ fillTop }}" rx="{{ surfaceRx }}" ry="{{ surfaceRy }}" fill="none" stroke="#ffffff" stroke-width="1.4" opacity="{{ meniscusOpacity }}"/>
+              <ellipse cx="{{ sheenCx }}" cy="{{ fillTop }}" rx="{{ sheenRx }}" ry="{{ sheenRy }}" fill="#ffffff" opacity="{{ sheenOpacity }}" filter="url(#mnSoft)"/>
             </g>
-            <rect x="70" y="{{ fillTop }}" width="180" height="2" fill="#dff5ff" opacity=".9" filter="url(#mnSoft)"/>
-            <rect class="mn-scan" x="70" y="168" width="180" height="1.2" fill="#bfe9ff" opacity=".8"/>
+            <rect x="80" y="{{ fillTop }}" width="160" height="18" fill="#dcecff" opacity="{{ refractOpacity }}" filter="url(#mnSoft)"/>
           </g>
 
-          <path d="M160 168 C 108 168, 82 200, 82 242 C 82 288, 116 314, 160 314 C 204 314, 238 288, 238 242 C 238 200, 212 168, 160 168 Z"
-                fill="none" stroke="#9fd6ff" stroke-width="1.8" opacity=".85"/>
-          <path d="M118 178 C 96 190, 84 214, 83 238" fill="none" stroke="#eaf8ff" stroke-width="2.2" stroke-linecap="round" opacity=".5" filter="url(#mnSoft)"/>
+          <!-- Glasschleier über der Milch: echtes Glas dämpft, es deckt nicht zu. -->
+          <circle cx="160" cy="244" r="75" fill="#0e141d" opacity=".14"/>
+          <g clip-path="url(#mnOrb)" fill="none" stroke-linecap="round">
+            <circle cx="160" cy="244" r="74" stroke="#7f95b4" stroke-width="1.6" opacity=".5"/>
+            <path d="M228 282 C 246 254, 242 214, 216 190" stroke="#ffd3a8" stroke-width="3.4" opacity=".7" filter="url(#mnFaint)"/>
+            <path d="M104 196 C 88 214, 84 238, 88 262" stroke="#dceaff" stroke-width="3" opacity=".55" filter="url(#mnFaint)"/>
+          </g>
+          <g class="mn-spec">
+            <ellipse cx="126" cy="206" rx="17" ry="10" fill="#ffffff" opacity=".5" transform="rotate(-32 126 206)" filter="url(#mnSoft)"/>
+            <ellipse cx="122" cy="202" rx="6" ry="3.4" fill="#ffffff" opacity=".85" transform="rotate(-32 122 202)"/>
+          </g>
 
-          <ellipse cx="132" cy="322" rx="20" ry="10" fill="rgba(120,190,255,.06)" stroke="#7fc6f5" stroke-width="1.5"/>
-          <ellipse cx="188" cy="322" rx="20" ry="10" fill="rgba(120,190,255,.06)" stroke="#7fc6f5" stroke-width="1.5"/>
-          <path d="M92 206 C 70 214, 62 240, 70 262" fill="none" stroke="#7fc6f5" stroke-width="2.4" stroke-linecap="round"/>
-          <path d="M228 206 C 250 214, 258 240, 250 262" fill="none" stroke="#7fc6f5" stroke-width="2.4" stroke-linecap="round"/>
-          <circle cx="92" cy="116" r="14" fill="rgba(120,190,255,.05)" stroke="#7fc6f5" stroke-width="1.8"/>
-          <circle cx="228" cy="116" r="14" fill="rgba(120,190,255,.05)" stroke="#7fc6f5" stroke-width="1.8"/>
-          <circle cx="160" cy="108" r="62" fill="rgba(120,190,255,.05)" stroke="#9fd6ff" stroke-width="2" filter="url(#mnGlow)"/>
-          <path d="M112 72 C 122 58, 140 48, 158 46" fill="none" stroke="#f2fbff" stroke-width="2.6" stroke-linecap="round" opacity=".55" filter="url(#mnSoft)"/>
-          <path d="M148 50 Q160 36 173 49" fill="none" stroke="#7fc6f5" stroke-width="2.2" stroke-linecap="round"/>
+          <circle cx="160" cy="104" r="60" fill="url(#mnHead)"/>
+          <g clip-path="url(#mnHeadClip)">
+            <ellipse cx="160" cy="176" rx="70" ry="26" fill="#8ec2f0" opacity="{{ bounceOpacity }}" filter="url(#mnBlur)"/>
+            <circle cx="160" cy="104" r="59" fill="none" stroke="#8296b2" stroke-width="1.4" opacity=".45"/>
+            <path d="M110 66 C 122 50, 140 42, 158 40" fill="none" stroke="#e6f0ff" stroke-width="3" stroke-linecap="round" opacity=".55" filter="url(#mnFaint)"/>
+            <path d="M214 138 C 224 118, 222 92, 206 74" fill="none" stroke="#ffd3a8" stroke-width="2.8" stroke-linecap="round" opacity=".5" filter="url(#mnFaint)"/>
+          </g>
+          <path d="M148 46 Q160 32 173 45" fill="none" stroke="#2b3442" stroke-width="4" stroke-linecap="round"/>
+          <ellipse cx="160" cy="170" rx="52" ry="12" fill="#05070a" opacity=".65" filter="url(#mnBlur)"/>
 
-          <g filter="url(#mnGlow)" stroke="#ecf9ff" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <g stroke="#f4f9ff" fill="none" stroke-linecap="round" stroke-linejoin="round" filter="url(#mnFaint)">
             <path d="{{ eyes }}" stroke-width="{{ eyeWidth }}"/>
-            <path d="{{ mouth }}" stroke-width="3"/>
+            <path d="{{ mouth }}" stroke-width="3.2"/>
           </g>
         </svg>
 
-        <!-- Die drei Kennzahlen wie bisher, nur auf dem dunklen Grund. -->
         <div style="position: relative; display: flex; flex-direction: column; gap: 13px; min-width: 0; flex-grow: 1;">
           <div>
-            <div style="font-family: ui-serif, 'Iowan Old Style', Palatino, Georgia, serif; font-size: 26px; font-weight: 400; letter-spacing: -0.03em; line-height: 1.1; color: #ffffff;">vor 36 Min</div>
+            <div style="font-family: ui-serif, 'Iowan Old Style', Palatino, Georgia, serif; font-size: 26px; letter-spacing: -0.03em; line-height: 1.1; color: #ffffff;">vor 36 Min</div>
             <div style="margin-top: 1px; font-size: 12px; line-height: 1.35; color: #c3c2b7;">14:28 · Flasche · 80 ml</div>
           </div>
           <div>
-            <div style="font-family: ui-serif, 'Iowan Old Style', Palatino, Georgia, serif; font-size: 26px; font-weight: 400; letter-spacing: -0.03em; line-height: 1.1; color: #ffffff;">5</div>
+            <div style="font-family: ui-serif, 'Iowan Old Style', Palatino, Georgia, serif; font-size: 26px; letter-spacing: -0.03em; line-height: 1.1; color: #ffffff;">5</div>
             <div style="margin-top: 1px; font-size: 12px; line-height: 1.35; color: #c3c2b7;">Mahlzeiten, 2 davon nachts</div>
           </div>
           <div>
-            <div style="font-family: ui-serif, 'Iowan Old Style', Palatino, Georgia, serif; font-size: 26px; font-weight: 400; letter-spacing: -0.03em; line-height: 1.1; color: #ffffff;">2 Std 51 Min</div>
+            <div style="font-family: ui-serif, 'Iowan Old Style', Palatino, Georgia, serif; font-size: 26px; letter-spacing: -0.03em; line-height: 1.1; color: #ffffff;">2 Std 51 Min</div>
             <div style="margin-top: 1px; font-size: 12px; line-height: 1.35; color: #c3c2b7;">Ø Abstand</div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Schnelleingabe, angeschnitten wie auf dem echten Bildschirm -->
     <div style="background: rgba(38,38,40,.62); border: 1px solid rgba(255,255,255,.09); border-radius: 22px; box-shadow: 0 10px 30px rgba(0,0,0,.38); backdrop-filter: blur(10px); padding: 16px; display: flex; flex-direction: column; gap: 12px;">
       <div style="display: flex; align-items: center; gap: 12px;">
         <div style="min-width: 0; flex-grow: 1;">
@@ -190,7 +187,6 @@
     </div>
   </div>
 
-  <!-- Leiste -->
   <div style="position: relative; flex: none; margin: 0 12px 12px; padding: 6px; border-radius: 999px; background: rgba(44,44,46,.90); border: 1px solid rgba(255,255,255,.09); box-shadow: 0 12px 34px rgba(0,0,0,.45); backdrop-filter: blur(10px); display: flex;">
     <sc-for list="{{ tabs }}" as="tab" hint-placeholder-count="5">
       <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 7px 0 6px; border-radius: 999px; background: {{ tab.bg }};">
@@ -209,8 +205,11 @@
 }'>
 class Component extends DCLogic {
   renderVals() {
-    const TOP = 168;
-    const BOTTOM = 314;
+    const CX = 160;
+    const CY = 244;
+    const R = 75;
+    const TOP = CY - R;
+    const BOTTOM = CY + R;
 
     const pct = Math.max(0, Math.min(115, this.props.fill ?? 63));
     const ratio = pct / 100;
@@ -220,16 +219,14 @@ class Component extends DCLogic {
     const target = this.props.targetMl ?? 605;
     const ml = Math.round(target * ratio);
 
+    const dy = fillTop - CY;
+    const cut = Math.sqrt(Math.max(0, R * R - dy * dy));
+    const surfaceRy = cut * 0.2;
+    const empty = clamped < 0.005;
+
     const depth = 3 + clamped * 15;
     const half = 13 + clamped * 6;
-    const mouth = `M${(160 - half).toFixed(1)} 134 Q160 ${(134 + depth).toFixed(1)} ${(160 + half).toFixed(1)} 134`;
-
     const happy = clamped >= 0.72;
-    const eyes = over
-      ? 'M126 106 Q136 118 146 106 M174 106 Q184 118 194 106'
-      : happy
-        ? 'M126 112 Q136 98 146 112 M174 112 Q184 98 194 112'
-        : 'M136 108 L136 108 M184 108 L184 108';
 
     const tabs = [
       { label: 'Heute', icon: 'M3 10.5 12 3l9 7.5M5.5 9.5V20h13V9.5M9.5 20v-5.5h5V20', active: true },
@@ -246,8 +243,24 @@ class Component extends DCLogic {
     return {
       fillTop,
       fillTopPx: `${fillTop}px`,
-      mouth,
-      eyes,
+      surfaceRx: cut.toFixed(1),
+      surfaceRy: surfaceRy.toFixed(1),
+      surfaceOpacity: empty ? 0 : 0.28,
+      meniscusOpacity: empty ? 0 : 0.5,
+      sheenCx: (CX - cut * 0.32).toFixed(1),
+      sheenRx: (cut * 0.42).toFixed(1),
+      sheenRy: (surfaceRy * 0.5).toFixed(1),
+      sheenOpacity: empty ? 0 : 0.5,
+      refractOpacity: empty ? 0 : 0.16,
+      causticRx: (46 + clamped * 54).toFixed(0),
+      causticOpacity: (0.12 + clamped * 0.68).toFixed(2),
+      bounceOpacity: (clamped * 0.3).toFixed(2),
+      mouth: `M${(CX - half).toFixed(1)} 130 Q${CX} ${(130 + depth).toFixed(1)} ${(CX + half).toFixed(1)} 130`,
+      eyes: over
+        ? 'M126 102 Q136 114 146 102 M174 102 Q184 114 194 102'
+        : happy
+          ? 'M126 108 Q136 94 146 108 M174 108 Q184 94 194 108'
+          : 'M136 104 L136 104 M184 104 L184 104',
       eyeWidth: happy || over ? 3.4 : 9,
       ml,
       targetMl: target,

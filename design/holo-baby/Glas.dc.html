@@ -1,0 +1,254 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+    a { color: #86b6ef; } a:hover { color: #9ec5f4; }
+
+    /* Die Oberfläche schwappt kaum - eine Kugel voll Milch ist träge. */
+    @keyframes gl-tilt {
+      0%, 100% { transform: rotate(-0.7deg); }
+      50%      { transform: rotate(0.7deg); }
+    }
+    .gl-surface { animation: gl-tilt 7s ease-in-out infinite; }
+
+    /* Das Glanzlicht wandert ein wenig, sonst wirkt die Kugel wie aufgeklebt. */
+    @keyframes gl-spec {
+      0%, 100% { transform: translate(0, 0); opacity: .85; }
+      50%      { transform: translate(3px, -2px); opacity: 1; }
+    }
+    .gl-spec { animation: gl-spec 9s ease-in-out infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .gl-surface, .gl-spec { animation: none; }
+    }
+  </style>
+</helmet>
+
+<div style="position: relative; width: 100%; height: 100%; background: #08090c; overflow: hidden; display: flex; flex-direction: column;">
+
+  <!-- Schlüssellicht von oben links, weit und weich. -->
+  <div style="position: absolute; left: 22%; top: 8%; width: 560px; height: 560px; transform: translate(-50%,-50%); background: radial-gradient(closest-side, rgba(150,200,255,.16), transparent 70%); pointer-events: none;"></div>
+  <!-- Gegenlicht von rechts hinten: das ist der Griff, der Tiefe macht. -->
+  <div style="position: absolute; right: -6%; top: 52%; width: 460px; height: 460px; transform: translate(0,-50%); background: radial-gradient(closest-side, rgba(255,196,140,.12), transparent 70%); pointer-events: none;"></div>
+
+  <div style="position: relative; flex-grow: 1; display: flex; align-items: center; justify-content: center;">
+    <svg viewBox="0 0 320 400" width="440" height="550" style="display: block;">
+      <defs>
+        <!-- Glaskörper des Bauchs: dunkel, mit Licht an der Schulter. -->
+        <radialGradient id="glShell" cx="34%" cy="26%" r="78%">
+          <stop offset="0"    stop-color="#3d4d63" stop-opacity=".55"/>
+          <stop offset="0.55" stop-color="#141a24" stop-opacity=".85"/>
+          <stop offset="1"    stop-color="#0b0e14" stop-opacity=".95"/>
+        </radialGradient>
+
+        <!-- Der Kopf ist ein Volumen, keine Scheibe: dieselbe Lichtsetzung. -->
+        <radialGradient id="glHead" cx="32%" cy="24%" r="80%">
+          <stop offset="0"    stop-color="#4a5a72"/>
+          <stop offset="0.55" stop-color="#1b222e"/>
+          <stop offset="1"    stop-color="#0d1118"/>
+        </radialGradient>
+
+        <!-- Die Milch: dicht und tief unten, an der Oberfläche fast weiß. -->
+        <linearGradient id="glMilk" gradientUnits="userSpaceOnUse" x1="160" y1="319" x2="160" y2="169">
+          <stop offset="0"    stop-color="#1d4d8a"/>
+          <stop offset="0.45" stop-color="#4e92d8"/>
+          <stop offset="0.85" stop-color="#bcdcf7"/>
+          <stop offset="1"    stop-color="#eaf4ff"/>
+        </linearGradient>
+
+        <!-- Kaustik am Boden: das Licht geht durch die Milch hindurch. -->
+        <radialGradient id="glCaustic" cx="50%" cy="50%" r="50%">
+          <stop offset="0"   stop-color="#9fd0ff" stop-opacity=".55"/>
+          <stop offset="0.5" stop-color="#5f9ede" stop-opacity=".18"/>
+          <stop offset="1"   stop-color="#5f9ede" stop-opacity="0"/>
+        </radialGradient>
+
+        <filter id="glBlur" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="7"/></filter>
+        <filter id="glSoft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.6"/></filter>
+        <filter id="glFaint" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="1.2"/></filter>
+
+        <!-- Filmkorn. Ohne das bleibt jede dunkle Fläche digital glatt. -->
+        <filter id="glGrain" x="0" y="0" width="100%" height="100%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/>
+          <feColorMatrix type="saturate" values="0"/>
+        </filter>
+
+        <clipPath id="glOrb"><circle cx="160" cy="244" r="75"/></clipPath>
+        <clipPath id="glHeadClip"><circle cx="160" cy="104" r="60"/></clipPath>
+      </defs>
+
+      <!-- Boden: eine Ebene, keine Linie. -->
+      <ellipse cx="160" cy="344" rx="126" ry="22" fill="#0d1017"/>
+      <ellipse cx="160" cy="342" rx="96" ry="15" fill="#000" opacity=".7" filter="url(#glBlur)"/>
+      <!-- Die Kaustik wächst mit der Menge: mehr Milch, mehr Licht am Boden. -->
+      <ellipse cx="160" cy="340" rx="{{ causticRx }}" ry="16" fill="url(#glCaustic)" opacity="{{ causticOpacity }}" filter="url(#glBlur)"/>
+
+      <!-- Füße, hinter der Kugel -->
+      <ellipse cx="128" cy="330" rx="21" ry="10" fill="#161c26"/>
+      <ellipse cx="192" cy="330" rx="21" ry="10" fill="#161c26"/>
+
+      <!-- Arme, hinter der Kugel -->
+      <path d="M96 214 C 72 224, 64 254, 74 276" fill="none" stroke="#1a212c" stroke-width="15" stroke-linecap="round"/>
+      <path d="M224 214 C 248 224, 256 254, 246 276" fill="none" stroke="#1a212c" stroke-width="15" stroke-linecap="round"/>
+
+      <!-- Ohren -->
+      <circle cx="94" cy="112" r="15" fill="#1a212c"/>
+      <circle cx="226" cy="112" r="15" fill="#1a212c"/>
+
+      <!-- ------------------------------------------------------------------
+           Der Bauch als Kugel voll Milch. Der Unterschied zu einer gefüllten
+           Fläche steckt in drei Dingen: die Oberfläche ist eine ELLIPSE, weil
+           man leicht von oben darauf sieht; das Glas hat ein Glanzlicht; und
+           unter der Kugel liegt Licht, das durch sie hindurchgegangen ist.
+           ------------------------------------------------------------------ -->
+      <!-- Der leere Teil der Kugel: dunkles Glas, hinter der Milch. -->
+      <circle cx="160" cy="244" r="75" fill="url(#glShell)"/>
+      <g clip-path="url(#glOrb)">
+        <!-- Der Körper der Flüssigkeit -->
+        <rect x="80" y="{{ fillTop }}" width="160" height="160" fill="url(#glMilk)"/>
+        <!-- Die vordere Hälfte der Oberfläche wölbt sich unter die Linie. -->
+        <ellipse cx="160" cy="{{ fillTop }}" rx="{{ surfaceRx }}" ry="{{ surfaceRy }}" fill="url(#glMilk)"/>
+
+        <g class="gl-surface" style="transform-origin: 160px {{ fillTopPx }};">
+          <!-- Die Oberfläche selbst, von schräg oben gesehen -->
+          <ellipse cx="160" cy="{{ fillTop }}" rx="{{ surfaceRx }}" ry="{{ surfaceRy }}"
+                   fill="#e8f3ff" opacity="{{ surfaceOpacity }}"/>
+          <ellipse cx="160" cy="{{ fillTop }}" rx="{{ surfaceRx }}" ry="{{ surfaceRy }}"
+                   fill="none" stroke="#ffffff" stroke-width="1.4" opacity="{{ meniscusOpacity }}"/>
+          <!-- Reflexion auf der Oberfläche -->
+          <ellipse cx="{{ sheenCx }}" cy="{{ fillTop }}" rx="{{ sheenRx }}" ry="{{ sheenRy }}"
+                   fill="#ffffff" opacity="{{ sheenOpacity }}" filter="url(#glSoft)"/>
+        </g>
+
+        <!-- Brechung: knapp unter der Oberfläche ist die Milch heller, weil
+             das Licht dort noch durchkommt. -->
+        <rect x="80" y="{{ fillTop }}" width="160" height="18" fill="#dcecff" opacity="{{ refractOpacity }}" filter="url(#glSoft)"/>
+      </g>
+
+      <!-- Glasschleier über der Milch: echtes Glas dämpft, es deckt nicht zu. -->
+      <circle cx="160" cy="244" r="75" fill="#0e141d" opacity=".14"/>
+
+      <!-- Kantenlicht rechts unten (Gegenlicht) und links oben (Schlüssellicht) -->
+      <g clip-path="url(#glOrb)" fill="none" stroke-linecap="round">
+        <circle cx="160" cy="244" r="74" stroke="#7f95b4" stroke-width="1.6" opacity=".5"/>
+        <path d="M228 282 C 246 254, 242 214, 216 190" stroke="#ffd3a8" stroke-width="3.4" opacity=".7" filter="url(#glFaint)"/>
+        <path d="M104 196 C 88 214, 84 238, 88 262" stroke="#dceaff" stroke-width="3" opacity=".55" filter="url(#glFaint)"/>
+      </g>
+
+      <!-- Glanzlicht: das eine harte Licht auf der Kugel. -->
+      <g class="gl-spec">
+        <ellipse cx="126" cy="206" rx="17" ry="10" fill="#ffffff" opacity=".5" transform="rotate(-32 126 206)" filter="url(#glSoft)"/>
+        <ellipse cx="122" cy="202" rx="6" ry="3.4" fill="#ffffff" opacity=".85" transform="rotate(-32 122 202)"/>
+      </g>
+
+      <!-- Kopf -->
+      <circle cx="160" cy="104" r="60" fill="url(#glHead)"/>
+      <g clip-path="url(#glHeadClip)">
+        <!-- Der Bauch wirft Licht nach oben zurück - das verbindet beide. -->
+        <ellipse cx="160" cy="176" rx="70" ry="26" fill="#8ec2f0" opacity="{{ bounceOpacity }}" filter="url(#glBlur)"/>
+        <circle cx="160" cy="104" r="59" fill="none" stroke="#8296b2" stroke-width="1.4" opacity=".45"/>
+        <path d="M110 66 C 122 50, 140 42, 158 40" fill="none" stroke="#e6f0ff" stroke-width="3" stroke-linecap="round" opacity=".55" filter="url(#glFaint)"/>
+        <path d="M214 138 C 224 118, 222 92, 206 74" fill="none" stroke="#ffd3a8" stroke-width="2.8" stroke-linecap="round" opacity=".5" filter="url(#glFaint)"/>
+      </g>
+      <path d="M148 46 Q160 32 173 45" fill="none" stroke="#2b3442" stroke-width="4" stroke-linecap="round"/>
+
+      <!-- Verschattung, wo der Kopf auf dem Bauch sitzt -->
+      <ellipse cx="160" cy="170" rx="52" ry="12" fill="#05070a" opacity=".65" filter="url(#glBlur)"/>
+
+      <!-- Gesicht -->
+      <g stroke="#f4f9ff" fill="none" stroke-linecap="round" stroke-linejoin="round" filter="url(#glFaint)">
+        <path d="{{ eyes }}" stroke-width="{{ eyeWidth }}"/>
+        <path d="{{ mouth }}" stroke-width="3.2"/>
+      </g>
+
+      <!-- Korn zuletzt, über allem -->
+      <rect x="0" y="0" width="320" height="400" filter="url(#glGrain)" opacity=".055" style="mix-blend-mode: overlay;"/>
+    </svg>
+  </div>
+
+  <div style="position: relative; display: flex; align-items: baseline; justify-content: center; gap: 10px; padding: 0 0 30px;">
+    <span style="font-family: ui-serif, 'Iowan Old Style', Palatino, Georgia, serif; font-size: 46px; line-height: 1; color: #eef6ff; letter-spacing: -0.02em;">{{ ml }}</span>
+    <span style="font-size: 15px; font-weight: 650; color: #8fb6dd;">von {{ targetMl }} ml heute</span>
+  </div>
+</div>
+</x-dc>
+
+<script data-dc-script data-props='{
+  "fill": {"editor": "range", "default": 62, "min": 0, "max": 115, "step": 1, "unit": "%", "section": "Füllstand"},
+  "targetMl": {"editor": "int", "default": 605, "min": 100, "max": 1200, "step": 5, "section": "Füllstand"},
+  "$preview": {"width": 560, "height": 660}
+}'>
+class Component extends DCLogic {
+  renderVals() {
+    // Der Bauch ist eine Kugel, keine Fläche. Alles folgt aus Mittelpunkt
+    // und Radius.
+    const CX = 160;
+    const CY = 244;
+    const R = 75;
+    const TOP = CY - R;
+    const BOTTOM = CY + R;
+
+    const pct = Math.max(0, Math.min(115, this.props.fill ?? 62));
+    const ratio = pct / 100;
+    const clamped = Math.min(1, ratio);
+    const fillTop = BOTTOM - clamped * (BOTTOM - TOP);
+    const over = ratio > 1.02;
+    const target = this.props.targetMl ?? 605;
+
+    // Der Schnitt durch die Kugel auf Höhe der Oberfläche: das ist der
+    // Radius der Ellipse, die man von schräg oben sieht.
+    const dy = fillTop - CY;
+    const cut = Math.sqrt(Math.max(0, R * R - dy * dy));
+    // Flach, weil man nur wenig von oben draufsieht - genau das macht den
+    // Unterschied zu einer geraden Kante.
+    const surfaceRy = cut * 0.2;
+
+    const depth = 3 + clamped * 15;
+    const half = 13 + clamped * 6;
+    const mouth = `M${(CX - half).toFixed(1)} 130 Q${CX} ${(130 + depth).toFixed(1)} ${(CX + half).toFixed(1)} 130`;
+
+    const happy = clamped >= 0.72;
+    const eyes = over
+      ? 'M126 102 Q136 114 146 102 M174 102 Q184 114 194 102'
+      : happy
+        ? 'M126 108 Q136 94 146 108 M174 108 Q184 94 194 108'
+        : 'M136 104 L136 104 M184 104 L184 104';
+
+    const empty = clamped < 0.005;
+
+    return {
+      fillTop,
+      fillTopPx: `${fillTop}px`,
+      surfaceRx: cut.toFixed(1),
+      surfaceRy: surfaceRy.toFixed(1),
+      surfaceOpacity: empty ? 0 : 0.28,
+      meniscusOpacity: empty ? 0 : 0.5,
+      // Die Reflexion sitzt dort, wo das Schlüssellicht steht.
+      sheenCx: (CX - cut * 0.32).toFixed(1),
+      sheenRx: (cut * 0.42).toFixed(1),
+      sheenRy: (surfaceRy * 0.5).toFixed(1),
+      sheenOpacity: empty ? 0 : 0.5,
+      refractOpacity: empty ? 0 : 0.16,
+      // Was am Boden ankommt und was der Bauch nach oben zurückwirft, hängt
+      // beides an der Menge.
+      causticRx: (46 + clamped * 54).toFixed(0),
+      causticOpacity: (0.12 + clamped * 0.68).toFixed(2),
+      bounceOpacity: (clamped * 0.3).toFixed(2),
+      mouth,
+      eyes,
+      eyeWidth: happy || over ? 3.4 : 9,
+      ml: Math.round(target * ratio),
+      targetMl: target,
+    };
+  }
+}
+</script>
+</body>
+</html>

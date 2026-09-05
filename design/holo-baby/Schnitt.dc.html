@@ -1,0 +1,202 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+    a { color: #7ee0c8; } a:hover { color: #a8ecdb; }
+
+    /* Ein Durchlauf von unten nach oben, alle zehn Sekunden. Das ist die
+       einzige Bewegung - eine Aufnahme, die entsteht. */
+    @keyframes sc-sweep {
+      0%   { transform: translateY(0); opacity: 0; }
+      8%   { opacity: 1; }
+      92%  { opacity: 1; }
+      100% { transform: translateY(-286px); opacity: 0; }
+    }
+    .sc-sweep { animation: sc-sweep 10s cubic-bezier(.4,0,.5,1) infinite; }
+
+    @media (prefers-reduced-motion: reduce) { .sc-sweep { animation: none; } }
+  </style>
+</helmet>
+
+<div style="position: relative; width: 100%; height: 100%; background: #05080a; overflow: hidden; display: flex; flex-direction: column;">
+
+  <div style="position: absolute; inset: 0; background: radial-gradient(60% 45% at 50% 44%, rgba(30,120,140,.16), transparent 72%); pointer-events: none;"></div>
+
+  <div style="position: relative; flex-grow: 1; display: flex; align-items: center; justify-content: center;">
+    <svg viewBox="0 0 320 400" width="396" height="495" style="display: block;">
+      <defs>
+        <!-- Jede Schnittlinie wird zu den Rändern hin schwächer. Das allein
+             macht aus einem Stapel Striche einen Körper. -->
+        <linearGradient id="scBody" gradientUnits="userSpaceOnUse" x1="70" y1="0" x2="250" y2="0">
+          <stop offset="0"    stop-color="#2f5f74" stop-opacity=".15"/>
+          <stop offset="0.32" stop-color="#4e93ad" stop-opacity=".8"/>
+          <stop offset="0.5"  stop-color="#6fb7cf" stop-opacity="1"/>
+          <stop offset="0.68" stop-color="#4e93ad" stop-opacity=".8"/>
+          <stop offset="1"    stop-color="#2f5f74" stop-opacity=".15"/>
+        </linearGradient>
+
+        <linearGradient id="scMilk" gradientUnits="userSpaceOnUse" x1="70" y1="0" x2="250" y2="0">
+          <stop offset="0"    stop-color="#7fd4ff" stop-opacity=".2"/>
+          <stop offset="0.3"  stop-color="#bfe9ff" stop-opacity=".9"/>
+          <stop offset="0.5"  stop-color="#ffffff" stop-opacity="1"/>
+          <stop offset="0.7"  stop-color="#bfe9ff" stop-opacity=".9"/>
+          <stop offset="1"    stop-color="#7fd4ff" stop-opacity=".2"/>
+        </linearGradient>
+
+        <filter id="scGlow" x="-30%" y="-30%" width="160%" height="160%">
+          <feGaussianBlur stdDeviation="3.5" result="b"/>
+          <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+        <filter id="scSoft" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="2"/></filter>
+      </defs>
+
+      <!-- Der Körper als Stapel waagerechter Schnitte. Keine Kontur, keine
+           Fläche: die Form entsteht nur daraus, wie lang die Linien sind. -->
+      <g stroke-linecap="round">
+        <sc-for list="{{ slices }}" as="slice" hint-placeholder-count="62">
+          <path d="M{{ slice.x1 }} {{ slice.y }} L{{ slice.x2 }} {{ slice.y }}"
+                stroke="{{ slice.paint }}"
+                stroke-width="{{ slice.weight }}"
+                opacity="{{ slice.opacity }}"/>
+        </sc-for>
+      </g>
+
+      <!-- Die Oberfläche der Milch als eigene, hellste Linie -->
+      <path d="M{{ surfaceX1 }} {{ fillTop }} L{{ surfaceX2 }} {{ fillTop }}"
+            stroke="#ffffff" stroke-width="2.4" stroke-linecap="round"
+            opacity="{{ surfaceOpacity }}" filter="url(#scGlow)"/>
+
+      <!-- Der Durchlauf -->
+      <g class="sc-sweep">
+        <path d="M74 316 L246 316" stroke="#7ee0c8" stroke-width="1.6" opacity=".9" filter="url(#scSoft)"/>
+        <path d="M74 320 L246 320" stroke="#7ee0c8" stroke-width="8" opacity=".12" filter="url(#scSoft)"/>
+      </g>
+
+      <!-- Gesicht: die einzige Stelle, die nicht aus Schnitten besteht -
+           sonst wäre nicht zu erkennen, dass es ein Kind ist. -->
+      <g stroke="#eafcff" fill="none" stroke-linecap="round" stroke-linejoin="round" filter="url(#scGlow)">
+        <path d="{{ eyes }}" stroke-width="{{ eyeWidth }}"/>
+        <path d="{{ mouth }}" stroke-width="3"/>
+      </g>
+
+      <!-- Massband links: die Schnitte sind gezählt, nicht nur gezeichnet. -->
+      <g stroke="#2c6b7d" stroke-width="1.2" stroke-linecap="round">
+        <path d="M46 169 L46 319" opacity=".6"/>
+        <sc-for list="{{ marks }}" as="mark" hint-placeholder-count="5">
+          <path d="M42 {{ mark.y }} L54 {{ mark.y }}" opacity="{{ mark.opacity }}"/>
+        </sc-for>
+      </g>
+      <path d="M38 {{ fillTop }} L58 {{ fillTop }}" stroke="#7ee0c8" stroke-width="2.2" stroke-linecap="round" filter="url(#scGlow)" opacity="{{ surfaceOpacity }}"/>
+    </svg>
+  </div>
+
+  <div style="position: relative; display: flex; align-items: baseline; justify-content: center; gap: 10px; padding: 0 0 14px;">
+    <span style="font-family: ui-serif, 'Iowan Old Style', Palatino, Georgia, serif; font-size: 46px; line-height: 1; color: #eafcff; letter-spacing: -0.02em;">{{ ml }}</span>
+    <span style="font-size: 15px; font-weight: 650; color: #6aa9ba;">von {{ targetMl }} ml heute</span>
+  </div>
+  <p style="position: relative; margin: 0; padding: 0 26px 26px; text-align: center; font-size: 12px; line-height: 1.45; color: #4d7f8d;">
+    {{ litSlices }} von {{ totalSlices }} Schnitten im Bauch stehen unter der Oberfläche.
+  </p>
+</div>
+</x-dc>
+
+<script data-dc-script data-props='{
+  "fill": {"editor": "range", "default": 62, "min": 0, "max": 115, "step": 1, "unit": "%", "section": "Füllstand"},
+  "targetMl": {"editor": "int", "default": 605, "min": 100, "max": 1200, "step": 5, "section": "Füllstand"},
+  "$preview": {"width": 560, "height": 660}
+}'>
+class Component extends DCLogic {
+  renderVals() {
+    const HEAD = { cy: 104, r: 60 };
+    const BELLY = { cy: 244, r: 75 };
+    const CX = 160;
+    const TOP = BELLY.cy - BELLY.r;      // 169
+    const BOTTOM = BELLY.cy + BELLY.r;   // 319
+    const STEP = 4.5;
+
+    const pct = Math.max(0, Math.min(115, this.props.fill ?? 62));
+    const ratio = pct / 100;
+    const clamped = Math.min(1, ratio);
+    const fillTop = BOTTOM - clamped * (BOTTOM - TOP);
+    const over = ratio > 1.02;
+    const target = this.props.targetMl ?? 605;
+
+    /** Halbe Breite des Körpers auf dieser Höhe - daraus entsteht die Form. */
+    const halfWidth = (y) => {
+      const dh = Math.abs(y - HEAD.cy);
+      const db = Math.abs(y - BELLY.cy);
+      const head = dh < HEAD.r ? Math.sqrt(HEAD.r * HEAD.r - dh * dh) : 0;
+      const belly = db < BELLY.r ? Math.sqrt(BELLY.r * BELLY.r - db * db) : 0;
+      // Der Hals: zwischen Kopf und Bauch klafft sonst eine Lücke.
+      const neck = y > 148 && y < 188 ? 21 : 0;
+      return Math.max(head, belly, neck);
+    };
+
+    const slices = [];
+    let lit = 0;
+    let inBelly = 0;
+    for (let y = 46; y <= BOTTOM; y += STEP) {
+      const w = halfWidth(y);
+      if (w < 3) continue;
+      const belly = y >= TOP;
+      if (belly) inBelly++;
+      const underWater = belly && y >= fillTop;
+      if (underWater) lit++;
+      slices.push({
+        y: y.toFixed(1),
+        x1: (CX - w).toFixed(1),
+        x2: (CX + w).toFixed(1),
+        paint: underWater ? (over ? '#8df0b6' : 'url(#scMilk)') : 'url(#scBody)',
+        // Die gefüllten Schnitte liegen dichter beieinander und wiegen mehr -
+        // Menge liest man als Dichte, nicht nur als Helligkeit.
+        weight: underWater ? 3 : 1.6,
+        opacity: underWater ? 1 : 0.5,
+      });
+    }
+
+    // Fünf Marken am Massband, die vierte ist das Ziel.
+    const marks = [0, 0.25, 0.5, 0.75, 1].map((share) => ({
+      y: (BOTTOM - share * (BOTTOM - TOP)).toFixed(1),
+      opacity: share === 0 || share === 1 ? 0.9 : 0.5,
+    }));
+
+    const cut = (() => {
+      const dy = fillTop - BELLY.cy;
+      return Math.sqrt(Math.max(0, BELLY.r * BELLY.r - dy * dy));
+    })();
+
+    const depth = 3 + clamped * 15;
+    const half = 13 + clamped * 6;
+    const happy = clamped >= 0.72;
+
+    return {
+      slices,
+      marks,
+      fillTop: fillTop.toFixed(1),
+      surfaceX1: (CX - cut).toFixed(1),
+      surfaceX2: (CX + cut).toFixed(1),
+      surfaceOpacity: clamped < 0.005 ? 0 : 0.95,
+      mouth: `M${(CX - half).toFixed(1)} 130 Q${CX} ${(130 + depth).toFixed(1)} ${(CX + half).toFixed(1)} 130`,
+      eyes: over
+        ? 'M126 102 Q136 114 146 102 M174 102 Q184 114 194 102'
+        : happy
+          ? 'M126 108 Q136 94 146 108 M174 108 Q184 94 194 108'
+          : 'M136 104 L136 104 M184 104 L184 104',
+      eyeWidth: happy || over ? 3.4 : 9,
+      litSlices: lit,
+      totalSlices: inBelly,
+      ml: Math.round(target * ratio),
+      targetMl: target,
+    };
+  }
+}
+</script>
+</body>
+</html>
