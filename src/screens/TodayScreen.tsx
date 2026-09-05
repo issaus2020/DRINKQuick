@@ -9,6 +9,8 @@ import { BreastTimer } from '../components/entry/BreastTimer';
 import { DiaperSheet } from '../components/entry/DiaperSheet';
 import { FeedSheet } from '../components/entry/FeedSheet';
 import { MeasurementSheet } from '../components/entry/MeasurementSheet';
+import { SleepSheet } from '../components/entry/SleepSheet';
+import { SleepToggle } from '../components/entry/SleepToggle';
 import { NextFeedCard } from '../components/NextFeedCard';
 import { RestCard } from '../components/RestCard';
 import { QuickAmounts } from '../components/entry/QuickAmounts';
@@ -43,6 +45,7 @@ export function TodayScreen({ baby }: TodayScreenProps) {
   const [feedSheet, setFeedSheet] = useState<{ kind: Feed['kind']; existing?: Feed } | null>(null);
   const [diaperOpen, setDiaperOpen] = useState(false);
   const [weightOpen, setWeightOpen] = useState(false);
+  const [sleepOpen, setSleepOpen] = useState(false);
 
   const feeds = useMemo(() => data.feeds.filter((f) => f.babyId === baby.id), [data.feeds, baby.id]);
   const measurements = useMemo(
@@ -54,6 +57,10 @@ export function TodayScreen({ baby }: TodayScreenProps) {
     [data.diapers, baby.id],
   );
   const health = useMemo(() => data.health.filter((h) => h.babyId === baby.id), [data.health, baby.id]);
+  const sleeps = useMemo(
+    () => data.sleeps.filter((s) => s.babyId === baby.id),
+    [data.sleeps, baby.id],
+  );
 
   const stats = feedingStats(feeds, now);
   const quote = useMemo(() => quoteOfDay(now), [now]);
@@ -132,6 +139,15 @@ export function TodayScreen({ baby }: TodayScreenProps) {
       />
 
       <BreastTimer babyId={baby.id} showStart={false} />
+
+      {sleeps.some((entry) => !entry.endedAt) && (
+        <SleepToggle
+          babyId={baby.id}
+          sleeps={sleeps}
+          now={now}
+          onOpenSheet={() => setSleepOpen(true)}
+        />
+      )}
 
       <QuickAmounts
         babyId={baby.id}
@@ -222,6 +238,14 @@ export function TodayScreen({ baby }: TodayScreenProps) {
           <span className="quick__label">Stillen manuell</span>
           <span className="quick__meta">ohne Timer nachtragen</span>
         </button>
+        {!sleeps.some((entry) => !entry.endedAt) && (
+          <SleepToggle
+            babyId={baby.id}
+            sleeps={sleeps}
+            now={now}
+            onOpenSheet={() => setSleepOpen(true)}
+          />
+        )}
       </div>
 
       <NextFeedCard
@@ -233,7 +257,12 @@ export function TodayScreen({ baby }: TodayScreenProps) {
         now={now}
       />
 
-      <RestCard feeds={feeds} ageDays={ageInDays(baby.birthedAt, now)} now={now} />
+      <RestCard
+        feeds={feeds}
+        sleeps={sleeps}
+        ageDays={ageInDays(baby.birthedAt, now)}
+        now={now}
+      />
 
       <div className="tiles">
         <MetricTile
@@ -339,6 +368,7 @@ export function TodayScreen({ baby }: TodayScreenProps) {
       )}
       {diaperOpen && <DiaperSheet onClose={() => setDiaperOpen(false)} babyId={baby.id} />}
       {weightOpen && <MeasurementSheet onClose={() => setWeightOpen(false)} babyId={baby.id} />}
+      {sleepOpen && <SleepSheet onClose={() => setSleepOpen(false)} babyId={baby.id} />}
     </div>
   );
 }

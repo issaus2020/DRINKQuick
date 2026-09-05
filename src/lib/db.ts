@@ -75,6 +75,7 @@ export function normalize(raw: unknown): AppData {
     diapers: withSyncFields(input.diapers),
     health: withSyncFields(input.health),
     checkups: withSyncFields(input.checkups),
+    sleeps: withSyncFields(input.sleeps),
     timers: input.timers ?? [],
     settings: { ...EMPTY_DATA.settings, ...(input.settings ?? {}) },
   };

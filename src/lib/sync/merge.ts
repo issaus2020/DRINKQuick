@@ -18,6 +18,7 @@ export const SYNCED_COLLECTIONS = [
   'diapers',
   'health',
   'checkups',
+  'sleeps',
 ] as const;
 
 export type SyncedCollection = (typeof SYNCED_COLLECTIONS)[number];
@@ -30,6 +31,7 @@ export const COLLECTION_KIND: Record<SyncedCollection, string> = {
   diapers: 'diaper',
   health: 'health',
   checkups: 'checkup',
+  sleeps: 'sleep',
 };
 
 export const KIND_COLLECTION: Record<string, SyncedCollection> = Object.fromEntries(
