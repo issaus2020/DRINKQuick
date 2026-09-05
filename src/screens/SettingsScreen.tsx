@@ -206,6 +206,28 @@ export function SettingsScreen({ baby, onShowReport, onShowAccount }: SettingsSc
       </div>
 
       <div className="card stack stack--tight">
+        <h2 className="card__title">Anrede</h2>
+        <div className="field">
+          <label className="field__label" htmlFor="s-parent">
+            Wie soll die App dich ansprechen?
+          </label>
+          <input
+            id="s-parent"
+            className="input"
+            type="text"
+            autoComplete="off"
+            placeholder="Mama, Papa oder dein Name"
+            value={data.settings.parentName ?? ''}
+            onChange={(event) => setSettings({ parentName: event.target.value })}
+          />
+          <span className="field__hint">
+            Steht in der Begrüßung auf „Heute“. Bleibt das Feld leer, grüßt die App ohne Anrede,
+            statt zu raten.
+          </span>
+        </div>
+      </div>
+
+      <div className="card stack stack--tight">
         <h2 className="card__title">Darstellung</h2>
         <Segmented
           value={data.settings.theme}

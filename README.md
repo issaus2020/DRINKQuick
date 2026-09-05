@@ -20,6 +20,14 @@ anlegen und einen Familien-Bereich teilen – siehe unten.
 
 ### Trinkverhalten und Menge
 
+- **Name und Zitat über der Figur.** Über dem Baby steht der Name des Kindes,
+  darunter ein Satz für die Person, die das Protokoll führt – gebunden an den
+  Kalendertag, damit er nicht bei jedem Antippen wechselt. Aufgenommen sind nur
+  Zitate mit belegter Herkunft und Sprichwörter ohne Urheber; die vielen schönen
+  Sätze mit falscher Zuschreibung („Wurzeln und Flügel“ als Goethe) stehen
+  bewusst nicht dort. Wie die App dich anspricht – „Mama“, „Papa“ oder dein
+  Name – stellst du unter *Mehr → Anrede* ein; ohne Angabe grüßt sie ohne
+  Anrede, statt zu raten.
 - **Der Kopf des Startbildschirms** beantwortet die eine Frage, die um sechs
   Uhr morgens und um drei Uhr nachts zählt: Anrede mit Namen, darunter groß,
   wie viel bis zum Richtwert noch fehlt, dazu ein Satz zur Lage des Tages. Wird

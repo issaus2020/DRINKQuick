@@ -154,6 +154,11 @@ export interface Account {
 
 export interface Settings {
   theme: ThemeSetting;
+  /**
+   * Wie die App die Person anspricht, der das Konto gehört - "Mama", "Papa"
+   * oder ein Name. Leer: dann grüßt sie ohne Anrede, statt zu raten.
+   */
+  parentName?: string;
   /** Aktives Baby (bei Zwillingen umschaltbar). */
   activeBabyId?: string;
   /** Erinnerung, wenn seit X Stunden nicht getrunken wurde. 0 = aus. */

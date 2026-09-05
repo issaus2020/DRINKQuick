@@ -1081,6 +1081,46 @@ button {
   margin-top: 2px;
 }
 
+.hero__head {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.hero__name {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+/* Das Zitat des Tages - für die Person am Bildschirm, nicht für das Kind.
+   Der senkrechte Strich hält es vom Rest der Karte getrennt, ohne einen
+   eigenen Kasten zu brauchen. */
+.quote {
+  margin: 0;
+  padding-left: 12px;
+  border-left: 2px solid color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+.quote__text {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-style: italic;
+  line-height: 1.45;
+  color: var(--text-secondary);
+  text-wrap: pretty;
+}
+
+.quote__source {
+  margin-top: 3px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
 .hero {
   display: flex;
   align-items: center;

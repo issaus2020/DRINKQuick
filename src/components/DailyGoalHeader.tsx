@@ -11,6 +11,8 @@ import type { Baby } from '../lib/types';
 
 interface DailyGoalHeaderProps {
   baby: Baby;
+  /** Anrede für die Person am Bildschirm, falls hinterlegt. */
+  parentName?: string;
   /** Heute erfasste Menge in ml. */
   intakeMl: number;
   /** Heute erfasste Mahlzeiten. */
@@ -24,6 +26,7 @@ interface DailyGoalHeaderProps {
 
 export function DailyGoalHeader({
   baby,
+  parentName,
   intakeMl,
   meals,
   targetMl,
@@ -32,7 +35,6 @@ export function DailyGoalHeader({
 }: DailyGoalHeaderProps) {
   const goal = dailyGoal(baby, intakeMl, meals, targetMl, targetMeals);
   const { text } = encouragement(baby, goal, now);
-  const name = baby.name.trim() || 'dein Baby';
 
   // Ohne Wägung gibt es keinen Richtwert - dann führt die Zahl der Mahlzeiten,
   // und die App sagt, was ihr zum genaueren Wert fehlt.
@@ -40,8 +42,11 @@ export function DailyGoalHeader({
 
   return (
     <section className="goal">
+      {/* Die Begrüßung gilt der Person, die das Protokoll führt - der Name
+          des Kindes steht über der Figur, wo er hingehört. */}
       <p className="goal__greeting">
-        {greetingFor(now)}, {name}
+        {greetingFor(now)}
+        {parentName ? `, ${parentName}` : ''}
       </p>
 
       {goal.reached ? (
