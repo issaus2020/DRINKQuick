@@ -197,13 +197,24 @@ Bewusste Festlegungen:
   eine Schrift von einem fremden Server verträgt sich mit beidem nicht. Wer die
   Originalschnitte will, legt die woff2-Dateien nach `public/fonts/` und ergänzt
   `@font-face`.
-- **Der Tagesfortschritt ist ein Füllstand**, kein Ring: `LiquidVessel` füllt
-  sich mit der Tagesmenge, die Wasserlinie sitzt exakt auf dem Anteil. Über dem
-  Richtwert färbt sich die Flüssigkeit um, statt weiter zu steigen.
+- **Der Tagesfortschritt ist ein Baby**, kein Ring und kein Balken:
+  `BellyBaby` füllt sich mit der Tagesmenge, die Wasserlinie sitzt exakt auf dem
+  Anteil. Über dem Richtwert färbt sich die Füllung um, statt weiter zu steigen.
+  Zwei Festlegungen darin sind Absicht:
+  - **Die untere Stufe ist ruhig, nicht traurig.** Morgens ist der Magen
+    zwangsläufig leer; ein trauriges Gesicht wäre dann ein Vorwurf. Die Züge
+    laufen ruhig → zufrieden → fröhlich → satt, der Mund geht nie nach unten.
+    Stufenlos wandern Mundbogen, Wangenröte und eine leichte Neigung mit; die
+    Augen wechseln bei 72 % und über dem Ziel.
+  - **Kein Hautton.** Die Figur ist eine Linienzeichnung im Strich des
+    Icon-Sets, das „Papier" ist die Kartenfläche. Gefüllt ist nur der Bauch –
+    was an Farbe zu sehen ist, ist ausschließlich die Trinkmenge.
+  Die Sprachausgabe bekommt Stand und Stimmung als Satz: das Gesicht allein
+  sagt einem Screenreader nichts.
 - **Die Navigation schwebt** als Pille am unteren Rand; die Auswahl wandert als
   weiche Form mit (`--tab-index` aus React, der Rest in CSS).
 - **Bewegung ist Schmuck.** Bei `prefers-reduced-motion: reduce` steht alles
-  still – Lichtwolken, Füllstand, Marker. Das Bild bleibt dasselbe.
+  still – Lichtwolken, Wellen im Bauch, Marker. Das Bild bleibt dasselbe.
 - **Dunkel ist kein Nachgedanke:** dieselben Farben als Dämmerung, gedämpfte
   Lichtwolken, dunkles Glas. Nachts um drei ist das der häufigere Fall.
 
