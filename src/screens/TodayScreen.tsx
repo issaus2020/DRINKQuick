@@ -21,6 +21,7 @@ import { expectedMealsPerDay, feedingStats, intakeTarget, usualBottleMl } from '
 import { formatPercentile, percentileFromZ, weightSeries, weightStats, zScore } from '../lib/growth';
 import { dailyDiapers, diaperTargets } from '../lib/health';
 import { useNow } from '../lib/hooks';
+import { quoteOfDay } from '../lib/quotes';
 import { useStore } from '../lib/store-context';
 import type { Baby, Feed } from '../lib/types';
 
@@ -54,6 +55,7 @@ export function TodayScreen({ baby }: TodayScreenProps) {
   const health = useMemo(() => data.health.filter((h) => h.babyId === baby.id), [data.health, baby.id]);
 
   const stats = feedingStats(feeds, now);
+  const quote = useMemo(() => quoteOfDay(now), [now]);
   const weight = weightStats(baby, measurements, now);
   const referenceWeight = weight.latestWeightG ?? baby.birthWeightG;
   const target = referenceWeight ? intakeTarget(baby, referenceWeight, now) : undefined;
@@ -124,12 +126,20 @@ export function TodayScreen({ baby }: TodayScreenProps) {
         meals={stats.today.meals}
         targetMl={target?.dailyMl}
         targetMeals={target?.mealsPerDay ?? expectedMealsPerDay(ageInDays(baby.birthedAt, now))}
+        parentName={data.settings.parentName}
         now={now}
       />
 
       <BreastTimer babyId={baby.id} showStart={false} />
 
       <div className="card">
+        <div className="hero__head">
+          <h2 className="hero__name">{baby.name.trim() || 'Dein Baby'}</h2>
+          <figure className="quote">
+            <blockquote className="quote__text">{quote.text}</blockquote>
+            {quote.source && <figcaption className="quote__source">{quote.source}</figcaption>}
+          </figure>
+        </div>
         <div className="hero">
           <div className="hero__figure">
             {/* Die Zahlen stehen schon in der Überschrift darüber - die Figur

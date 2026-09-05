@@ -985,6 +985,34 @@ button {
   gap: 6px;
 }
 
+.plan__sleep {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 5px 12px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* Eine senkrechte Spur zwischen den Mahlzeiten: die Schlafzeit als Strecke,
+   nicht als weitere Zeile mit einer Zahl. */
+.plan__sleep-rail {
+  width: 2px;
+  height: 14px;
+  border-radius: 1px;
+  background: color-mix(in srgb, var(--text-muted) 40%, transparent);
+}
+
+.plan__sleep--night .plan__sleep-rail {
+  height: 20px;
+  background: color-mix(in srgb, var(--series-7) 65%, transparent);
+}
+
+.plan__sleep--night {
+  color: color-mix(in srgb, var(--series-7) 75%, var(--text-secondary));
+}
+
 .plan__item {
   display: flex;
   align-items: center;
@@ -1079,6 +1107,46 @@ button {
   font-size: 0.75rem;
   color: var(--text-muted);
   margin-top: 2px;
+}
+
+.hero__head {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.hero__name {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+/* Das Zitat des Tages - für die Person am Bildschirm, nicht für das Kind.
+   Der senkrechte Strich hält es vom Rest der Karte getrennt, ohne einen
+   eigenen Kasten zu brauchen. */
+.quote {
+  margin: 0;
+  padding-left: 12px;
+  border-left: 2px solid color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+.quote__text {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-style: italic;
+  line-height: 1.45;
+  color: var(--text-secondary);
+  text-wrap: pretty;
+}
+
+.quote__source {
+  margin-top: 3px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
 }
 
 .hero {
