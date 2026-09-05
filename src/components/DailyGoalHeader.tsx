@@ -67,19 +67,19 @@ export function DailyGoalHeader({
         </p>
       )}
 
-      <p className="goal__detail">
-        {showMl ? (
-          <>
-            {intakeMl} von {goal.targetMl} ml heute
-            {!goal.mlComplete && ' · Stillmahlzeiten sind hier nicht mitgezählt'}
-          </>
-        ) : (
-          <>
-            {meals} von etwa {targetMeals} Mahlzeiten heute · für eine Mengenangabe fehlt eine
-            Wägung
-          </>
-        )}
-      </p>
+      {/*
+        Wie viel schon getrunken wurde, zeigt die Figur darunter - die Zahl
+        noch einmal auszuschreiben wäre dieselbe Aussage zweimal. Was hier
+        bleibt, sind die beiden Einschränkungen: Sie sagen nicht, wie weit der
+        Tag ist, sondern warum die Zahl darüber nicht alles abdeckt.
+      */}
+      {showMl
+        ? !goal.mlComplete && (
+            <p className="goal__detail">Stillmahlzeiten sind hier nicht mitgezählt</p>
+          )
+        : (
+            <p className="goal__detail">Für eine Mengenangabe fehlt eine Wägung</p>
+          )}
 
       <p className="goal__sentence">{text}</p>
     </section>
