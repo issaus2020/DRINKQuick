@@ -1,13 +1,16 @@
 /**
  * Der Kopf des Startbildschirms: Anrede mit Namen, die fehlende Menge in
- * groß, und ein Satz zur Lage.
+ * groß, und darunter der Stand samt Zielmenge.
  *
  * Die eine Frage, die morgens um sechs und nachts um drei zählt, ist "wie
  * viel fehlt noch?". Sie steht deshalb ganz oben und in der größten Schrift
- * auf dem Bildschirm.
+ * auf dem Bildschirm. Die Zeile darunter beantwortet die zweite Frage - "von
+ * wie viel eigentlich?" - und nennt die Einschränkungen, unter denen die
+ * Zahl gilt.
  */
-import { dailyGoal, encouragement, greetingFor } from '../lib/greeting';
+import { dailyGoal, greetingFor } from '../lib/greeting';
 import type { Baby } from '../lib/types';
+import { Icon } from './ui/Icon';
 
 interface DailyGoalHeaderProps {
   baby: Baby;
@@ -34,14 +37,13 @@ export function DailyGoalHeader({
   now = new Date(),
 }: DailyGoalHeaderProps) {
   const goal = dailyGoal(baby, intakeMl, meals, targetMl, targetMeals);
-  const { text } = encouragement(baby, goal, now);
 
   // Ohne Wägung gibt es keinen Richtwert - dann führt die Zahl der Mahlzeiten,
   // und die App sagt, was ihr zum genaueren Wert fehlt.
   const showMl = goal.remainingMl !== undefined;
 
   return (
-    <section className="goal">
+    <section className={`goal${goal.reached ? ' goal--reached' : ''}`}>
       {/* Die Begrüßung gilt der Person, die das Protokoll führt - der Name
           des Kindes steht über der Figur, wo er hingehört. */}
       <p className="goal__greeting">
@@ -49,8 +51,12 @@ export function DailyGoalHeader({
         {parentName ? `, ${parentName}` : ''}
       </p>
 
+      {/* Erreicht: Siegel und Farbe bleiben stehen, solange der Tag läuft.
+          Das Konfetti fliegt nicht hier, sondern an der Figur darunter - hier
+          oben käme es hinter der Kopfleiste heraus. */}
       {goal.reached ? (
-        <p className="goal__headline">
+        <p className="goal__headline goal__headline--done">
+          <Icon name="check" className="goal__seal" size={30} />
           {showMl ? 'Tagesziel erreicht' : 'Genug Mahlzeiten für heute'}
         </p>
       ) : showMl ? (
@@ -67,21 +73,16 @@ export function DailyGoalHeader({
         </p>
       )}
 
-      {/*
-        Wie viel schon getrunken wurde, zeigt die Figur darunter - die Zahl
-        noch einmal auszuschreiben wäre dieselbe Aussage zweimal. Was hier
-        bleibt, sind die beiden Einschränkungen: Sie sagen nicht, wie weit der
-        Tag ist, sondern warum die Zahl darüber nicht alles abdeckt.
-      */}
-      {showMl
-        ? !goal.mlComplete && (
-            <p className="goal__detail">Stillmahlzeiten sind hier nicht mitgezählt</p>
-          )
-        : (
-            <p className="goal__detail">Für eine Mengenangabe fehlt eine Wägung</p>
-          )}
-
-      <p className="goal__sentence">{text}</p>
+      {/* Der Stand mit der Zielmenge, und dahinter das, was die Zahl nicht
+          abdeckt: Gestilltes lässt sich nicht messen, und ohne Wägung gibt es
+          überhaupt keinen ml-Richtwert. */}
+      <p className="goal__detail">
+        {showMl
+          ? `${goal.intakeMl} von ${goal.targetMl} ml heute`
+          : `${goal.meals} von ${goal.targetMeals} Mahlzeiten heute`}
+        {showMl && !goal.mlComplete && ' · Stillmahlzeiten sind hier nicht mitgezählt'}
+        {!showMl && ' · für eine Mengenangabe fehlt eine Wägung'}
+      </p>
     </section>
   );
 }

@@ -51,3 +51,26 @@ export function useActiveTimer(babyId?: string): TimerHandle {
     [timer, now],
   );
 }
+
+/**
+ * Ist der Zustand gerade eingetreten - oder war er beim Öffnen schon so?
+ *
+ * Für Feiern: Wer die App abends öffnet und das Tagesziel längst erreicht hat,
+ * soll nicht jedes Mal Konfetti sehen. Gefeiert wird der Moment, nicht der
+ * Zustand. Der Vergleichswert wird beim Einhängen einmal festgehalten und nie
+ * wieder gesetzt - damit braucht es keinen Effekt.
+ */
+export function useJustHappened(value: boolean): boolean {
+  const [atMount] = useState(value);
+  return value && !atMount;
+}
+
+/**
+ * Ist der Zähler seit dem Öffnen gewachsen? Der Rückgabewert bleibt danach
+ * wahr; für das erneute Abspielen einer Animation dient der Zählerstand als
+ * React-`key`, der das Element neu einhängt.
+ */
+export function useGrewSince(count: number): boolean {
+  const [atMount] = useState(count);
+  return count > atMount;
+}

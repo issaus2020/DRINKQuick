@@ -2,6 +2,7 @@
 import { useMemo, useState } from 'react';
 import { WeightChart, type WeightIndicator } from '../components/charts/WeightChart';
 import { MeasurementSheet } from '../components/entry/MeasurementSheet';
+import { Celebration } from '../components/ui/Celebration';
 import { Icon } from '../components/ui/Icon';
 import { MetricTile } from '../components/ui/MetricTile';
 import { Segmented } from '../components/ui/Segmented';
@@ -12,9 +13,11 @@ import {
   percentileFromZ,
   weightSeries,
   weightStats,
+  weightGoalReached,
   weightLossLevel,
   zScore,
 } from '../lib/growth';
+import { useJustHappened } from '../lib/hooks';
 import { useStore } from '../lib/store-context';
 import type { Baby, Measurement } from '../lib/types';
 
@@ -65,6 +68,16 @@ export function GrowthScreen({ baby }: GrowthScreenProps) {
     if (stats.gainPerDayG >= min * 0.6) return { className: 'badge--watch', text: 'etwas unter Erwartung' };
     return { className: 'badge--alert', text: `unter ${min} g/Tag` };
   })();
+
+  // Beim Gewicht gibt es zwei Schwellen, die man erreicht - und die deshalb
+  // genauso gefeiert werden wie das Tagesziel beim Trinken: die Zunahme im
+  // Erwartungsbereich, und das nach der ersten Woche wieder erreichte
+  // Geburtsgewicht. Konfetti fliegt nur, wenn die Wägung gerade eben
+  // dazugekommen ist - nicht bei jedem Öffnen des Tabs.
+  const gainReached = weightGoalReached(stats);
+  const justGained = useJustHappened(gainReached);
+  const regained = Boolean(stats.regainedOnDay);
+  const justRegained = useJustHappened(regained);
 
   return (
     <div className="page">
@@ -121,13 +134,43 @@ export function GrowthScreen({ baby }: GrowthScreenProps) {
         />
       </div>
 
-      {gainBadge && (
+      {gainReached && stats.gainPerDayG !== undefined && stats.expectedGain && (
+        <div className="milestone">
+          <span className="milestone__seal">
+            <Icon name="check" size={24} />
+          </span>
+          <div className="milestone__body">
+            <div className="milestone__title">Zunahme im Soll</div>
+            <p className="milestone__detail">
+              {Math.round(stats.gainPerDayG)} g pro Tag
+              {stats.gainSpanDays ? ` über ${stats.gainSpanDays} Tage` : ''} – erwartet sind{' '}
+              {stats.expectedGain.min} bis {stats.expectedGain.max} g.
+            </p>
+          </div>
+          {justGained && <Celebration />}
+        </div>
+      )}
+
+      {regained && (
+        <div className="milestone">
+          <span className="milestone__seal">
+            <Icon name="check" size={24} />
+          </span>
+          <div className="milestone__body">
+            <div className="milestone__title">Geburtsgewicht wieder erreicht</div>
+            <p className="milestone__detail">
+              An Lebenstag {stats.regainedOnDay}. Die meisten Neugeborenen schaffen das bis zum
+              14. Tag.
+            </p>
+          </div>
+          {justRegained && <Celebration />}
+        </div>
+      )}
+
+      {gainBadge && (!gainReached || (loss > 0 && !stats.regainedAt)) && (
         <div className="row row--wrap">
-          <span className={`badge ${gainBadge.className}`}>Zunahme {gainBadge.text}</span>
-          {stats.regainedOnDay && (
-            <span className="badge badge--good">
-              Geburtsgewicht an Lebenstag {stats.regainedOnDay} wieder erreicht
-            </span>
+          {!gainReached && (
+            <span className={`badge ${gainBadge.className}`}>Zunahme {gainBadge.text}</span>
           )}
           {loss > 0 && !stats.regainedAt && (
             <span className={`badge ${lossLevel === 'ok' ? '' : lossLevel === 'watch' ? 'badge--watch' : 'badge--alert'}`}>

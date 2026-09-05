@@ -45,6 +45,12 @@ interface BellyBabyProps {
    * Das Gesicht allein sagt Screenreadern nichts.
    */
   unitLabel: string;
+  /**
+   * Einmal schaukeln - für den Moment, in dem eine Mahlzeit dazukommt. Die
+   * Animation spielt beim Einhängen; damit sie sich wiederholt, gibt der
+   * Aufrufer der Figur einen `key`, der sich mit jeder Mahlzeit ändert.
+   */
+  dance?: boolean;
   width?: number;
   height?: number;
 }
@@ -53,6 +59,7 @@ export function BellyBaby({
   value,
   target,
   unitLabel,
+  dance = false,
   width = 138,
   height = 188,
 }: BellyBabyProps) {
@@ -91,7 +98,7 @@ export function BellyBaby({
 
   return (
     <svg
-      className={`belly${over ? ' belly--over' : ''}`}
+      className={`belly${over ? ' belly--over' : ''}${dance ? ' belly--dance' : ''}`}
       viewBox="0 0 140 190"
       width={width}
       height={height}

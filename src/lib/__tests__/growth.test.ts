@@ -3,6 +3,7 @@ import {
   formatPercentile,
   percentileFromZ,
   valueAtPercentile,
+  weightGoalReached,
   weightLossLevel,
   weightStats,
   zScore,
@@ -114,5 +115,36 @@ describe('weightStats', () => {
     const stats = weightStats(baby(), [], new Date('2026-01-04T12:00:00.000Z'));
     expect(stats.latest).toBeUndefined();
     expect(stats.expectedGain).toBeDefined();
+  });
+});
+
+describe('weightGoalReached', () => {
+  const now = new Date('2026-01-15T12:00:00.000Z');
+
+  it('gilt ab der unteren Grenze des Erwartungsbereichs', () => {
+    // 14 Tage alt: erwartet werden 25 bis 40 g pro Tag.
+    const knapp = weightStats(
+      baby(),
+      [weighIn('2026-01-11T08:00:00.000Z', 3400), weighIn('2026-01-15T08:00:00.000Z', 3500)],
+      now,
+    );
+    expect(knapp.gainPerDayG).toBe(25);
+    expect(weightGoalReached(knapp)).toBe(true);
+  });
+
+  it('ist nicht erreicht, solange die Zunahme darunter liegt', () => {
+    const zuWenig = weightStats(
+      baby(),
+      [weighIn('2026-01-11T08:00:00.000Z', 3400), weighIn('2026-01-15T08:00:00.000Z', 3480)],
+      now,
+    );
+    expect(zuWenig.gainPerDayG).toBe(20);
+    expect(weightGoalReached(zuWenig)).toBe(false);
+  });
+
+  it('feiert nichts, solange es nur eine Wägung gibt', () => {
+    const einzeln = weightStats(baby(), [weighIn('2026-01-15T08:00:00.000Z', 3500)], now);
+    expect(einzeln.gainPerDayG).toBeUndefined();
+    expect(weightGoalReached(einzeln)).toBe(false);
   });
 });
