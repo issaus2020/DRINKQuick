@@ -6,6 +6,7 @@ import {
   feedingStats,
   intakeTarget,
   suggestBottleAmounts,
+  usualBottleMl,
 } from '../feeding';
 import type { Baby, Feed } from '../types';
 
@@ -228,5 +229,45 @@ describe('suggestBottleAmounts', () => {
     const result = suggestBottleAmounts(feeds, 80, now);
     expect(result.basis).toBe('target');
     expect(result.amounts).toEqual([60, 80, 100]);
+  });
+});
+
+describe('usualBottleMl', () => {
+  const now = new Date('2026-03-20T15:00:00.000Z');
+
+  it('nimmt den Median der Flaschen, nicht den Richtwert', () => {
+    const feeds = [70, 75, 80, 95, 95].map((ml, index) =>
+      feed(`2026-03-1${index + 4}T09:00:00.000Z`, { amountMl: ml }),
+    );
+    expect(usualBottleMl(feeds, now)).toBe(80);
+  });
+
+  it('schweigt, solange zu wenige Flaschen erfasst sind', () => {
+    const feeds = [80, 80].map((ml, index) =>
+      feed(`2026-03-1${index + 4}T09:00:00.000Z`, { amountMl: ml }),
+    );
+    expect(usualBottleMl(feeds, now)).toBeUndefined();
+  });
+
+  it('zählt Stillmahlzeiten und Abpumpen nicht mit', () => {
+    // Ohne diese Trennung wäre "die gewohnte Portion" eine Mischung aus
+    // Flaschenmengen und abgepumpten Mengen - zwei verschiedene Dinge.
+    const feeds = [
+      feed('2026-03-18T06:00:00.000Z', { amountMl: 80 }),
+      feed('2026-03-18T09:00:00.000Z', { amountMl: 80 }),
+      feed('2026-03-18T12:00:00.000Z', { amountMl: 80 }),
+      feed('2026-03-18T15:00:00.000Z', { kind: 'pump', amountMl: 200 }),
+      feed('2026-03-18T18:00:00.000Z', { kind: 'breast', amountMl: undefined }),
+    ];
+    expect(usualBottleMl(feeds, now)).toBe(80);
+  });
+
+  it('vergisst Flaschen, die länger als drei Wochen zurückliegen', () => {
+    const feeds = [
+      feed('2026-01-05T09:00:00.000Z', { amountMl: 40 }),
+      feed('2026-01-06T09:00:00.000Z', { amountMl: 40 }),
+      feed('2026-01-07T09:00:00.000Z', { amountMl: 40 }),
+    ];
+    expect(usualBottleMl(feeds, now)).toBeUndefined();
   });
 });

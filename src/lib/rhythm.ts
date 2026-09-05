@@ -391,21 +391,43 @@ export function planRestOfDay(
     return plan;
   }
 
-  const perMeal = Math.round(remainingMl / todaySlots.length / 5) * 5;
+  // Wie viele der verbleibenden Mahlzeiten braucht der Rest überhaupt? Ohne
+  // diese Frage verteilte sich eine kleine Restmenge gleichmäßig auf alle
+  // Plätze und ergab Portionen, die niemand füttert - 60 ml auf vier
+  // Mahlzeiten sind 15 ml je Flasche, kein Plan.
+  const needed = usual
+    ? Math.min(todaySlots.length, Math.max(1, Math.ceil(remainingMl / usual)))
+    : todaySlots.length;
+  const used = todaySlots.slice(0, needed);
+
+  // In 5-ml-Schritten aufteilen und die Rundungsdifferenz auf die vorderen
+  // Mahlzeiten legen, statt jede Portion einzeln zu runden: sonst stimmte die
+  // Summe des Plans nicht mit der offenen Menge überein.
+  const steps = Math.max(1, Math.round(remainingMl / 5));
+  const base = Math.floor(steps / used.length);
+  let extra = steps - base * used.length;
+  for (const slot of used) {
+    const own = base + (extra > 0 ? 1 : 0);
+    if (extra > 0) extra--;
+    slot.amountMl = own * 5;
+  }
+
+  // Die größte Portion ist die, die sich fragen lassen muss, ob sie passt.
+  const perMeal = used[0].amountMl as number;
   plan.perMealMl = perMeal;
-  todaySlots.forEach((slot) => {
-    slot.amountMl = perMeal;
-  });
 
   if (usual && perMeal > usual * 1.5) plan.strain = 'unrealistic';
   else if (usual && perMeal > usual * 1.2) plan.strain = 'tight';
 
+  const covered = used.length < todaySlots.length;
   plan.note =
     plan.strain === 'unrealistic'
       ? 'Der Rest lässt sich heute nicht mehr sinnvoll unterbringen - und das muss er auch nicht. Füttere nach Hunger und lass die Differenz stehen; ein einzelner Tag unter dem Richtwert ist unauffällig. Bleibt es über mehrere Tage so, sprich es bei der Hebamme oder in der Praxis an.'
       : plan.strain === 'tight'
         ? 'Das wären etwas größere Portionen als gewohnt. Zwing nichts hinein - lieber eine Mahlzeit mehr als eine zu große.'
-        : 'Das geht sich im gewohnten Rhythmus aus.';
+        : covered
+          ? `Der Richtwert ist nach ${used.length === 1 ? 'einer weiteren Mahlzeit' : `${used.length} weiteren Mahlzeiten`} gedeckt. Was danach kommt, geht nach Hunger - deshalb steht dort keine Menge.`
+          : 'Das geht sich im gewohnten Rhythmus aus.';
 
   return plan;
 }

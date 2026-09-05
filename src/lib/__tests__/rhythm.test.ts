@@ -271,6 +271,35 @@ describe('planRestOfDay', () => {
     expect(plan.note).toContain('Wägung');
   });
 
+  it('trifft mit der Summe der Portionen die offene Menge', () => {
+    const now = new Date(2026, 4, 20, 13, 0, 0);
+    // 220 ml gehen nicht glatt durch drei: jede Portion einzeln auf 5 zu
+    // runden ergäbe 225 und damit einen Plan, der mehr verspricht als offen ist.
+    const plan = planRestOfDay(regular(12, now), 220, 80, now);
+    const sum = plan.slots
+      .filter((slot) => !slot.nextDay)
+      .reduce((total, slot) => total + (slot.amountMl ?? 0), 0);
+    expect(sum).toBe(220);
+  });
+
+  it('macht aus einer kleinen Restmenge keine Zwergportionen', () => {
+    const now = new Date(2026, 4, 20, 14, 0, 0);
+    // 60 ml offen, gewohnt sind 80: das ist eine Mahlzeit, nicht vier zu 15 ml.
+    const plan = planRestOfDay(regular(12, now), 60, 80, now);
+    const withAmount = plan.slots.filter((slot) => !slot.nextDay && slot.amountMl);
+    expect(withAmount).toHaveLength(1);
+    expect(withAmount[0].amountMl).toBe(60);
+  });
+
+  it('lässt die übrigen Mahlzeiten ohne Menge und sagt warum', () => {
+    const now = new Date(2026, 4, 20, 14, 0, 0);
+    const plan = planRestOfDay(regular(12, now), 60, 80, now);
+    const today = plan.slots.filter((slot) => !slot.nextDay);
+    expect(today.length).toBeGreaterThan(1);
+    expect(today.slice(1).every((slot) => slot.amountMl === undefined)).toBe(true);
+    expect(plan.note).toContain('nach Hunger');
+  });
+
   it('markiert Nachtmahlzeiten und erklärt sie, statt sie wegzuplanen', () => {
     const now = new Date(2026, 4, 20, 20, 0, 0);
     const plan = planRestOfDay(regular(18, now), 160, 80, now);
