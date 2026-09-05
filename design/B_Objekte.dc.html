@@ -1,0 +1,341 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600&display=swap">
+  <style>
+    body { margin: 0; }
+    a { color: #2f6fb5; }
+    a:hover { color: #1f4f85; }
+
+    .root {
+      position: relative;
+      width: 880px;
+      height: 560px;
+      overflow: hidden;
+      background: #faf8f5;
+      color: #17170f;
+      font-family: 'Outfit', system-ui, sans-serif;
+      padding: 22px 24px;
+      box-sizing: border-box;
+      display: flex; flex-direction: column; gap: 16px;
+    }
+    .is-paused, .is-paused * { animation-play-state: paused !important; }
+
+    .serif { font-family: 'Instrument Serif', Georgia, 'Times New Roman', serif; font-weight: 400; }
+    .muted { color: #7c7a73; }
+    .tiny { font-size: 11px; letter-spacing: 0.06em; }
+
+    .bloom { position: absolute; border-radius: 50%; filter: blur(46px); pointer-events: none; }
+    .bloom--1 {
+      width: 320px; height: 280px; top: -90px; left: 120px;
+      background: radial-gradient(circle, color-mix(in oklab, var(--tint) 55%, transparent), transparent 68%);
+      animation: float1 24s ease-in-out infinite alternate;
+    }
+    .bloom--2 {
+      width: 300px; height: 280px; bottom: -110px; right: 80px;
+      background: radial-gradient(circle, color-mix(in oklab, var(--warm) 55%, transparent), transparent 68%);
+      animation: float2 28s ease-in-out infinite alternate;
+    }
+    @keyframes float1 { from { transform: translate(0, 0) scale(1); } to { transform: translate(50px, 26px) scale(1.12); } }
+    @keyframes float2 { from { transform: translate(0, 0) scale(1.08); } to { transform: translate(-44px, -24px) scale(1); } }
+    .grain {
+      position: absolute; inset: 0; pointer-events: none; opacity: 0.5;
+      background-image: radial-gradient(rgba(23,23,15,0.05) 0.6px, transparent 0.7px);
+      background-size: 3px 3px;
+    }
+
+    .head { position: relative; z-index: 2; display: flex; align-items: baseline; gap: 10px; }
+    .head__title { font-size: 22px; }
+    .head__spacer { flex-grow: 1; }
+
+    .grid {
+      position: relative; z-index: 2;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .cell {
+      display: flex; flex-direction: column; gap: 6px;
+      padding: 14px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.6);
+      border: 1px solid rgba(23,23,15,0.07);
+      box-shadow: 0 8px 22px rgba(23,23,15,0.05);
+      backdrop-filter: blur(8px);
+      min-height: 200px;
+    }
+    .cell__stage { flex-grow: 1; display: flex; align-items: center; justify-content: center; min-height: 108px; }
+    .cell__name { font-size: 15px; }
+    .cell__use { font-size: 11px; color: #7c7a73; line-height: 1.45; }
+
+    /* 1 Liquid-Fill */
+    .vessel {
+      position: relative; width: 66px; height: 96px;
+      border-radius: 33px 33px 24px 24px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.6);
+      border: 1px solid rgba(23,23,15,0.08);
+    }
+    .liquid {
+      position: absolute; left: 0; right: 0; bottom: 0; height: 0;
+      background: color-mix(in oklab, var(--tint) 92%, #ffffff);
+      animation: rise 3.4s cubic-bezier(0.22, 1, 0.36, 1) infinite alternate;
+    }
+    @keyframes rise { from { height: 26%; } to { height: 72%; } }
+    .wave {
+      position: absolute; left: 50%; top: -58px; width: 130px; height: 130px;
+      margin-left: -65px;
+      background: color-mix(in oklab, var(--tint) 92%, #ffffff);
+      border-radius: 44% 46% 42% 48%;
+      animation: turn 7s linear infinite;
+    }
+    .wave--2 {
+      background: color-mix(in oklab, var(--tint) 52%, #ffffff);
+      border-radius: 47% 43% 45% 41%;
+      animation: turn 11s linear infinite reverse;
+      opacity: 0.8;
+    }
+    @keyframes turn { to { transform: rotate(360deg); } }
+
+    /* 2 Blasen */
+    .bubbles { position: relative; width: 66px; height: 96px; }
+    .bubble {
+      position: absolute; bottom: 4px; width: 8px; height: 8px; border-radius: 50%;
+      background: color-mix(in oklab, var(--tint) 70%, #ffffff);
+      border: 1px solid color-mix(in oklab, var(--tint) 95%, #000);
+      opacity: 0;
+      animation: bubble 4.4s ease-in infinite;
+    }
+    @keyframes bubble {
+      0%   { transform: translateY(0) scale(0.55); opacity: 0; }
+      15%  { opacity: 0.95; }
+      100% { transform: translateY(-84px) scale(1.2); opacity: 0; }
+    }
+
+    /* 3 Aurora-Wolke */
+    .aurora {
+      width: 112px; height: 96px; border-radius: 50%;
+      background: radial-gradient(circle at 40% 40%, color-mix(in oklab, var(--tint) 80%, transparent), transparent 62%),
+                  radial-gradient(circle at 68% 62%, color-mix(in oklab, var(--warm) 76%, transparent), transparent 62%);
+      filter: blur(10px);
+      animation: morphcloud 12s ease-in-out infinite alternate;
+    }
+    @keyframes morphcloud {
+      from { transform: scale(1) rotate(0deg); border-radius: 50%; }
+      to   { transform: scale(1.14) rotate(22deg); border-radius: 42% 58% 55% 45%; }
+    }
+
+    /* 4 Atem-Punkt */
+    .breath { position: relative; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; }
+    .breath__core {
+      width: 14px; height: 14px; border-radius: 50%;
+      background: color-mix(in oklab, var(--tint) 92%, #000);
+      animation: heartbeat 3.4s ease-in-out infinite;
+    }
+    @keyframes heartbeat { 0%, 100% { transform: scale(1); opacity: 0.9; } 50% { transform: scale(1.4); opacity: 1; } }
+    .breath__ring {
+      position: absolute; inset: 0; border-radius: 50%;
+      border: 1.5px solid color-mix(in oklab, var(--tint) 70%, transparent);
+      animation: halo 3.4s ease-out infinite;
+    }
+    @keyframes halo { 0% { transform: scale(0.4); opacity: 0.9; } 100% { transform: scale(1.1); opacity: 0; } }
+
+    /* 5 Morph-Dock */
+    .dock {
+      position: relative; width: 100%;
+      display: flex; align-items: center; padding: 6px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.78);
+      border: 1px solid rgba(23,23,15,0.07);
+      box-shadow: 0 8px 20px rgba(23,23,15,0.08);
+      box-sizing: border-box;
+    }
+    .dock__blob {
+      position: absolute; left: 6px; top: 6px; width: 46px; height: 38px;
+      border-radius: 999px;
+      background: color-mix(in oklab, var(--tint) 40%, #ffffff);
+      animation: slideblob 6s ease-in-out infinite alternate;
+    }
+    @keyframes slideblob {
+      0%   { transform: translateX(0); border-radius: 999px; }
+      50%  { transform: translateX(46px); border-radius: 40% 60% 55% 45% / 50%; }
+      100% { transform: translateX(92px); border-radius: 999px; }
+    }
+    .dock__item { flex-grow: 1; display: flex; align-items: center; justify-content: center; height: 38px; color: #8b897f; position: relative; }
+
+    /* 6 Organische Kurve */
+    .curvebox { width: 100%; }
+    .curvebox svg { display: block; width: 100%; height: 92px; }
+    .curvebox .band { fill: color-mix(in oklab, var(--cool) 42%, transparent); }
+    .curvebox .line {
+      fill: none; stroke: color-mix(in oklab, var(--tint) 96%, #000); stroke-width: 2.4; stroke-linecap: round;
+      stroke-dasharray: 220;
+      animation: draw 3s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+    }
+    @keyframes draw { 0% { stroke-dashoffset: 220; } 60%, 100% { stroke-dashoffset: 0; } }
+    .curvebox .halo {
+      fill: color-mix(in oklab, var(--tint) 65%, transparent);
+      transform-origin: center; transform-box: fill-box;
+      animation: pulse 3s ease-out infinite;
+    }
+    @keyframes pulse { 0% { transform: scale(0.6); opacity: 0.8; } 100% { transform: scale(3); opacity: 0; } }
+    .curvebox .dot { fill: color-mix(in oklab, var(--tint) 96%, #000); }
+
+    /* 7 Röhren */
+    .tubes { display: flex; align-items: flex-end; gap: 7px; height: 96px; width: 100%; }
+    .tube {
+      position: relative; flex-grow: 1; height: 100%;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.6);
+      border: 1px solid rgba(23,23,15,0.07);
+      overflow: hidden;
+    }
+    .tube__fill {
+      position: absolute; left: 0; right: 0; bottom: 0; height: 0;
+      background: color-mix(in oklab, var(--tint) 92%, #ffffff);
+      animation: fill 2.4s cubic-bezier(0.22, 1, 0.36, 1) infinite alternate;
+    }
+    @keyframes fill { to { height: var(--h); } }
+
+    /* 8 Serifen-Zahl */
+    .bignum { font-size: 58px; line-height: 1; letter-spacing: -0.02em; }
+    .bignum em { font-style: italic; color: color-mix(in oklab, var(--tint) 96%, #000); }
+  </style>
+</helmet>
+
+<div class="root {{pause}}" style="--tint: {{tint}}; --warm: {{warm}}; --cool: {{cool}}">
+  <div class="bloom bloom--1"></div>
+  <div class="bloom bloom--2"></div>
+  <div class="grain"></div>
+
+  <div class="head">
+    <span class="head__title serif">Variante B · Aurora</span>
+    <span class="tiny muted">Animierte Objekte</span>
+    <span class="head__spacer"></span>
+    <span class="tiny muted">Hell · organisch · ruhig</span>
+  </div>
+
+  <div class="grid">
+    <div class="cell">
+      <div class="cell__stage">
+        <div class="vessel">
+          <div class="liquid">
+            <div class="wave"></div>
+            <div class="wave wave--2"></div>
+          </div>
+        </div>
+      </div>
+      <span class="cell__name serif">Füllstand</span>
+      <span class="cell__use">Die Tagesmenge als Flüssigkeit statt als Balken – ohne Zahl lesbar.</span>
+    </div>
+
+    <div class="cell">
+      <div class="cell__stage">
+        <div class="bubbles">
+          <span class="bubble" style="left: 10px; animation-delay: 0s"></span>
+          <span class="bubble" style="left: 28px; animation-delay: 1.1s"></span>
+          <span class="bubble" style="left: 46px; animation-delay: 2.2s"></span>
+          <span class="bubble" style="left: 34px; animation-delay: 3.2s"></span>
+        </div>
+      </div>
+      <span class="cell__name serif">Blasen</span>
+      <span class="cell__use">Jede Blase ist eine erfasste Mahlzeit – Leben in einem sonst stillen Bild.</span>
+    </div>
+
+    <div class="cell">
+      <div class="cell__stage">
+        <div class="aurora"></div>
+      </div>
+      <span class="cell__name serif">Aurora-Wolke</span>
+      <span class="cell__use">Atmosphäre im Hintergrund, wechselt die Farbe mit der Tageszeit.</span>
+    </div>
+
+    <div class="cell">
+      <div class="cell__stage">
+        <div class="breath">
+          <div class="breath__ring"></div>
+          <div class="breath__core"></div>
+        </div>
+      </div>
+      <span class="cell__name serif">Atem-Punkt</span>
+      <span class="cell__use">Ruhiger Herzschlag der App – zeigt Verbindung, ohne zu blinken.</span>
+    </div>
+
+    <div class="cell">
+      <div class="cell__stage">
+        <div class="dock">
+          <div class="dock__blob"></div>
+          <div class="dock__item">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5M5.5 9.5V20h13V9.5M9.5 20v-5.5h5V20"></path></svg>
+          </div>
+          <div class="dock__item">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2h6M9.5 5h5M8 8.5h8v11a2.5 2.5 0 0 1-2.5 2.5h-3A2.5 2.5 0 0 1 8 19.5zM8 5.5h8M11 12v4"></path></svg>
+          </div>
+          <div class="dock__item">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16l1.5 13.5H2.5zM8.5 11.5a3.5 3.5 0 0 0 7 0M12 7V4M9 4h6"></path></svg>
+          </div>
+        </div>
+      </div>
+      <span class="cell__name serif">Morph-Dock</span>
+      <span class="cell__use">Die Auswahl wandert als weiche Form mit, statt hart umzuspringen.</span>
+    </div>
+
+    <div class="cell">
+      <div class="cell__stage">
+        <div class="curvebox">
+          <svg viewBox="0 0 180 92" preserveAspectRatio="none">
+            <path class="band" d="M0 58 C 50 44, 110 28, 180 12 L 180 52 C 110 62, 50 72, 0 80 Z"></path>
+            <path class="line" d="M4 72 C 14 78, 26 76, 40 70 C 76 56, 120 42, 168 30"></path>
+            <circle class="halo" cx="168" cy="30" r="4"></circle>
+            <circle class="dot" cx="168" cy="30" r="4"></circle>
+          </svg>
+        </div>
+      </div>
+      <span class="cell__name serif">Wachstumskurve</span>
+      <span class="cell__use">Perzentilbänder als weicher Schleier, die eigene Kurve klar darüber.</span>
+    </div>
+
+    <div class="cell">
+      <div class="cell__stage">
+        <div class="tubes">
+          <div class="tube"><div class="tube__fill" style="--h: 72%; animation-delay: 0s"></div></div>
+          <div class="tube"><div class="tube__fill" style="--h: 84%; animation-delay: 0.15s"></div></div>
+          <div class="tube"><div class="tube__fill" style="--h: 63%; animation-delay: 0.3s"></div></div>
+          <div class="tube"><div class="tube__fill" style="--h: 90%; animation-delay: 0.45s"></div></div>
+        </div>
+      </div>
+      <span class="cell__name serif">Tagesröhren</span>
+      <span class="cell__use">Sieben Tage nebeneinander, gefüllt wie kleine Fläschchen.</span>
+    </div>
+
+    <div class="cell">
+      <div class="cell__stage">
+        <span class="bignum serif">Noch <em>225</em></span>
+      </div>
+      <span class="cell__name serif">Serifen-Zahl</span>
+      <span class="cell__use">Die wichtigste Zahl des Tages – gesetzt wie in einem Buch, nicht wie im Cockpit.</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+
+<script data-dc-script data-props='{"tint":{"editor":"color","default":"#8ec7ef","options":["#8ec7ef","#a8dcc6","#e3b6c6","#c9bff0"],"section":"Farbe"},"warm":{"editor":"color","default":"#f2c9a8","options":["#f2c9a8","#e3b6c6","#f0dfa8","#c9bff0"],"section":"Farbe"},"cool":{"editor":"color","default":"#c9bff0","options":["#c9bff0","#a8dcc6","#8ec7ef","#e3b6c6"],"section":"Farbe"},"motion":{"editor":"boolean","default":true,"section":"Bewegung"},"$preview":{"width":880,"height":560}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      tint: this.props.tint ?? '#8ec7ef',
+      warm: this.props.warm ?? '#f2c9a8',
+      cool: this.props.cool ?? '#c9bff0',
+      pause: this.props.motion === false ? 'is-paused' : '',
+    };
+  }
+}
+</script>
+</body>
+</html>

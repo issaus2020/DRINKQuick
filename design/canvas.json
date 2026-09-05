@@ -1,0 +1,27 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "title": "A · Heute", "x": 0, "y": 0, "w": 390, "h": 844 },
+    { "file": "A_Verlauf.dc.html", "title": "A · Trinken", "x": 470, "y": 0, "w": 390, "h": 844 },
+    { "file": "A_Objekte.dc.html", "title": "A · Objekte", "x": 940, "y": 0, "w": 880, "h": 560 },
+    { "file": "B_Heute.dc.html", "title": "B · Heute", "x": 0, "y": 964, "w": 390, "h": 844 },
+    { "file": "B_Gewicht.dc.html", "title": "B · Gewicht", "x": 470, "y": 964, "w": 390, "h": 844 },
+    { "file": "B_Objekte.dc.html", "title": "B · Objekte", "x": 940, "y": 964, "w": 880, "h": 560 }
+  ],
+  "annotations": [
+    {
+      "id": "variante-a",
+      "x": -460,
+      "y": 0,
+      "w": 380,
+      "text": "VARIANTE A · ORBIT\n\nDunkles Cockpit. Der Tag ist ein 24-Stunden-Zifferblatt: jede Mahlzeit ein leuchtender Knoten an ihrer Uhrzeit, die offene Menge ein Bogen, die nächste Mahlzeit ein pulsierender Ring. Ein Radarschweif zeigt, dass mitgezählt wird.\n\nDafür: sehr viel Information auf einen Blick, nachts blendfrei, wirkt präzise und ernst.\n\nDagegen: dicht. Einhändig um drei Uhr nachts ist mehr zu lesen, und die Bildsprache will einmal gelernt werden."
+    },
+    {
+      "id": "variante-b",
+      "x": -460,
+      "y": 964,
+      "w": 380,
+      "text": "VARIANTE B · AURORA\n\nHell und organisch. Ein einziges großes Objekt je Screen: das Fläschchen füllt sich mit der Tagesmenge, Blasen steigen auf, Aurora-Wolken atmen im Hintergrund. Zahlen in einer Serifenschrift statt im Cockpit-Mono.\n\nDafür: ruhig, emotional, ohne Anleitung verständlich; die eine wichtige Zahl ist unübersehbar.\n\nDagegen: weniger Daten gleichzeitig sichtbar, und hell ist nachts im abgedunkelten Zimmer unangenehmer als A."
+    }
+  ],
+  "launch": { "view": "canvas" }
+}

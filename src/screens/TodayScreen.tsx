@@ -12,7 +12,7 @@ import { MeasurementSheet } from '../components/entry/MeasurementSheet';
 import { NextFeedCard } from '../components/NextFeedCard';
 import { QuickAmounts } from '../components/entry/QuickAmounts';
 import { Icon } from '../components/ui/Icon';
-import { ProgressRing } from '../components/ui/ProgressRing';
+import { LiquidVessel } from '../components/ui/LiquidVessel';
 import { buildAlerts, type AlertLevel } from '../lib/alerts';
 import { ageInDays, formatDurationShort, formatSince, formatTime, startOfDay } from '../lib/date';
 import { FEED_KIND_LABELS, SIDE_LABELS } from '../lib/export';
@@ -136,7 +136,7 @@ export function TodayScreen({ baby }: TodayScreenProps) {
         <div className="hero">
           <div className="hero__figure">
             {primaryIsMl && target ? (
-              <ProgressRing
+              <LiquidVessel
                 value={stats.today.ml}
                 target={target.dailyMl}
                 label={`${stats.today.ml}`}
@@ -144,7 +144,7 @@ export function TodayScreen({ baby }: TodayScreenProps) {
                 description={`Heute ${stats.today.ml} von etwa ${target.dailyMl} Millilitern getrunken.`}
               />
             ) : (
-              <ProgressRing
+              <LiquidVessel
                 value={stats.today.meals}
                 target={target?.mealsPerDay ?? 8}
                 label={`${stats.today.meals}`}

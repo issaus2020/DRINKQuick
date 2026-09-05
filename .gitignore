@@ -14,3 +14,6 @@ coverage
 # Zugangsdaten
 .env
 .env.local
+
+# Ausgabe des Design-Canvas-Helfers (wird aus design/ neu erzeugt)
+/drinkquick-orbit-aurora.html

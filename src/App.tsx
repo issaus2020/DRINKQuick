@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { Icon, type IconName } from './components/ui/Icon';
 import { formatAge, lifeDay } from './lib/date';
 import { useStore } from './lib/store-context';
@@ -187,7 +187,12 @@ export function App() {
         )}
       </main>
 
-      <nav className="tabbar" aria-label="Hauptnavigation">
+      <nav
+        className="tabbar"
+        aria-label="Hauptnavigation"
+        style={{ '--tab-index': TABS.findIndex((entry) => entry.id === tab) } as CSSProperties}
+      >
+        <span className="tabbar__marker" aria-hidden="true" />
         {TABS.map((entry) => (
           <button
             key={entry.id}
