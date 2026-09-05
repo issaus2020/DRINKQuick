@@ -143,8 +143,16 @@ drei). Abstände unter 10 Minuten und über 10 Stunden fallen heraus – das sin
 Doppeleinträge und Protokolllücken, keine Rhythmen. Das gezeigte Fenster ist das
 25.- bis 75.-Perzentil derselben Abstände. Die offene Tagesmenge wird nur auf die
 geplanten Mahlzeiten **vor Mitternacht** verteilt; alles danach zählt auf den
-nächsten Tag. Liegt die so errechnete Portion über dem 1,2-fachen der gewohnten
-Menge, warnt die App, ab dem 1,5-fachen rät sie ausdrücklich davon ab.
+nächsten Tag. Dabei werden nur so viele Mahlzeiten belegt, wie der Rest bei
+gewohnter Portion braucht - sonst ergäben 60 ml auf vier Plätze Portionen von
+15 ml, die niemand füttert; die übrigen Zeitpunkte bleiben ohne Menge und die
+App sagt, dass es dort nach Hunger geht. Die Aufteilung erfolgt in 5-ml-Schritten
+mit der Rundungsdifferenz auf den vorderen Mahlzeiten, damit die Summe des Plans
+die offene Menge trifft. Bezugsgröße für „wie gewohnt“ ist der Median der
+Flaschen der letzten drei Wochen, nicht der rechnerische Richtwert - sonst
+warnte die App vor einer Menge, die längst normal ist. Liegt die errechnete
+Portion über dem 1,2-fachen davon, warnt sie, ab dem 1,5-fachen rät sie
+ausdrücklich ab.
 
 **Blähungen.** Ein Eintrag wird der letzten Mahlzeit zugeordnet, die höchstens
 drei Stunden davor lag, und jede Mahlzeit höchstens einmal. Verglichen werden

@@ -255,6 +255,35 @@ function quantile(sorted: number[], p: number): number {
  * Einträge, weitet sich der Blick auf den ganzen Tag; ganz am Anfang bleibt
  * der Richtwert aus Gewicht und Lebenstag.
  */
+/** Wie viele Flaschen es mindestens braucht, um von "üblich" zu sprechen. */
+const USUAL_MIN_SAMPLES = 3;
+
+/**
+ * Die übliche Menge je Flasche - der Median der letzten drei Wochen.
+ *
+ * Nicht zu verwechseln mit `intakeTarget().perMealMl`: das ist der
+ * rechnerische Richtwert (Tagesmenge geteilt durch erwartete Mahlzeiten).
+ * Wenn im Tagesplan steht "größere Portionen als gewohnt", muss die
+ * Bezugsgröße das sein, was das Kind wirklich trinkt - sonst warnt die App
+ * vor einer Menge, die längst normal ist.
+ */
+export function usualBottleMl(feeds: Feed[], now: Date = new Date()): number | undefined {
+  const since = now.getTime() - SUGGESTION_LOOKBACK_DAYS * MS_PER_DAY;
+  const amounts = feeds
+    .filter(
+      (feed) =>
+        feed.kind === 'bottle' &&
+        typeof feed.amountMl === 'number' &&
+        feed.amountMl > 0 &&
+        new Date(feed.startedAt).getTime() >= since,
+    )
+    .map((feed) => feed.amountMl as number)
+    .sort((a, b) => a - b);
+
+  if (amounts.length < USUAL_MIN_SAMPLES) return undefined;
+  return roundTo5(quantile(amounts, 0.5));
+}
+
 export function suggestBottleAmounts(
   feeds: Feed[],
   fallbackPerMealMl: number,

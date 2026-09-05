@@ -17,7 +17,7 @@ import { BellyBaby } from '../components/ui/BellyBaby';
 import { buildAlerts, type AlertLevel } from '../lib/alerts';
 import { ageInDays, formatDurationShort, formatSince, formatTime, startOfDay } from '../lib/date';
 import { FEED_KIND_LABELS, SIDE_LABELS } from '../lib/export';
-import { expectedMealsPerDay, feedingStats, intakeTarget } from '../lib/feeding';
+import { expectedMealsPerDay, feedingStats, intakeTarget, usualBottleMl } from '../lib/feeding';
 import { formatPercentile, percentileFromZ, weightSeries, weightStats, zScore } from '../lib/growth';
 import { dailyDiapers, diaperTargets } from '../lib/health';
 import { useNow } from '../lib/hooks';
@@ -216,7 +216,9 @@ export function TodayScreen({ baby }: TodayScreenProps) {
       <NextFeedCard
         feeds={feeds}
         remainingMl={remainingMl}
-        usualPerMealMl={target?.perMealMl}
+        // Maßstab ist, was Noah wirklich trinkt; der Richtwert nur als
+        // Rückfall, solange dafür die Einträge fehlen.
+        usualPerMealMl={usualBottleMl(feeds, now) ?? target?.perMealMl}
         now={now}
       />
 
