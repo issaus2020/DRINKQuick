@@ -3,14 +3,17 @@ import { useMemo, useState } from 'react';
 import { WeightChart, type WeightIndicator } from '../components/charts/WeightChart';
 import { MeasurementSheet } from '../components/entry/MeasurementSheet';
 import { Icon } from '../components/ui/Icon';
+import { MetricTile } from '../components/ui/MetricTile';
 import { Segmented } from '../components/ui/Segmented';
 import { ageInDays, formatLongDate, lifeDay } from '../lib/date';
 import {
   MAX_TABLE_DAY,
   formatPercentile,
+  percentileFromZ,
   weightSeries,
   weightStats,
   weightLossLevel,
+  zScore,
 } from '../lib/growth';
 import { useStore } from '../lib/store-context';
 import type { Baby, Measurement } from '../lib/types';
@@ -38,6 +41,19 @@ export function GrowthScreen({ baby }: GrowthScreenProps) {
   const stats = weightStats(baby, measurements);
   const series = weightSeries(measurements);
 
+  // Verläufe für die Kacheln - dieselbe Reihe, einmal als Gewicht und einmal
+  // als Perzentile, damit sichtbar wird, ob das Kind seiner Kurve folgt.
+  const weightTrend = useMemo(() => series.map((m) => m.weightG as number), [series]);
+  const percentileTrend = useMemo(
+    () =>
+      series.map((m) =>
+        percentileFromZ(
+          zScore('weight', baby.sex, ageInDays(baby.birthedAt, new Date(m.takenAt)), (m.weightG as number) / 1000),
+        ),
+      ),
+    [series, baby.sex, baby.birthedAt],
+  );
+
   const loss =
     stats.vsBirthPercent !== undefined && stats.vsBirthPercent < 0 ? -stats.vsBirthPercent : 0;
   const lossLevel = weightLossLevel(loss);
@@ -52,53 +68,57 @@ export function GrowthScreen({ baby }: GrowthScreenProps) {
 
   return (
     <div className="page">
-      <div className="stat-row">
-        <div className="stat">
-          <div className="stat__label">Aktuelles Gewicht</div>
-          <div className="stat__value">
-            {stats.latestWeightG ?? '-'}
-            <span className="stat__unit">g</span>
-          </div>
-          <div className="stat__note">
-            {stats.latest ? formatLongDate(stats.latest.takenAt) : 'noch keine Wägung'}
-          </div>
-        </div>
-        <div className="stat">
-          <div className="stat__label">Perzentile (WHO)</div>
-          <div className="stat__value">
-            {stats.percentile !== undefined ? formatPercentile(stats.percentile) : '-'}
-          </div>
-          <div className="stat__note">
-            {stats.zScore !== undefined ? `z = ${stats.zScore.toFixed(2).replace('.', ',')}` : ''}
-          </div>
-        </div>
-        <div className="stat">
-          <div className="stat__label">Zunahme</div>
-          <div className="stat__value">
-            {stats.gainPerDayG !== undefined ? Math.round(stats.gainPerDayG) : '-'}
-            <span className="stat__unit">g/Tag</span>
-          </div>
-          <div className="stat__note">
-            {stats.gainSpanDays ? `über ${stats.gainSpanDays} Tage` : ''}
+      {/*
+        Eine Kennzahl führt, der Rest steht daneben: das aktuelle Gewicht ist
+        die Zahl, wegen der dieser Bildschirm geöffnet wird. Perzentile und
+        Bilanz zum Geburtsgewicht bleiben vollständig erhalten, nur leiser.
+      */}
+      <div className="lede">
+        <span className="lede__value">
+          {stats.latestWeightG ?? '-'}
+          <span className="lede__unit"> g</span>
+        </span>
+        <span className="lede__side">
+          {stats.gainPerDayG !== undefined && (
+            <span className={`badge ${gainBadge ? gainBadge.className : ''}`}>
+              {stats.gainPerDayG > 0 ? '+' : ''}
+              {Math.round(stats.gainPerDayG)} g pro Tag
+            </span>
+          )}
+          <span className="muted small">
             {stats.expectedGain
-              ? ` · erwartet ${stats.expectedGain.min}-${stats.expectedGain.max}`
-              : ''}
-          </div>
-        </div>
-        <div className="stat">
-          <div className="stat__label">Zum Geburtsgewicht</div>
-          <div className="stat__value">
-            {stats.vsBirthG !== undefined
+              ? `Erwartet: ${stats.expectedGain.min}–${stats.expectedGain.max} g`
+              : 'Erwartungsbereich ab der zweiten Wägung'}
+          </span>
+          <span className="muted small">
+            {stats.latest ? formatLongDate(stats.latest.takenAt) : 'noch keine Wägung'}
+          </span>
+        </span>
+      </div>
+
+      <div className="tiles">
+        <MetricTile
+          label="Perzentile (WHO)"
+          value={stats.percentile !== undefined ? formatPercentile(stats.percentile) : '-'}
+          trend={percentileTrend}
+        />
+        <MetricTile
+          label={
+            stats.vsBirthPercent !== undefined
+              ? `Zum Geburtsgewicht (${stats.vsBirthPercent > 0 ? '+' : ''}${stats.vsBirthPercent
+                  .toFixed(1)
+                  .replace('.', ',')} %)`
+              : 'Zum Geburtsgewicht'
+          }
+          value={
+            stats.vsBirthG !== undefined
               ? `${stats.vsBirthG > 0 ? '+' : ''}${stats.vsBirthG}`
-              : '-'}
-            <span className="stat__unit">g</span>
-          </div>
-          <div className="stat__note">
-            {stats.vsBirthPercent !== undefined
-              ? `${stats.vsBirthPercent > 0 ? '+' : ''}${stats.vsBirthPercent.toFixed(1).replace('.', ',')} %`
-              : 'Geburtsgewicht fehlt'}
-          </div>
-        </div>
+              : '-'
+          }
+          unit={stats.vsBirthG !== undefined ? 'g' : undefined}
+          trend={weightTrend}
+          trendDelayMs={120}
+        />
       </div>
 
       {gainBadge && (
@@ -158,7 +178,7 @@ export function GrowthScreen({ baby }: GrowthScreenProps) {
         </div>
 
         <p className="muted small" style={{ marginTop: 10 }}>
-          Die grauen Bänder sind die WHO-Referenz für {baby.sex === 'girl' ? 'Mädchen' : 'Jungen'}:
+          Die hinterlegten Bänder sind die WHO-Referenz für {baby.sex === 'girl' ? 'Mädchen' : 'Jungen'}:
           innen P15-P85, außen P3-P97. Entscheidend ist nicht die Höhe der Kurve, sondern dass sie
           ihrem eigenen Kanal folgt.
         </p>

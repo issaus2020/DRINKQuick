@@ -7,6 +7,7 @@
  * Minute, und wenn die offene Menge nicht mehr hineinpasst, sagt die Karte
  * das auch.
  */
+import { DayBand } from './DayBand';
 import { formatTime } from '../lib/date';
 import { forecastNextFeed, planRestOfDay } from '../lib/rhythm';
 import type { Feed } from '../lib/types';
@@ -57,6 +58,8 @@ export function NextFeedCard({ feeds, remainingMl, usualPerMealMl, now }: NextFe
             : 'aus eurem Rhythmus der letzten Tage'}
         </span>
       </div>
+
+      <DayBand feeds={feeds} nextAt={forecast.expectedAt ?? undefined} now={now} />
 
       <p className="forecast">
         {forecast.overdue ? (

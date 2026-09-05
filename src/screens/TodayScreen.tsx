@@ -12,12 +12,13 @@ import { MeasurementSheet } from '../components/entry/MeasurementSheet';
 import { NextFeedCard } from '../components/NextFeedCard';
 import { QuickAmounts } from '../components/entry/QuickAmounts';
 import { Icon } from '../components/ui/Icon';
+import { MetricTile } from '../components/ui/MetricTile';
 import { LiquidVessel } from '../components/ui/LiquidVessel';
 import { buildAlerts, type AlertLevel } from '../lib/alerts';
 import { ageInDays, formatDurationShort, formatSince, formatTime, startOfDay } from '../lib/date';
 import { FEED_KIND_LABELS, SIDE_LABELS } from '../lib/export';
 import { expectedMealsPerDay, feedingStats, intakeTarget } from '../lib/feeding';
-import { weightStats } from '../lib/growth';
+import { formatPercentile, percentileFromZ, weightSeries, weightStats, zScore } from '../lib/growth';
 import { dailyDiapers, diaperTargets } from '../lib/health';
 import { useNow } from '../lib/hooks';
 import { useStore } from '../lib/store-context';
@@ -62,6 +63,32 @@ export function TodayScreen({ baby }: TodayScreenProps) {
   // hundert Einträgen und kostet weniger als das Memoisieren.
   const alerts = buildAlerts({ baby, feeds, measurements, diapers, health, now });
 
+  // Verläufe der letzten Tage für die Kacheln. Dieselben Daten wie auf den
+  // Tabs, hier nur als Richtung: steigt, fällt oder bleibt.
+  const diaperTrend = useMemo(
+    () => dailyDiapers(diapers, 7, now).map((day) => day.wet),
+    [diapers, now],
+  );
+  const weighings = useMemo(() => weightSeries(measurements), [measurements]);
+  const weightTrend = useMemo(
+    () => weighings.map((entry) => entry.weightG as number),
+    [weighings],
+  );
+  const percentileTrend = useMemo(
+    () =>
+      weighings.map((entry) =>
+        percentileFromZ(
+          zScore(
+            'weight',
+            baby.sex,
+            ageInDays(baby.birthedAt, new Date(entry.takenAt)),
+            (entry.weightG as number) / 1000,
+          ),
+        ),
+      ),
+    [weighings, baby.sex, baby.birthedAt],
+  );
+
   const todayStart = startOfDay(now).getTime();
   const todayEntries = useMemo(
     () =>
@@ -102,6 +129,62 @@ export function TodayScreen({ baby }: TodayScreenProps) {
 
       <BreastTimer babyId={baby.id} showStart={false} />
 
+      <div className="card">
+        <div className="hero">
+          <div className="hero__figure">
+            {primaryIsMl && target ? (
+              <LiquidVessel
+                value={stats.today.ml}
+                target={target.dailyMl}
+                label={`${stats.today.ml}`}
+                sublabel={`von ${target.dailyMl} ml`}
+                description={`Heute ${stats.today.ml} von etwa ${target.dailyMl} Millilitern getrunken.`}
+              />
+            ) : (
+              <LiquidVessel
+                value={stats.today.meals}
+                target={target?.mealsPerDay ?? 8}
+                label={`${stats.today.meals}`}
+                sublabel={`von ca. ${target?.mealsPerDay ?? 8}`}
+                description={`Heute ${stats.today.meals} Mahlzeiten von etwa ${target?.mealsPerDay ?? 8} erwarteten.`}
+              />
+            )}
+          </div>
+          <div className="hero__body">
+            <div className="hero__block">
+              <div className="hero__value">
+                {stats.lastFeed ? formatSince(stats.lastFeed.endedAt ?? stats.lastFeed.startedAt, now) : '-'}
+              </div>
+              <div className="hero__label">
+                {stats.lastFeed
+                  ? `${formatTime(stats.lastFeed.startedAt)} · ${FEED_KIND_LABELS[stats.lastFeed.kind]}${
+                      stats.lastFeed.amountMl ? ` · ${stats.lastFeed.amountMl} ml` : ''
+                    }`
+                  : 'noch keine Mahlzeit heute'}
+              </div>
+            </div>
+            <div className="hero__block">
+              <div className="hero__value">{stats.today.meals}</div>
+              <div className="hero__label">
+                {stats.today.meals === 1 ? 'Mahlzeit' : 'Mahlzeiten'}
+                {stats.nightFeeds > 0 ? `, ${stats.nightFeeds} davon nachts` : ''}
+              </div>
+            </div>
+            <div className="hero__block">
+              <div className="hero__value">
+                {stats.avgIntervalH ? formatDurationShort(stats.avgIntervalH * 3600) : '-'}
+              </div>
+              <div className="hero__label">
+                Ø Abstand
+                {stats.longestIntervalH
+                  ? `, längste Pause ${formatDurationShort(stats.longestIntervalH * 3600)}`
+                  : ''}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <QuickAmounts
         babyId={baby.id}
         feeds={feeds}
@@ -132,45 +215,6 @@ export function TodayScreen({ baby }: TodayScreenProps) {
         </button>
       </div>
 
-      <div className="card">
-        <div className="hero">
-          <div className="hero__figure">
-            {primaryIsMl && target ? (
-              <LiquidVessel
-                value={stats.today.ml}
-                target={target.dailyMl}
-                label={`${stats.today.ml}`}
-                sublabel={`von ${target.dailyMl} ml`}
-                description={`Heute ${stats.today.ml} von etwa ${target.dailyMl} Millilitern getrunken.`}
-              />
-            ) : (
-              <LiquidVessel
-                value={stats.today.meals}
-                target={target?.mealsPerDay ?? 8}
-                label={`${stats.today.meals}`}
-                sublabel={`von ca. ${target?.mealsPerDay ?? 8}`}
-                description={`Heute ${stats.today.meals} Mahlzeiten von etwa ${target?.mealsPerDay ?? 8} erwarteten.`}
-              />
-            )}
-          </div>
-          <div className="hero__body stack stack--tight">
-            <div>
-              <div className="hero__label">Letzte Mahlzeit</div>
-              <div className="hero__value">
-                {stats.lastFeed ? formatSince(stats.lastFeed.endedAt ?? stats.lastFeed.startedAt, now) : '-'}
-              </div>
-              {stats.lastFeed && (
-                <div className="muted small">
-                  {formatTime(stats.lastFeed.startedAt)} ·{' '}
-                  {FEED_KIND_LABELS[stats.lastFeed.kind]}
-                  {stats.lastFeed.amountMl ? ` · ${stats.lastFeed.amountMl} ml` : ''}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
       <NextFeedCard
         feeds={feeds}
         remainingMl={remainingMl}
@@ -178,51 +222,41 @@ export function TodayScreen({ baby }: TodayScreenProps) {
         now={now}
       />
 
-      <div className="stat-row">
-        <div className="stat">
-          <div className="stat__label">Mahlzeiten heute</div>
-          <div className="stat__value">{stats.today.meals}</div>
-          <div className="stat__note">{stats.nightFeeds} davon nachts (22-6 Uhr)</div>
-        </div>
-        <div className="stat">
-          <div className="stat__label">Ø Abstand</div>
-          <div className="stat__value">
-            {stats.avgIntervalH ? formatDurationShort(stats.avgIntervalH * 3600) : '-'}
-          </div>
-          <div className="stat__note">
-            {stats.longestIntervalH
-              ? `längste Pause ${formatDurationShort(stats.longestIntervalH * 3600)}`
-              : 'letzte 24 Stunden'}
-          </div>
-        </div>
-        <div className="stat">
-          <div className="stat__label">Nasse Windeln</div>
-          <div className="stat__value">
-            {diaperToday.wet}
-            <span className="stat__unit">/ {diaperTarget.wet || '-'}</span>
-          </div>
-          <div className="stat__note">{diaperToday.dirty}× Stuhl heute</div>
-        </div>
-        {!primaryIsMl && stats.today.ml > 0 && (
-          <div className="stat">
-            <div className="stat__label">Flasche heute</div>
-            <div className="stat__value">
-              {stats.today.ml}
-              <span className="stat__unit">ml</span>
-            </div>
-            <div className="stat__note">
-              {target ? `Gesamtrichtwert ${target.dailyMl} ml inkl. Stillen` : 'erfasste Menge'}
-            </div>
-          </div>
-        )}
-        {stats.today.breastSeconds > 0 && (
-          <div className="stat">
-            <div className="stat__label">Stillzeit heute</div>
-            <div className="stat__value">{Math.round(stats.today.breastSeconds / 60)}</div>
-            <div className="stat__note">Minuten in {stats.today.breastFeeds} Mahlzeiten</div>
-          </div>
-        )}
+      <div className="tiles">
+        <MetricTile
+          label="Nasse Windeln heute"
+          value={diaperToday.wet}
+          unit={diaperTarget.wet ? `/ ${diaperTarget.wet}` : undefined}
+          trend={diaperTrend}
+        />
+        <MetricTile
+          label={weight.gainSpanDays ? `Zunahme über ${weight.gainSpanDays} Tage` : 'Zunahme'}
+          value={weight.gainPerDayG !== undefined ? Math.round(weight.gainPerDayG) : '-'}
+          unit={weight.gainPerDayG !== undefined ? 'g/Tag' : undefined}
+          trend={weightTrend}
+          trendDelayMs={120}
+        />
+        <MetricTile
+          label="Perzentile (WHO)"
+          value={weight.percentile !== undefined ? formatPercentile(weight.percentile) : '-'}
+          trend={percentileTrend}
+          trendDelayMs={240}
+        />
       </div>
+
+      {!primaryIsMl && stats.today.ml > 0 && (
+        <p className="muted small" style={{ marginTop: -6 }}>
+          Flasche heute: {stats.today.ml} ml
+          {target ? ` – Gesamtrichtwert ${target.dailyMl} ml inklusive Stillen.` : '.'}
+        </p>
+      )}
+
+      {stats.today.breastSeconds > 0 && (
+        <p className="muted small" style={{ marginTop: -6 }}>
+          Dazu {Math.round(stats.today.breastSeconds / 60)} Minuten Stillzeit in{' '}
+          {stats.today.breastFeeds} Mahlzeiten – die ml-Bilanz deckt sie nicht ab.
+        </p>
+      )}
 
       <div className="stack stack--tight">
         {alerts.map((alert) => (
