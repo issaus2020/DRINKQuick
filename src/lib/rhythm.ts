@@ -268,6 +268,18 @@ const NIGHT_FROM = 22;
 const NIGHT_TO = 6;
 /** Mehr Mahlzeiten als das plant niemand sinnvoll voraus. */
 const MAX_SLOTS = 10;
+/**
+ * Enger als das rücken wir Mahlzeiten nicht zusammen. Wer aufholen muss,
+ * füttert häufiger - aber im Zwei-Stunden-Takt ist Schluss, sonst schläft
+ * niemand mehr.
+ */
+const MIN_PLAN_INTERVAL_MIN = 120;
+/**
+ * Mehr als das Anderthalbfache der gewohnten Portion empfiehlt die App nicht.
+ * Was darüber offen bleibt, bleibt offen - das ist ehrlicher, als es einer
+ * einzigen Flasche aufzuladen.
+ */
+const MAX_PORTION_FACTOR = 1.5;
 
 export interface PlannedFeed {
   at: Date;
@@ -277,6 +289,11 @@ export interface PlannedFeed {
   night: boolean;
   /** Liegt schon nach Mitternacht und zählt damit auf den nächsten Tag. */
   nextDay: boolean;
+  /**
+   * Minuten zwischen der vorigen Mahlzeit (bzw. jetzt) und dieser - für ein
+   * Neugeborenes ist das die Schlafzeit, nicht nur eine Lücke im Plan.
+   */
+  sleepBeforeMinutes: number;
 }
 
 export interface DayPlan {
@@ -297,6 +314,10 @@ export interface DayPlan {
   strain: 'ok' | 'tight' | 'unrealistic';
   /** Wie viele der geplanten Mahlzeiten in die Nacht fallen. */
   nightSlots: number;
+  /** Geplante Schlafzeit in Minuten von jetzt bis zur letzten Mahlzeit. */
+  sleepMinutes: number;
+  /** Davon zwischen 22 und 6 Uhr. */
+  nightSleepMinutes: number;
   /** Der Satz, der zur Lage gehört. */
   note: string;
   /**
@@ -335,21 +356,52 @@ export function planRestOfDay(
   midnight.setHours(0, 0, 0, 0);
   midnight.setDate(midnight.getDate() + 1);
 
-  const slots: PlannedFeed[] = [];
-  let cursor = forecast.expectedAt ?? new Date(now.getTime() + intervalMinutes * 60_000);
-  if (cursor < now) cursor = new Date(now.getTime() + 15 * 60_000);
-  while (cursor < horizon && slots.length < MAX_SLOTS) {
-    const hour = cursor.getHours();
-    slots.push({
-      at: new Date(cursor),
-      night: hour >= NIGHT_FROM || hour < NIGHT_TO,
-      nextDay: cursor >= midnight,
-    });
-    cursor = new Date(cursor.getTime() + intervalMinutes * 60_000);
-  }
-
-  const todaySlots = slots.filter((slot) => !slot.nextDay);
+  const first = forecast.expectedAt ?? new Date(now.getTime() + intervalMinutes * 60_000);
+  const start = first < now ? new Date(now.getTime() + 15 * 60_000) : first;
   const usual = usualPerMealMl && usualPerMealMl > 0 ? Math.round(usualPerMealMl / 5) * 5 : undefined;
+
+  /** Zeitpunkte ab `start` im Takt `stepMin` bis zum Horizont. */
+  const buildSlots = (stepMin: number, tightenUntil?: Date): PlannedFeed[] => {
+    const out: PlannedFeed[] = [];
+    let cursor = new Date(start);
+    let previous = now.getTime();
+    while (cursor < horizon && out.length < MAX_SLOTS) {
+      const hour = cursor.getHours();
+      out.push({
+        at: new Date(cursor),
+        night: hour >= NIGHT_FROM || hour < NIGHT_TO,
+        nextDay: cursor >= midnight,
+        sleepBeforeMinutes: Math.max(0, Math.round((cursor.getTime() - previous) / 60_000)),
+      });
+      previous = cursor.getTime();
+      // Der engere Takt gilt nur, solange die nächste Mahlzeit noch vor
+      // Mitternacht liegt - er soll den Rest unterbringen, nicht nachts wecken.
+      const tightened = new Date(cursor.getTime() + stepMin * 60_000);
+      const step = tightenUntil && tightened < tightenUntil ? stepMin : intervalMinutes;
+      cursor = new Date(cursor.getTime() + step * 60_000);
+    }
+    return out;
+  };
+
+  let slots = buildSlots(intervalMinutes);
+  let todaySlots = slots.filter((slot) => !slot.nextDay);
+
+  // Passt der Rest bei gewohnter Portion nicht in die verbleibenden
+  // Mahlzeiten, rücken sie enger zusammen - lieber öfter füttern als einer
+  // Flasche die doppelte Menge aufladen. Bei zwei Stunden Abstand ist Schluss.
+  if (usual && remainingMl !== undefined && remainingMl > 0 && todaySlots.length > 0) {
+    const wanted = Math.ceil(remainingMl / usual);
+    if (wanted > todaySlots.length) {
+      const room = midnight.getTime() - start.getTime();
+      const maxFit = Math.floor(room / (MIN_PLAN_INTERVAL_MIN * 60_000)) + 1;
+      const count = Math.min(wanted, maxFit, MAX_SLOTS);
+      if (count > todaySlots.length && count > 1) {
+        const step = Math.max(MIN_PLAN_INTERVAL_MIN, room / count / 60_000);
+        slots = buildSlots(step, midnight);
+        todaySlots = slots.filter((slot) => !slot.nextDay);
+      }
+    }
+  }
   // Die Mahlzeiten nach Mitternacht gehören zum nächsten Tag - dort ist die
   // gewohnte Portion der beste Anhaltspunkt, den es zu diesem Zeitpunkt gibt.
   if (usual) {
@@ -363,6 +415,12 @@ export function planRestOfDay(
     intervalMinutes,
     strain: 'ok',
     nightSlots,
+    // Zwischen den Mahlzeiten wird geschlafen - das ist keine Lücke im Plan,
+    // sondern der Teil, auf den es für alle Beteiligten ankommt.
+    sleepMinutes: slots.reduce((total, slot) => total + slot.sleepBeforeMinutes, 0),
+    nightSleepMinutes: slots
+      .filter((slot) => slot.night)
+      .reduce((total, slot) => total + slot.sleepBeforeMinutes, 0),
     note: '',
   };
 
@@ -400,10 +458,18 @@ export function planRestOfDay(
     : todaySlots.length;
   const used = todaySlots.slice(0, needed);
 
+  // Keine Portion über dem Anderthalbfachen der gewohnten Menge: was darüber
+  // offen bliebe, bleibt offen. Alles einer einzigen Flasche aufzuladen wäre
+  // keine Empfehlung, sondern eine Zumutung.
+  const cap = usual ? Math.round((usual * MAX_PORTION_FACTOR) / 5) * 5 : undefined;
+  const placeable = cap ? used.length * cap : remainingMl;
+  const toPlace = Math.min(remainingMl, placeable);
+  const leftover = remainingMl - toPlace;
+
   // In 5-ml-Schritten aufteilen und die Rundungsdifferenz auf die vorderen
   // Mahlzeiten legen, statt jede Portion einzeln zu runden: sonst stimmte die
   // Summe des Plans nicht mit der offenen Menge überein.
-  const steps = Math.max(1, Math.round(remainingMl / 5));
+  const steps = Math.max(1, Math.round(toPlace / 5));
   const base = Math.floor(steps / used.length);
   let extra = steps - base * used.length;
   for (const slot of used) {
@@ -416,13 +482,13 @@ export function planRestOfDay(
   const perMeal = used[0].amountMl as number;
   plan.perMealMl = perMeal;
 
-  if (usual && perMeal > usual * 1.5) plan.strain = 'unrealistic';
+  if (leftover > 0) plan.strain = 'unrealistic';
   else if (usual && perMeal > usual * 1.2) plan.strain = 'tight';
 
   const covered = used.length < todaySlots.length;
   plan.note =
     plan.strain === 'unrealistic'
-      ? 'Der Rest lässt sich heute nicht mehr sinnvoll unterbringen - und das muss er auch nicht. Füttere nach Hunger und lass die Differenz stehen; ein einzelner Tag unter dem Richtwert ist unauffällig. Bleibt es über mehrere Tage so, sprich es bei der Hebamme oder in der Praxis an.'
+      ? `Etwa ${Math.round(leftover / 5) * 5} ml bleiben heute offen - mehr lässt sich nicht in sinnvolle Portionen bringen, und das muss es auch nicht. Füttere nach Hunger und lass die Differenz stehen; ein einzelner Tag unter dem Richtwert ist unauffällig. Bleibt es über mehrere Tage so, sprich es bei der Hebamme oder in der Praxis an.`
       : plan.strain === 'tight'
         ? 'Das wären etwas größere Portionen als gewohnt. Zwing nichts hinein - lieber eine Mahlzeit mehr als eine zu große.'
         : covered

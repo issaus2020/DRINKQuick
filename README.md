@@ -151,8 +151,12 @@ drei). Abstände unter 10 Minuten und über 10 Stunden fallen heraus – das sin
 Doppeleinträge und Protokolllücken, keine Rhythmen. Das gezeigte Fenster ist das
 25.- bis 75.-Perzentil derselben Abstände. Die offene Tagesmenge wird nur auf die
 geplanten Mahlzeiten **vor Mitternacht** verteilt; alles danach zählt auf den
-nächsten Tag. Dabei werden nur so viele Mahlzeiten belegt, wie der Rest bei
-gewohnter Portion braucht - sonst ergäben 60 ml auf vier Plätze Portionen von
+nächsten Tag. Reicht der gewohnte Takt vor Mitternacht nicht aus, rücken die
+Mahlzeiten enger zusammen – bis auf zwei Stunden, nicht näher –, statt einer
+einzigen Flasche die doppelte Menge aufzuladen; keine Portion geht über das
+Anderthalbfache der gewohnten Menge, und was darüber offen bliebe, bleibt offen
+und wird beziffert. Umgekehrt werden nur so viele Mahlzeiten belegt, wie der
+Rest bei gewohnter Portion braucht - sonst ergäben 60 ml auf vier Plätze Portionen von
 15 ml, die niemand füttert; die übrigen Zeitpunkte bleiben ohne Menge und die
 App sagt, dass es dort nach Hunger geht. Die Aufteilung erfolgt in 5-ml-Schritten
 mit der Rundungsdifferenz auf den vorderen Mahlzeiten, damit die Summe des Plans
@@ -197,8 +201,12 @@ Auch der **Aufbau** der Bildschirme folgt den Entwürfen:
   bleiben bewusst über der Falzkante, weil das nachts der häufigste Griff ist.
   Die Vorhersage trägt ein **Tagesband**: eine weiche Kurve, durchgezogen bis
   jetzt, gestrichelt weiter, mit einem Punkt je Mahlzeit und einem
-  pulsierenden Ring für die erwartete nächste. Statt einer Zahlenreihe stehen
-  darunter drei Glaskacheln mit der Richtung der letzten Tage.
+  pulsierenden Ring für die erwartete nächste. Zwischen den geplanten
+  Mahlzeiten steht die **Schlafzeit** als eigene Zeile mit einer senkrechten
+  Spur – nachts eingefärbt – und darunter die Summe bis zum Morgen: Für ein
+  Neugeborenes ist die Zeit zwischen zwei Mahlzeiten kein Loch im Plan, sondern
+  der Teil, auf den es für alle Beteiligten ankommt. Statt einer Zahlenreihe
+  stehen darunter drei Glaskacheln mit der Richtung der letzten Tage.
 - **„Gewicht"** führt eine Leitzahl an – das aktuelle Gewicht – mit der
   Zunahme und dem Erwartungsbereich daneben; Perzentile und Bilanz zum
   Geburtsgewicht folgen als Kacheln.

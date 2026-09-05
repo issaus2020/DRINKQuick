@@ -232,8 +232,48 @@ describe('planRestOfDay', () => {
     // 500 ml offen, aber nur noch zwei Mahlzeiten bis Mitternacht.
     const plan = planRestOfDay(regular(18, now), 500, 80, now);
     expect(plan.strain).toBe('unrealistic');
-    expect(plan.note).toContain('nicht mehr sinnvoll');
+    expect(plan.note).toMatch(/bleiben heute offen/);
     expect(plan.note).toContain('Hunger');
+  });
+
+  it('lädt keiner einzelnen Mahlzeit die doppelte Portion auf', () => {
+    // Der Fall aus dem Alltag: 160 ml offen, aber im gewohnten Takt liegt nur
+    // noch eine Mahlzeit vor Mitternacht. Vorher stand dort "160 ml".
+    const now = new Date(2026, 4, 20, 19, 30, 0);
+    const feeds: Feed[] = [];
+    const last = new Date(2026, 4, 20, 17, 15, 0);
+    for (let i = 30; i >= 0; i--) {
+      feeds.push(feed(new Date(last.getTime() - i * 204 * 60_000)));
+    }
+    const plan = planRestOfDay(feeds, 160, 80, now);
+    const today = plan.slots.filter((slot) => !slot.nextDay);
+    expect(today.length).toBeGreaterThan(1);
+    for (const slot of today) expect(slot.amountMl).toBeLessThanOrEqual(120);
+    expect(today.reduce((sum, slot) => sum + (slot.amountMl ?? 0), 0)).toBe(160);
+  });
+
+  it('rückt dafür enger zusammen, aber nie unter zwei Stunden', () => {
+    const now = new Date(2026, 4, 20, 19, 30, 0);
+    const feeds: Feed[] = [];
+    const last = new Date(2026, 4, 20, 17, 15, 0);
+    for (let i = 30; i >= 0; i--) {
+      feeds.push(feed(new Date(last.getTime() - i * 204 * 60_000)));
+    }
+    const plan = planRestOfDay(feeds, 400, 80, now);
+    const today = plan.slots.filter((slot) => !slot.nextDay);
+    for (const slot of today.slice(1)) {
+      expect(slot.sleepBeforeMinutes).toBeGreaterThanOrEqual(120);
+    }
+  });
+
+  it('rechnet die Schlafzeit zwischen den Mahlzeiten mit', () => {
+    const now = new Date(2026, 4, 20, 13, 0, 0);
+    const plan = planRestOfDay(regular(12, now), 300, 80, now);
+    // Die Summe der Pausen ist der Weg von jetzt bis zur letzten Mahlzeit.
+    const span = plan.slots[plan.slots.length - 1].at.getTime() - now.getTime();
+    expect(plan.sleepMinutes).toBe(Math.round(span / 60_000));
+    expect(plan.nightSleepMinutes).toBeGreaterThan(0);
+    expect(plan.nightSleepMinutes).toBeLessThanOrEqual(plan.sleepMinutes);
   });
 
   it('drängt auch dann nicht, wenn heute gar keine Mahlzeit mehr ansteht', () => {

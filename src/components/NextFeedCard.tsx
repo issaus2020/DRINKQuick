@@ -8,7 +8,7 @@
  * das auch.
  */
 import { DayBand } from './DayBand';
-import { formatTime } from '../lib/date';
+import { formatDurationShort, formatTime } from '../lib/date';
 import { forecastNextFeed, planRestOfDay } from '../lib/rhythm';
 import type { Feed } from '../lib/types';
 
@@ -94,14 +94,35 @@ export function NextFeedCard({ feeds, remainingMl, usualPerMealMl, now }: NextFe
           </h3>
           <ul className="plan">
             {plan.slots.map((slot) => (
-              <li key={slot.at.toISOString()} className="plan__item">
-                <span className="plan__time">{formatTime(slot.at)}</span>
-                {slot.amountMl ? <span className="plan__amount">{slot.amountMl} ml</span> : null}
-                {slot.night && <span className="badge">Nacht</span>}
-                {slot.nextDay && <span className="badge">morgen</span>}
+              <li key={slot.at.toISOString()}>
+                {/* Zwischen den Mahlzeiten wird geschlafen - das ist der Teil
+                    des Plans, auf den es für alle Beteiligten ankommt, und
+                    deshalb steht er hier und nicht nur zwischen den Zeilen. */}
+                {slot.sleepBeforeMinutes >= 20 && (
+                  <p className={`plan__sleep${slot.night ? ' plan__sleep--night' : ''}`}>
+                    <span className="plan__sleep-rail" aria-hidden="true" />
+                    {formatDurationShort(slot.sleepBeforeMinutes * 60)} Schlaf
+                  </p>
+                )}
+                <div className="plan__item">
+                  <span className="plan__time">{formatTime(slot.at)}</span>
+                  {slot.amountMl ? <span className="plan__amount">{slot.amountMl} ml</span> : null}
+                  {slot.night && <span className="badge">Nacht</span>}
+                  {slot.nextDay && <span className="badge">morgen</span>}
+                </div>
               </li>
             ))}
           </ul>
+          {plan.sleepMinutes > 0 && (
+            <p className="muted small">
+              Dazwischen liegen etwa {formatDurationShort(plan.sleepMinutes * 60)} Schlaf bis zum
+              Morgen
+              {plan.nightSleepMinutes > 0
+                ? `, davon ${formatDurationShort(plan.nightSleepMinutes * 60)} nach 22 Uhr`
+                : ''}
+              .
+            </p>
+          )}
         </>
       )}
 
