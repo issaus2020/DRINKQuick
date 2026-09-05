@@ -20,7 +20,7 @@ interface FeedingScreenProps {
 }
 
 export function FeedingScreen({ baby }: FeedingScreenProps) {
-  const { data } = useStore();
+  const { data, canEdit } = useStore();
   const [range, setRange] = useState<Range>('14');
   const [metric, setMetric] = useState<IntakeMetric>(
     baby.feedingMode === 'breast' ? 'meals' : 'ml',
@@ -199,14 +199,16 @@ export function FeedingScreen({ baby }: FeedingScreenProps) {
                       </div>
                     </div>
                     <span className="list__value">{feed.amountMl ? `${feed.amountMl} ml` : ''}</span>
-                    <button
-                      type="button"
-                      className="icon-btn"
-                      aria-label="Eintrag bearbeiten"
-                      onClick={() => setEditing(feed)}
-                    >
-                      <Icon name="edit" size={17} />
-                    </button>
+                    {canEdit && (
+                      <button
+                        type="button"
+                        className="icon-btn"
+                        aria-label="Eintrag bearbeiten"
+                        onClick={() => setEditing(feed)}
+                      >
+                        <Icon name="edit" size={17} />
+                      </button>
+                    )}
                   </li>
                 ))}
               </ul>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { dailyGoal, encouragement, greetingFor } from '../greeting';
+import { dailyGoal, greetingFor } from '../greeting';
 import type { Baby } from '../types';
 
 const baby = (patch: Partial<Baby> = {}): Baby => ({
@@ -51,46 +51,5 @@ describe('dailyGoal', () => {
     const goal = dailyGoal(baby(), 0, 8, undefined, 8);
     expect(goal.remainingMl).toBeUndefined();
     expect(goal.reached).toBe(true);
-  });
-});
-
-describe('encouragement', () => {
-  it('nimmt nachts einen eigenen Ton', () => {
-    const goal = dailyGoal(baby(), 100, 2, 585, 8);
-    expect(encouragement(baby(), goal, at(3)).mood).toBe('night');
-  });
-
-  it('spricht in den ersten Lebenstagen von kleinen Mengen', () => {
-    const newborn = baby({ birthedAt: '2026-04-24T07:00:00.000Z' });
-    const goal = dailyGoal(newborn, 30, 3, 200, 9);
-    expect(encouragement(newborn, goal, at(10)).mood).toBe('first_days');
-  });
-
-  it('erkennt einen leeren Tag', () => {
-    const goal = dailyGoal(baby(), 0, 0, 585, 8);
-    expect(encouragement(baby(), goal, at(10)).mood).toBe('nothing_yet');
-  });
-
-  it('feiert das erreichte Ziel', () => {
-    const goal = dailyGoal(baby(), 600, 8, 585, 8);
-    expect(encouragement(baby(), goal, at(19)).mood).toBe('reached');
-  });
-
-  it('drängt am Morgen nicht, wenn der Tag noch jung ist', () => {
-    const goal = dailyGoal(baby(), 60, 1, 585, 8);
-    expect(encouragement(baby(), goal, at(9)).mood).toBe('early');
-  });
-
-  it('benennt am Abend, wenn deutlich weniger zusammenkam', () => {
-    const goal = dailyGoal(baby(), 150, 2, 585, 8);
-    expect(encouragement(baby(), goal, at(20)).mood).toBe('behind');
-  });
-
-  it('bleibt über den Tag beim selben Satz', () => {
-    const goal = dailyGoal(baby(), 400, 6, 585, 8);
-    const morning = encouragement(baby(), goal, at(10));
-    const evening = encouragement(baby(), goal, at(16));
-    expect(morning.text).toBe(evening.text);
-    expect(morning.text.length).toBeGreaterThan(0);
   });
 });

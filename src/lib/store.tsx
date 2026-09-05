@@ -61,6 +61,21 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setData((current) => fn(current));
   }, []);
 
+  /**
+   * Änderungen an den Einträgen des Kindes - für Beobachter wirkungslos.
+   *
+   * Durchgesetzt wird das Nur-Lesen in der Datenbank (siehe
+   * supabase/schema.sql). Hier wird zusätzlich lokal nichts geändert: sonst
+   * entstünde auf dem Gerät ein Bestand, den der Server nie annimmt, und die
+   * beiden Ansichten liefen still auseinander.
+   *
+   * Die Geräte-Einstellungen (Design, Anrede) sind davon ausgenommen - die
+   * gehören dem Gerät, nicht dem Bereich.
+   */
+  const writeEntries = useCallback((fn: (current: AppData) => AppData) => {
+    setData((current) => (current.account?.role === 'viewer' ? current : fn(current)));
+  }, []);
+
   // Die Oberfläche sieht nur, was nicht gelöscht ist; Abgleich und Sicherung
   // brauchen dagegen die Löschmarkierungen.
   const visible = useMemo<AppData>(
@@ -86,6 +101,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       rawData: data,
       ready,
       activeBaby,
+      // Ohne Rolle (eigener Bereich, oder Konto von vor den Rollen) wird
+      // geschrieben wie bisher.
+      canEdit: data.account?.role !== 'viewer',
 
       setSettings: (patch: Partial<Settings>) =>
         update((d) => ({ ...d, settings: { ...d.settings, ...patch } })),
@@ -93,7 +111,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setAccount: (account?: Account) => update((d) => ({ ...d, account })),
 
       addBaby: (baby) =>
-        update((d) => {
+        writeEntries((d) => {
           const entry = stamp(baby);
           return {
             ...d,
@@ -101,9 +119,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             settings: { ...d.settings, activeBabyId: entry.id, onboarded: true },
           };
         }),
-      updateBaby: (id, patch) => update((d) => ({ ...d, babies: patchIn(d.babies, id, patch) })),
+      updateBaby: (id, patch) => writeEntries((d) => ({ ...d, babies: patchIn(d.babies, id, patch) })),
       removeBaby: (id) =>
-        update((d) => {
+        writeEntries((d) => {
           const byBaby = (item: { babyId: string }) => item.babyId === id;
           const babies = softDelete(d.babies, (b) => b.id === id);
           return {
@@ -123,32 +141,32 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           };
         }),
 
-      addFeed: (feed) => update((d) => ({ ...d, feeds: [...d.feeds, stamp(feed)] })),
-      updateFeed: (id, patch) => update((d) => ({ ...d, feeds: patchIn(d.feeds, id, patch) })),
-      removeFeed: (id) => update((d) => ({ ...d, feeds: softDelete(d.feeds, (f) => f.id === id) })),
+      addFeed: (feed) => writeEntries((d) => ({ ...d, feeds: [...d.feeds, stamp(feed)] })),
+      updateFeed: (id, patch) => writeEntries((d) => ({ ...d, feeds: patchIn(d.feeds, id, patch) })),
+      removeFeed: (id) => writeEntries((d) => ({ ...d, feeds: softDelete(d.feeds, (f) => f.id === id) })),
 
       addMeasurement: (entry) =>
-        update((d) => ({ ...d, measurements: [...d.measurements, stamp(entry)] })),
+        writeEntries((d) => ({ ...d, measurements: [...d.measurements, stamp(entry)] })),
       updateMeasurement: (id, patch) =>
-        update((d) => ({ ...d, measurements: patchIn(d.measurements, id, patch) })),
+        writeEntries((d) => ({ ...d, measurements: patchIn(d.measurements, id, patch) })),
       removeMeasurement: (id) =>
-        update((d) => ({ ...d, measurements: softDelete(d.measurements, (m) => m.id === id) })),
+        writeEntries((d) => ({ ...d, measurements: softDelete(d.measurements, (m) => m.id === id) })),
 
-      addDiaper: (entry) => update((d) => ({ ...d, diapers: [...d.diapers, stamp(entry)] })),
+      addDiaper: (entry) => writeEntries((d) => ({ ...d, diapers: [...d.diapers, stamp(entry)] })),
       removeDiaper: (id) =>
-        update((d) => ({ ...d, diapers: softDelete(d.diapers, (x) => x.id === id) })),
+        writeEntries((d) => ({ ...d, diapers: softDelete(d.diapers, (x) => x.id === id) })),
 
-      addHealth: (entry) => update((d) => ({ ...d, health: [...d.health, stamp(entry)] })),
+      addHealth: (entry) => writeEntries((d) => ({ ...d, health: [...d.health, stamp(entry)] })),
       removeHealth: (id) =>
-        update((d) => ({ ...d, health: softDelete(d.health, (x) => x.id === id) })),
+        writeEntries((d) => ({ ...d, health: softDelete(d.health, (x) => x.id === id) })),
 
-      addSleep: (entry) => update((d) => ({ ...d, sleeps: [...d.sleeps, stamp(entry)] })),
-      updateSleep: (id, patch) => update((d) => ({ ...d, sleeps: patchIn(d.sleeps, id, patch) })),
+      addSleep: (entry) => writeEntries((d) => ({ ...d, sleeps: [...d.sleeps, stamp(entry)] })),
+      updateSleep: (id, patch) => writeEntries((d) => ({ ...d, sleeps: patchIn(d.sleeps, id, patch) })),
       removeSleep: (id) =>
-        update((d) => ({ ...d, sleeps: softDelete(d.sleeps, (s) => s.id === id) })),
+        writeEntries((d) => ({ ...d, sleeps: softDelete(d.sleeps, (s) => s.id === id) })),
 
       toggleCheckup: (entry) =>
-        update((d) => {
+        writeEntries((d) => {
           const existing = d.checkups.find(
             (c) => c.babyId === entry.babyId && c.key === entry.key && !c.deletedAt,
           );
@@ -157,7 +175,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         }),
 
       setTimer: (babyId: string, timer?: ActiveTimer) =>
-        update((d) => ({
+        writeEntries((d) => ({
           ...d,
           timers: timer
             ? [...d.timers.filter((t) => t.babyId !== babyId), timer]
@@ -178,7 +196,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           return next;
         }),
     };
-  }, [data, visible, ready, update]);
+  }, [data, visible, ready, update, writeEntries]);
 
   return <StoreContext.Provider value={store}>{children}</StoreContext.Provider>;
 }

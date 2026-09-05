@@ -32,7 +32,8 @@ export type IconName =
   | 'moon'
   | 'baby'
   | 'pill'
-  | 'note';
+  | 'note'
+  | 'eye';
 
 const PATHS: Record<IconName, string> = {
   home: 'M3 10.5 12 3l9 7.5M5.5 9.5V20h13V9.5M9.5 20v-5.5h5V20',
@@ -66,6 +67,7 @@ const PATHS: Record<IconName, string> = {
   baby: 'M12 20a7 7 0 1 0 0-14 7 7 0 0 0 0 14ZM9.5 11h.01M14.5 11h.01M9.5 15c.7.8 1.6 1.2 2.5 1.2s1.8-.4 2.5-1.2M12 6V3.5',
   pill: 'M8.5 4.5h7A4.5 4.5 0 0 1 20 9v6a4.5 4.5 0 0 1-4.5 4.5h-7A4.5 4.5 0 0 1 4 15V9a4.5 4.5 0 0 1 4.5-4.5ZM4 12h16',
   note: 'M6 3.5h9L19 8v12.5H6zM14.5 3.5V8H19M9 12h7M9 16h5',
+  eye: 'M2.5 12S6.5 5.5 12 5.5 21.5 12 21.5 12 17.5 18.5 12 18.5 2.5 12 2.5 12ZM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z',
 };
 
 /** Diese Symbole werden gefüllt statt gestrichen dargestellt. */

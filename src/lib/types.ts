@@ -145,6 +145,15 @@ export interface Checkup extends Syncable {
 
 export type ThemeSetting = 'system' | 'light' | 'dark';
 
+/**
+ * Was jemand im geteilten Bereich darf.
+ *
+ * 'editor' trägt ein, 'viewer' sieht ausschließlich zu. Durchgesetzt wird das
+ * in der Datenbank (siehe supabase/schema.sql); die Rolle steht hier, damit
+ * die App die Eingabemöglichkeiten gar nicht erst anbietet.
+ */
+export type FamilyRole = 'editor' | 'viewer';
+
 /** Angemeldeter Nutzer und sein Familien-Bereich. Fehlt beides, läuft die App rein lokal. */
 export interface Account {
   userId: string;
@@ -158,6 +167,11 @@ export interface Account {
   /** Leer, solange noch kein Bereich angelegt oder beigetreten wurde. */
   familyId: string;
   familyName: string;
+  /**
+   * Eigene Rolle im Bereich. Fehlt sie, wird 'editor' angenommen - so
+   * verhalten sich Konten aus der Zeit vor den Rollen unverändert.
+   */
+  role?: FamilyRole;
   /** Serverseitiger Lesezeiger: bis hierher ist alles geholt. */
   syncCursor?: string;
   /** Lokaler Zeitpunkt, bis zu dem alles hochgeladen ist. */

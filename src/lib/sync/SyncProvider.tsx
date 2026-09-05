@@ -9,7 +9,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { useStore } from '../store-context';
-import type { Account } from '../types';
+import type { Account, FamilyRole } from '../types';
 import { getClient, isSyncConfigured } from './client';
 import { countPending } from './merge';
 import { runSync } from './sync';
@@ -40,6 +40,9 @@ export function SyncProvider({ children }: { children: ReactNode }) {
   const latest = useRef(rawData);
   const actions = useRef(store);
   const running = useRef(false);
+  // Die eigene Rolle wird einmal je Sitzung beim Server erfragt - sie ändert
+  // sich nur, wenn jemand neu eingeladen wird.
+  const roleChecked = useRef(false);
 
   useEffect(() => {
     latest.current = rawData;
@@ -57,16 +60,23 @@ export function SyncProvider({ children }: { children: ReactNode }) {
     running.current = true;
     setStatus('syncing');
     try {
+      const role = roleChecked.current
+        ? current.role
+        : await readRole(client, current.familyId, current.role);
+      roleChecked.current = true;
+
       const outcome = await runSync(
         client,
         latest.current,
         current.familyId,
         current.syncCursor,
         current.lastPushedAt,
+        role !== 'viewer',
       );
 
       const nextAccount: Account = {
         ...current,
+        role,
         syncCursor: outcome.cursor,
         lastPushedAt: outcome.pushedUpTo,
         lastSyncedAt: new Date().toISOString(),
@@ -219,16 +229,18 @@ export function SyncProvider({ children }: { children: ReactNode }) {
           ...current,
           familyId: familyId as string,
           familyName: name.trim() || 'Familie',
+          role: 'editor',
           syncCursor: undefined,
           lastPushedAt: undefined,
         });
       },
 
-      createInvite: async () => {
+      createInvite: async (role = 'editor') => {
         const current = latest.current.account;
         if (!current?.familyId) throw new Error('Noch kein Familien-Bereich');
         const { data: code, error: failure } = await requireClient().rpc('create_invite', {
           target: current.familyId,
+          invite_role: role,
         });
         if (failure) throw new Error(translateAuthError(failure.message));
         return code as string;
@@ -247,6 +259,8 @@ export function SyncProvider({ children }: { children: ReactNode }) {
           ...current,
           familyId: familyId as string,
           familyName: await readFamilyName(client, familyId as string),
+          // Der Code entscheidet, was der Beitretende darf.
+          role: await readRole(client, familyId as string, 'editor'),
           // Beide Zeiger zurücksetzen: der Lesezeiger, damit der gesamte
           // Bestand des Bereichs hereinkommt - und der Schreibzeiger, damit
           // die eigenen Einträge dieses Geräts im neuen Bereich landen. Ohne
@@ -262,6 +276,22 @@ export function SyncProvider({ children }: { children: ReactNode }) {
   }, [status, error, account?.lastSyncedAt, pending, sync]);
 
   return <SyncContext.Provider value={api}>{children}</SyncContext.Provider>;
+}
+
+/**
+ * Die eigene Rolle im Bereich holen.
+ *
+ * Schlägt der Aufruf fehl - etwa weil im Supabase-Projekt noch das Schema von
+ * vor den Rollen liegt -, bleibt es beim bisherigen Wert. Eine bestehende
+ * Installation verliert dadurch nicht ihr Schreibrecht.
+ */
+async function readRole(
+  client: SupabaseClient,
+  familyId: string,
+  fallback: FamilyRole | undefined,
+): Promise<FamilyRole | undefined> {
+  const { data } = await client.rpc('my_family_role', { target: familyId });
+  return data === 'viewer' || data === 'editor' ? data : fallback;
 }
 
 /** Den echten Namen des Bereichs holen, statt "Familie" zu raten. */
@@ -289,6 +319,9 @@ function translateAuthError(message: string): string {
   }
   if (lower.includes('invalid api key') || lower.includes('no api key')) {
     return 'Der hinterlegte Schlüssel stimmt nicht (VITE_SUPABASE_ANON_KEY). Nimm den Publishable key bzw. den anon key aus den API-Einstellungen - nicht den secret key. Nach dem Ändern neu deployen.';
+  }
+  if (lower.includes('nur wer mitschreiben darf')) {
+    return 'Als Beobachter kannst du niemanden einladen. Bitte die Person, die den Bereich angelegt hat, den Link zu verschicken.';
   }
   if (lower.includes('code unbekannt')) {
     return 'Diesen Einladungscode gibt es nicht. Achte auf Tippfehler - er besteht aus 8 Zeichen.';

@@ -18,7 +18,8 @@ interface SettingsScreenProps {
 }
 
 export function SettingsScreen({ baby, onShowReport, onShowAccount }: SettingsScreenProps) {
-  const { data, rawData, updateBaby, addBaby, removeBaby, setSettings, replaceAll } = useStore();
+  const { data, rawData, canEdit, updateBaby, addBaby, removeBaby, setSettings, replaceAll } =
+    useStore();
   const sync = useSync();
   const fileInput = useRef<HTMLInputElement>(null);
   const [importMessage, setImportMessage] = useState<string | null>(null);
@@ -59,6 +60,15 @@ export function SettingsScreen({ baby, onShowReport, onShowAccount }: SettingsSc
 
       <div className="card stack">
         <h2 className="card__title">Profil</h2>
+        {!canEdit && (
+          <p className="muted small">
+            Als Beobachter siehst du die Angaben, kannst sie aber nicht ändern.
+          </p>
+        )}
+        {/* Ein `fieldset` sperrt alle Felder darin auf einen Schlag - das ist
+            weniger fehleranfällig, als an jedes Feld ein `disabled` zu hängen
+            und eines zu vergessen. */}
+        <fieldset className="fieldset" disabled={!canEdit}>
 
         <div className="field">
           <label className="field__label" htmlFor="s-name">
@@ -163,6 +173,7 @@ export function SettingsScreen({ baby, onShowReport, onShowAccount }: SettingsSc
             App automatisch mit der aufsteigenden Staffel (60, 80, 100, 120, 140 ml/kg).
           </span>
         </div>
+        </fieldset>
       </div>
 
       {data.babies.length > 1 && (
@@ -184,6 +195,7 @@ export function SettingsScreen({ baby, onShowReport, onShowAccount }: SettingsSc
         </div>
       )}
 
+      {canEdit && (
       <div className="card stack stack--tight">
         <h2 className="card__title">Weiteres Kind</h2>
         <p className="muted small">Für Zwillinge oder Geschwister - jedes Kind hat eigene Daten.</p>
@@ -204,6 +216,7 @@ export function SettingsScreen({ baby, onShowReport, onShowAccount }: SettingsSc
           <Icon name="plus" size={18} /> Profil hinzufügen
         </button>
       </div>
+      )}
 
       <div className="card stack stack--tight">
         <h2 className="card__title">Anrede</h2>
@@ -258,9 +271,11 @@ export function SettingsScreen({ baby, onShowReport, onShowAccount }: SettingsSc
         <button type="button" className="btn" onClick={() => exportCsvBundle(data, baby)}>
           <Icon name="download" size={18} /> Tabellen als CSV
         </button>
-        <button type="button" className="btn" onClick={() => fileInput.current?.click()}>
-          <Icon name="upload" size={18} /> Sicherung einlesen
-        </button>
+        {canEdit && (
+          <button type="button" className="btn" onClick={() => fileInput.current?.click()}>
+            <Icon name="upload" size={18} /> Sicherung einlesen
+          </button>
+        )}
         <input
           ref={fileInput}
           type="file"
@@ -277,15 +292,19 @@ export function SettingsScreen({ baby, onShowReport, onShowAccount }: SettingsSc
 
       <div className="card stack stack--tight">
         <h2 className="card__title">Löschen</h2>
-        <button
-          type="button"
-          className="btn btn--danger"
-          onClick={() => {
-            if (confirm(`Alle Daten von ${baby.name} unwiderruflich löschen?`)) removeBaby(baby.id);
-          }}
-        >
-          <Icon name="trash" size={18} /> Dieses Profil löschen
-        </button>
+        {canEdit && (
+          <button
+            type="button"
+            className="btn btn--danger"
+            onClick={() => {
+              if (confirm(`Alle Daten von ${baby.name} unwiderruflich löschen?`)) {
+                removeBaby(baby.id);
+              }
+            }}
+          >
+            <Icon name="trash" size={18} /> Dieses Profil löschen
+          </button>
+        )}
         <button
           type="button"
           className="btn btn--danger"

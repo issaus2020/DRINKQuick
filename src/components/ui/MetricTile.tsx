@@ -16,11 +16,20 @@ interface MetricTileProps {
   /** Werte in Zeitfolge für die Linie; unter drei Punkten entfällt sie. */
   trend?: number[];
   trendDelayMs?: number;
+  /** Wert im Soll - die Kachel bekommt dann einen ruhigen grünen Rahmen. */
+  reached?: boolean;
 }
 
-export function MetricTile({ label, value, unit, trend, trendDelayMs }: MetricTileProps) {
+export function MetricTile({
+  label,
+  value,
+  unit,
+  trend,
+  trendDelayMs,
+  reached = false,
+}: MetricTileProps) {
   return (
-    <div className="tile">
+    <div className={`tile${reached ? ' tile--reached' : ''}`}>
       <span className="tile__value">
         {value}
         {unit && <span className="tile__unit"> {unit}</span>}

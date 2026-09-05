@@ -156,6 +156,18 @@ export interface WeightStats {
   expectedGain?: { min: number; max: number };
 }
 
+/**
+ * Liegt die Zunahme im Erwartungsbereich für das Alter?
+ *
+ * Das ist beim Gewicht das Gegenstück zum Tagesziel beim Trinken: eine
+ * Schwelle, die man erreicht - und die deshalb auch gefeiert werden darf.
+ * Ohne zweite Wägung gibt es keine Zunahme und damit auch nichts zu feiern.
+ */
+export function weightGoalReached(stats: WeightStats): boolean {
+  if (stats.gainPerDayG === undefined || !stats.expectedGain) return false;
+  return stats.gainPerDayG >= stats.expectedGain.min;
+}
+
 /** Nach Zeit sortierte Wägungen (aufsteigend), nur die mit Gewicht. */
 export function weightSeries(measurements: Measurement[]): Measurement[] {
   return measurements
