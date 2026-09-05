@@ -9,6 +9,7 @@ import { BreastTimer } from '../components/entry/BreastTimer';
 import { DiaperSheet } from '../components/entry/DiaperSheet';
 import { FeedSheet } from '../components/entry/FeedSheet';
 import { MeasurementSheet } from '../components/entry/MeasurementSheet';
+import { NextFeedCard } from '../components/NextFeedCard';
 import { QuickAmounts } from '../components/entry/QuickAmounts';
 import { Icon } from '../components/ui/Icon';
 import { ProgressRing } from '../components/ui/ProgressRing';
@@ -73,6 +74,11 @@ export function TodayScreen({ baby }: TodayScreenProps) {
   // Sobald gestillt wird, ist die ml-Summe unvollständig - dann führt die Zahl
   // der Mahlzeiten, und die Flaschenmenge steht daneben als eigene Kennzahl.
   const primaryIsMl = baby.feedingMode === 'bottle' && Boolean(target);
+
+  // Die offene Menge taugt nur als Plangröße, wenn die ml-Summe die ganze
+  // Ernährung abdeckt. Wird zusätzlich gestillt, fehlt in der Summe genau das,
+  // was niemand messen kann - dann plant die Karte nur Zeitpunkte.
+  const remainingMl = primaryIsMl && target ? Math.max(0, target.dailyMl - stats.today.ml) : undefined;
 
   // Der zuletzt gewählte Inhalt wird für den Schnelleintrag übernommen.
   const lastBottleContent = useMemo(
@@ -164,6 +170,13 @@ export function TodayScreen({ baby }: TodayScreenProps) {
           </div>
         </div>
       </div>
+
+      <NextFeedCard
+        feeds={feeds}
+        remainingMl={remainingMl}
+        usualPerMealMl={target?.perMealMl}
+        now={now}
+      />
 
       <div className="stat-row">
         <div className="stat">

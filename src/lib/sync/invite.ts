@@ -13,9 +13,16 @@ const PARAM = 'einladung';
 /** Der Code besteht aus 8 Zeichen ohne 0/O/1/I - siehe supabase/schema.sql. */
 const CODE_PATTERN = /^[A-HJ-NP-Z2-9]{4,12}$/;
 
-/** Einen vollständigen Einladungslink zu diesem Code bauen. */
-export function inviteLink(code: string, origin: string = window.location.origin): string {
-  const url = new URL(window.location.pathname, origin);
+/**
+ * Einen vollständigen Einladungslink zu diesem Code bauen.
+ *
+ * Wird ein Ursprung übergeben, kommt die Funktion ohne `window` aus - sonst
+ * wäre sie außerhalb des Browsers nicht prüfbar.
+ */
+export function inviteLink(code: string, origin?: string): string {
+  const base = origin ?? window.location.origin;
+  const path = origin ? '/' : window.location.pathname;
+  const url = new URL(path, base);
   url.searchParams.set(PARAM, code.trim().toUpperCase());
   return url.toString();
 }

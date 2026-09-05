@@ -43,6 +43,15 @@ anlegen und einen Familien-Bereich teilen – siehe unten.
 - **Soll-Trinkmenge** aus aktuellem Gewicht und Lebenstag, siehe unten.
 - **Tagesbilanz**: Menge, Mahlzeiten, Ø Abstand, längste Pause, Nachtmahlzeiten,
   Zeit seit der letzten Mahlzeit.
+- **Nächste Mahlzeit und Tagesplan** auf dem Startbildschirm: aus den Abständen
+  der letzten zehn Tage – bevorzugt zu dieser Tageszeit – ergibt sich, wann die
+  nächste Mahlzeit ansteht, dazu ein Zeitfenster statt einer Uhrzeit auf die
+  Minute. Darunter verteilt sich die noch offene Menge auf die Mahlzeiten bis
+  Mitternacht; die Zeitpunkte danach gehören zum nächsten Tag und tragen die
+  gewohnte Portion. Passt der Rest nicht mehr hinein, sagt die App genau das,
+  statt zu größeren Flaschen zu drängen – „Hunger geht vor Uhrzeit“ steht
+  bewusst daneben. Nachtmahlzeiten werden markiert und erklärt, nicht
+  wegoptimiert.
 - **Diagramme**: Menge/Mahlzeiten/Stillzeit pro Tag über 7, 14 oder 30 Tage,
   wahlweise als Balken (einzelne Tage) oder als Kurve (Verlauf), sowie eine
   Heatmap „wann getrunken wird“ (Tage × Stunden), die Cluster-Feeding und
@@ -67,6 +76,15 @@ anlegen und einen Familien-Bereich teilen – siehe unten.
 - Temperatur mit Einstufung und dem Hinweis, dass bei unter 3 Monate alten Babys
   ab 38,0 °C ärztlich abzuklären ist.
 - Medikamente, Vitamin D, Symptome, Notizen.
+- **Blähungen** mit einem Tipp erfassen und gegen das Trinkverhalten auswerten:
+  Die App vergleicht die Mahlzeiten, auf die innerhalb von drei Stunden ein
+  Eintrag folgte, mit allen übrigen – Portionsgröße, Trinkgeschwindigkeit,
+  Tageszeit und Flascheninhalt. Ein Befund erscheint erst ab sechs Mahlzeiten je
+  Seite und mindestens 15 % Unterschied, und immer mit dem Satz, dass das
+  Zusammenhänge sind und keine Ursachen. Dazu allgemeine Maßnahmen (aufstoßen
+  lassen, aufrecht füttern, langsamerer Fluss, Luft aus der Flasche halten,
+  Bauchmassage, kleinere Portionen) und die Grenze: über einen Wechsel der
+  Nahrung oder Medikamente entscheidet die Kinderarztpraxis.
 - Vorsorgeuntersuchungen U1–U9 mit konkreten Terminfenstern aus dem Geburtsdatum.
 
 ### Konto und Teilen (optional)
@@ -117,6 +135,23 @@ Die ml-Bilanz wird **nur bei reiner Flaschenernährung bewertet**. Wird (auch)
 gestillt, fehlt der Anteil an der Brust – dann führt die Zahl der Mahlzeiten, und
 die Flaschenmenge steht als eigene Kennzahl daneben. Eine Warnung „zu wenig
 getrunken“ wäre in diesem Fall schlicht falsch.
+
+**Rhythmus und Tagesplan.** Der erwartete Zeitpunkt der nächsten Mahlzeit ist der
+Median der Abstände der letzten zehn Tage, bevorzugt derer im Fenster ±2 Stunden
+um die aktuelle Uhrzeit (ab fünf Beobachtungen; sonst über den ganzen Tag ab
+drei). Abstände unter 10 Minuten und über 10 Stunden fallen heraus – das sind
+Doppeleinträge und Protokolllücken, keine Rhythmen. Das gezeigte Fenster ist das
+25.- bis 75.-Perzentil derselben Abstände. Die offene Tagesmenge wird nur auf die
+geplanten Mahlzeiten **vor Mitternacht** verteilt; alles danach zählt auf den
+nächsten Tag. Liegt die so errechnete Portion über dem 1,2-fachen der gewohnten
+Menge, warnt die App, ab dem 1,5-fachen rät sie ausdrücklich davon ab.
+
+**Blähungen.** Ein Eintrag wird der letzten Mahlzeit zugeordnet, die höchstens
+drei Stunden davor lag, und jede Mahlzeit höchstens einmal. Verglichen werden
+dann die betroffenen mit den unauffälligen Mahlzeiten. Ein Befund erscheint nur,
+wenn beide Gruppen mindestens sechs Mahlzeiten umfassen und der Unterschied
+mindestens 15 % beträgt. Das bleibt eine Beobachtung an kleinen Zahlen – die App
+sagt das auch dazu.
 
 **Gewicht.** Der z-Wert einer Messung folgt der LMS-Formel der WHO:
 `z = ((x/M)^L − 1) / (L·S)`. Die LMS-Koeffizienten für Gewicht, Länge und

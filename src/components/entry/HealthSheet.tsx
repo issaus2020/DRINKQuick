@@ -41,7 +41,10 @@ export function HealthSheet({ onClose, babyId, initialKind = 'temperature' }: He
     onClose();
   };
 
-  const canSave = kind === 'temperature' ? validTemp : Boolean(label.trim() || note.trim());
+  // Blähungen brauchen keine Beschreibung - der Zeitpunkt ist die Information,
+  // die sich später gegen das Trinkverhalten auswerten lässt.
+  const canSave =
+    kind === 'temperature' ? validTemp : kind === 'gas' ? true : Boolean(label.trim() || note.trim());
 
   return (
     <Sheet title="Gesundheitseintrag" onClose={onClose}>
@@ -54,6 +57,7 @@ export function HealthSheet({ onClose, babyId, initialKind = 'temperature' }: He
           { value: 'vitamin', label: 'Vitamin' },
           { value: 'medication', label: 'Medikament' },
           { value: 'symptom', label: 'Symptom' },
+          { value: 'gas', label: 'Blähungen' },
         ]}
       />
 
@@ -82,6 +86,11 @@ export function HealthSheet({ onClose, babyId, initialKind = 'temperature' }: He
             3 Monate alten Babys: ärztlich abklären.
           </span>
         </div>
+      ) : kind === 'gas' ? (
+        <p className="muted small">
+          Trag ein, wann es losging. Mehr braucht es nicht - aus dem Zeitpunkt und den Mahlzeiten
+          davor sucht die App nach Mustern.
+        </p>
       ) : (
         <>
           <div className="field">

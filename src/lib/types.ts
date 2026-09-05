@@ -97,7 +97,15 @@ export interface Diaper extends Syncable {
   note?: string;
 }
 
-export type HealthKind = 'temperature' | 'medication' | 'vitamin' | 'symptom' | 'spit_up' | 'note';
+export type HealthKind =
+  | 'temperature'
+  | 'medication'
+  | 'vitamin'
+  | 'symptom'
+  /** Blähungen - eigene Art, damit sie sich gegen das Trinkverhalten auswerten lässt. */
+  | 'gas'
+  | 'spit_up'
+  | 'note';
 
 export interface HealthEntry extends Syncable {
   babyId: string;

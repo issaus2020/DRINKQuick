@@ -1,5 +1,6 @@
 /** Der Gesundheits-Tab: Windeln, Temperatur, Medikamente, Vorsorgetermine. */
 import { useMemo, useState } from 'react';
+import { GasCard } from '../components/GasCard';
 import { DiaperSheet } from '../components/entry/DiaperSheet';
 import { HealthSheet } from '../components/entry/HealthSheet';
 import { Icon } from '../components/ui/Icon';
@@ -44,6 +45,7 @@ export function HealthScreen({ baby }: HealthScreenProps) {
     () => data.health.filter((h) => h.babyId === baby.id),
     [data.health, baby.id],
   );
+  const feeds = useMemo(() => data.feeds.filter((f) => f.babyId === baby.id), [data.feeds, baby.id]);
 
   const week = dailyDiapers(diapers, 7);
   const today = week[week.length - 1];
@@ -94,6 +96,8 @@ export function HealthScreen({ baby }: HealthScreenProps) {
           <span className="quick__meta">tägliche Gabe abhaken</span>
         </button>
       </div>
+
+      <GasCard babyId={baby.id} feeds={feeds} health={health} />
 
       <div className="card">
         <div className="card__head">

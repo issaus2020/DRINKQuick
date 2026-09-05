@@ -38,6 +38,7 @@ export const HEALTH_KIND_LABELS: Record<HealthEntry['kind'], string> = {
   medication: 'Medikament',
   vitamin: 'Vitamin',
   symptom: 'Symptom',
+  gas: 'Blähungen',
   spit_up: 'Spucken',
   note: 'Notiz',
 };
