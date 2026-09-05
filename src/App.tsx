@@ -2,12 +2,15 @@ import { useEffect, useState } from 'react';
 import { Icon, type IconName } from './components/ui/Icon';
 import { formatAge, lifeDay } from './lib/date';
 import { useStore } from './lib/store-context';
+import { useSync } from './lib/sync/sync-context';
+import { clearInviteFromUrl, inviteFromUrl } from './lib/sync/invite';
 import { FeedingScreen } from './screens/FeedingScreen';
 import { GrowthScreen } from './screens/GrowthScreen';
 import { HealthScreen } from './screens/HealthScreen';
 import { Onboarding } from './screens/Onboarding';
 import { ReportScreen } from './screens/ReportScreen';
 import { AccountScreen } from './screens/AccountScreen';
+import { AuthScreen } from './screens/AuthScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { TodayScreen } from './screens/TodayScreen';
 
@@ -31,9 +34,40 @@ const TITLES: Record<Tab, string> = {
 
 export function App() {
   const { ready, activeBaby, data } = useStore();
+  const sync = useSync();
   const [tab, setTab] = useState<Tab>('today');
   const [showReport, setShowReport] = useState(false);
   const [showAccount, setShowAccount] = useState(false);
+  // Der Code aus dem Einladungslink wird einmal beim Start gelesen und
+  // behalten, auch nachdem er aus der Adresszeile verschwunden ist.
+  const [inviteCode] = useState(() => inviteFromUrl());
+  const [skippedAuth, setSkippedAuth] = useState(false);
+  const [joinState, setJoinState] = useState<'idle' | 'joining' | 'failed'>('idle');
+  const [joinError, setJoinError] = useState<string | null>(null);
+
+  // Wer über einen Einladungslink kommt, soll nach dem Anmelden nicht noch
+  // einen Code abtippen: die App löst ihn selbst ein.
+  const account = data.account;
+  useEffect(() => {
+    if (!inviteCode || !account || account.familyId || joinState !== 'idle') return;
+    // Erst nach dem Rendern anstoßen, damit der Beitritt nicht mitten im
+    // Effekt Zustand setzt.
+    const start = window.setTimeout(() => {
+      setJoinState('joining');
+      void sync
+        .joinFamily(inviteCode)
+        .then(() => sync.syncNow())
+        .then(() => {
+          clearInviteFromUrl();
+          setJoinState('idle');
+        })
+        .catch((caught: unknown) => {
+          setJoinError(caught instanceof Error ? caught.message : 'Beitritt fehlgeschlagen.');
+          setJoinState('failed');
+        });
+    }, 0);
+    return () => window.clearTimeout(start);
+  }, [inviteCode, account, joinState, sync]);
 
   // Das Farbschema hängt am Wurzelelement, damit CSS und Formularelemente
   // (color-scheme) gemeinsam umschalten.
@@ -55,10 +89,49 @@ export function App() {
     );
   }
 
-  // Wer eingeladen wurde, hat noch kein Kind - und braucht trotzdem als
-  // Erstes den Konto-Bildschirm. Deshalb steht er vor dem Anlegen eines
-  // Profils zur Verfügung, sonst müsste die Person ein Kind erfinden, das
-  // hinterher als Dublette im geteilten Bereich landet.
+  // Anmeldung zuerst: erst das Konto, dann die Daten dazu. Ohne hinterlegten
+  // Server gibt es nichts anzumelden, dann bleibt es beim rein lokalen
+  // Betrieb.
+  const needsAuth = sync.status !== 'unconfigured' && !data.account && !skippedAuth;
+  if (needsAuth) {
+    return (
+      <div className="app">
+        <main className="app__main">
+          <AuthScreen inviteCode={inviteCode} onSkip={() => setSkippedAuth(true)} />
+        </main>
+      </div>
+    );
+  }
+
+  // Der Beitritt über den Link läuft - solange nichts anderes zeigen, sonst
+  // sähe die eingeladene Person kurz einen leeren Anlege-Bildschirm.
+  if (inviteCode && account && !account.familyId && joinState !== 'failed') {
+    return (
+      <div className="app">
+        <main className="app__main">
+          <div className="page">
+            <p className="empty">Du wirst dem geteilten Bereich hinzugefügt …</p>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  if (inviteCode && joinState === 'failed' && account && !account.familyId) {
+    return (
+      <div className="app">
+        <main className="app__main">
+          <div className="page">
+            <p className="alert alert--alert small" role="alert">
+              {joinError} Du kannst den Code auch von Hand eingeben.
+            </p>
+            <AccountScreen onBack={() => setJoinState('idle')} />
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   if (showAccount) {
     return (
       <div className="app">

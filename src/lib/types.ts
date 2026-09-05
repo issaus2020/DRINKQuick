@@ -127,6 +127,12 @@ export type ThemeSetting = 'system' | 'light' | 'dark';
 export interface Account {
   userId: string;
   email: string;
+  /**
+   * Gast ohne E-Mail und Passwort. Sein Zugang lebt nur in diesem Browser -
+   * gehen die Website-Daten verloren, ist er dauerhaft ausgesperrt. Deshalb
+   * bietet die App ihm an, den Zugang nachträglich zu sichern.
+   */
+  isGuest?: boolean;
   /** Leer, solange noch kein Bereich angelegt oder beigetreten wurde. */
   familyId: string;
   familyName: string;
