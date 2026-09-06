@@ -5,6 +5,7 @@ import { Segmented } from '../components/ui/Segmented';
 import { formatAge, formatSince, fromLocalInputValue, toLocalInputValue } from '../lib/date';
 import { clearData } from '../lib/db';
 import { exportBackup, exportCsvBundle, parseBackup } from '../lib/export';
+import { badgeProgress } from '../lib/badges';
 import { MEDICAL_DISCLAIMER } from '../lib/guidance';
 import { newId } from '../lib/id';
 import { useStore } from '../lib/store-context';
@@ -14,10 +15,16 @@ import type { Baby, FeedingMode, Sex, ThemeSetting } from '../lib/types';
 interface SettingsScreenProps {
   baby: Baby;
   onShowReport: () => void;
+  onShowMedals: () => void;
   onShowAccount: () => void;
 }
 
-export function SettingsScreen({ baby, onShowReport, onShowAccount }: SettingsScreenProps) {
+export function SettingsScreen({
+  baby,
+  onShowReport,
+  onShowMedals,
+  onShowAccount,
+}: SettingsScreenProps) {
   const { data, rawData, canEdit, updateBaby, addBaby, removeBaby, setSettings, replaceAll } =
     useStore();
   const sync = useSync();
@@ -33,6 +40,13 @@ export function SettingsScreen({ baby, onShowReport, onShowAccount }: SettingsSc
       setImportMessage(error instanceof Error ? error.message : 'Import fehlgeschlagen.');
     }
   };
+
+  // Kurzfassung für die Zeile: erreichte Medaillen und begleitete Tage.
+  const medalSummary = (() => {
+    const progress = badgeProgress(baby, data);
+    const earned = progress.badges.filter((b) => b.earnedAt).length;
+    return `${earned} von ${progress.badges.length} Medaillen · ${progress.loggedDays} Tage begleitet`;
+  })();
 
   const accountSummary = (() => {
     if (sync.status === 'unconfigured') return 'Nur auf diesem Gerät';
@@ -53,6 +67,19 @@ export function SettingsScreen({ baby, onShowReport, onShowAccount }: SettingsSc
           <span className="list__title">Konto & Teilen</span>
           <span className="list__meta" style={{ display: 'block' }}>
             {accountSummary}
+          </span>
+        </span>
+        <Icon name="chevron-right" size={18} />
+      </button>
+
+      <button type="button" className="card row row--between" onClick={onShowMedals}>
+        <span className="list__icon">
+          <Icon name="check" size={18} />
+        </span>
+        <span className="grow" style={{ textAlign: 'left' }}>
+          <span className="list__title">Die ersten vierzig Tage</span>
+          <span className="list__meta" style={{ display: 'block' }}>
+            {medalSummary}
           </span>
         </span>
         <Icon name="chevron-right" size={18} />
