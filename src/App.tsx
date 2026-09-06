@@ -195,7 +195,9 @@ export function App() {
       </header>
 
       <main className="app__main">
-        {tab === 'today' && <TodayScreen baby={activeBaby} />}
+        {tab === 'today' && (
+          <TodayScreen baby={activeBaby} onShowMedals={() => setShowMedals(true)} />
+        )}
         {tab === 'feeding' && <FeedingScreen baby={activeBaby} />}
         {tab === 'growth' && <GrowthScreen baby={activeBaby} />}
         {tab === 'health' && <HealthScreen baby={activeBaby} />}

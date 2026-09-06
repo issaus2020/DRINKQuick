@@ -14,6 +14,7 @@ import { FeedSheet } from '../components/entry/FeedSheet';
 import { MeasurementSheet } from '../components/entry/MeasurementSheet';
 import { SleepSheet } from '../components/entry/SleepSheet';
 import { SleepToggle } from '../components/entry/SleepToggle';
+import { NewMedalCard } from '../components/NewMedalCard';
 import { NextFeedCard } from '../components/NextFeedCard';
 import { RestCard } from '../components/RestCard';
 import { QuickAmounts } from '../components/entry/QuickAmounts';
@@ -21,6 +22,7 @@ import { Icon } from '../components/ui/Icon';
 import { MetricTile } from '../components/ui/MetricTile';
 import { BellyBaby } from '../components/ui/BellyBaby';
 import { Celebration } from '../components/ui/Celebration';
+import { badgeProgress } from '../lib/badges';
 import { buildAlerts, type AlertLevel } from '../lib/alerts';
 import { ageInDays, formatDurationShort, formatSince, formatTime, startOfDay } from '../lib/date';
 import { FEED_KIND_LABELS, SIDE_LABELS } from '../lib/export';
@@ -48,9 +50,11 @@ const ALERT_ICON: Record<AlertLevel, 'check' | 'info' | 'warning' | 'alert'> = {
 
 interface TodayScreenProps {
   baby: Baby;
+  /** Führt zur Sammlung der ersten vierzig Tage. */
+  onShowMedals: () => void;
 }
 
-export function TodayScreen({ baby }: TodayScreenProps) {
+export function TodayScreen({ baby, onShowMedals }: TodayScreenProps) {
   const { data, canEdit } = useStore();
   const now = useNow(30_000);
   const [feedSheet, setFeedSheet] = useState<{ kind: Feed['kind']; existing?: Feed } | null>(null);
@@ -141,6 +145,13 @@ export function TodayScreen({ baby }: TodayScreenProps) {
   // bei der zweiten und dritten Mahlzeit wieder von vorn läuft.
   const dance = useGrewSince(todayEntries.length);
 
+  // Die Sammlung der ersten vierzig Tage - hier nur für den Hinweis, ob
+  // heute eine Medaille dazugekommen ist.
+  const medals = useMemo(
+    () => badgeProgress(baby, data, now).badges,
+    [baby, data, now],
+  );
+
   // Der zuletzt gewählte Inhalt wird für den Schnelleintrag übernommen.
   const lastBottleContent = useMemo(
     () =>
@@ -229,6 +240,8 @@ export function TodayScreen({ baby }: TodayScreenProps) {
           </div>
         </div>
       </div>
+
+      <NewMedalCard badges={medals} now={now} onOpen={onShowMedals} />
 
       {/* Alles, was einträgt, entfällt für Beobachter - sie sollen keine
           Knöpfe sehen, die der Server ohnehin abweist. */}

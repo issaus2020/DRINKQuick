@@ -7,10 +7,11 @@
  * Punktestand - deshalb steht nirgends, wie viele Tage "fehlen".
  */
 import { useMemo, useState } from 'react';
+import { Certificate } from '../components/Certificate';
 import { Icon } from '../components/ui/Icon';
 import { Medal } from '../components/ui/Medal';
 import { Sheet } from '../components/ui/Sheet';
-import { formatDurationShort, formatLongDate, lifeDay } from '../lib/date';
+import { formatLongDate, lifeDay } from '../lib/date';
 import { BADGE_DAYS, badgeProgress, certificate, type Badge } from '../lib/badges';
 import { useStore } from '../lib/store-context';
 import type { Baby } from '../lib/types';
@@ -26,6 +27,7 @@ export function MedalsScreen({ baby, onBack }: MedalsScreenProps) {
   // Stichtag beim Rendern.
   const now = useMemo(() => new Date(), []);
   const [open, setOpen] = useState<Badge | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
 
   const progress = useMemo(() => badgeProgress(baby, data, now), [baby, data, now]);
   const paper = useMemo(() => certificate(baby, data, now), [baby, data, now]);
@@ -39,13 +41,14 @@ export function MedalsScreen({ baby, onBack }: MedalsScreenProps) {
         <button type="button" className="btn btn--sm" onClick={onBack}>
           Zurück
         </button>
-        {progress.complete && (
+        {(progress.complete || showPreview) && (
           <button
             type="button"
             className="btn btn--sm btn--primary"
             onClick={() => window.print()}
           >
-            <Icon name="print" size={16} /> Urkunde drucken
+            <Icon name="print" size={16} />{' '}
+            {progress.complete ? 'Urkunde drucken' : 'Vorschau drucken'}
           </button>
         )}
       </div>
@@ -128,85 +131,35 @@ export function MedalsScreen({ baby, onBack }: MedalsScreenProps) {
 
       {/* --- Die Urkunde -------------------------------------------------- */}
       {progress.complete ? (
-        <div className="certificate">
-          <div className="certificate__rule" aria-hidden="true" />
-          <p className="certificate__kicker">Die ersten vierzig Tage</p>
-          <h1 className="certificate__name">{paper.babyName}</h1>
-          <p className="certificate__dates">
-            geboren am {formatLongDate(paper.birthedAt)}
-            <br />
-            begleitet bis zum {formatLongDate(paper.completedAt)}
-          </p>
-
-          <div className="certificate__facts">
-            <div>
-              <span className="certificate__value">{paper.loggedDays}</span>
-              <span className="certificate__label">Tage mit Eintrag</span>
-            </div>
-            <div>
-              <span className="certificate__value">{paper.totalMeals}</span>
-              <span className="certificate__label">Mahlzeiten</span>
-            </div>
-            {paper.totalMl > 0 && (
-              <div>
-                <span className="certificate__value">{(paper.totalMl / 1000).toFixed(1).replace('.', ',')}</span>
-                <span className="certificate__label">Liter getrunken</span>
-              </div>
-            )}
-            {paper.birthWeightG && paper.lastWeightG && (
-              <div>
-                <span className="certificate__value">
-                  +{paper.lastWeightG - paper.birthWeightG}
-                </span>
-                <span className="certificate__label">Gramm zugenommen</span>
-              </div>
-            )}
-            {paper.longestSleepMinutes !== undefined && (
-              <div>
-                <span className="certificate__value">
-                  {formatDurationShort(paper.longestSleepMinutes * 60)}
-                </span>
-                <span className="certificate__label">längster Schlaf am Stück</span>
-              </div>
-            )}
-          </div>
-
-          <div className="certificate__medals">
-            {paper.earned.map((badge) => (
-              <div key={badge.id} className="certificate__medal">
-                <Medal
-                  rank={badge.rank}
-                  icon={badge.icon}
-                  numeral={badge.numeral}
-                  earned
-                  size={52}
-                  label={badge.title}
-                />
-                <span className="certificate__medal-title">{badge.title}</span>
-                <span className="certificate__medal-day">Tag {badge.lifeDay}</span>
-              </div>
-            ))}
-          </div>
-
-          <p className="certificate__foot">
-            Ausgestellt von DRINKQuick am {formatLongDate(now)}. Die Zahlen stammen aus den
-            Einträgen auf diesem Gerät.
-          </p>
-          <div className="certificate__rule" aria-hidden="true" />
-        </div>
+        <Certificate paper={paper} now={now} />
       ) : (
-        <div className="card stack stack--tight no-print">
-          <h2 className="card__title">Die Urkunde</h2>
-          <p className="muted small">
-            Am vierzigsten Tag gibt es ein Blatt zum Ausdrucken: Name, Geburtsdatum, die Zahlen
-            der vierzig Tage und alle erreichten Medaillen. Noch {BADGE_DAYS - day + 1}{' '}
-            {BADGE_DAYS - day + 1 === 1 ? 'Tag' : 'Tage'}.
-          </p>
-          <p className="muted small">
-            Zum Ausdrucken braucht es keinen Dienst und kein Konto – das Blatt geht direkt an den
-            Drucker oder als PDF an einen Copyshop, wenn ihr es auf festem Papier wollt.
-          </p>
-        </div>
+        <>
+          <div className="card stack stack--tight no-print">
+            <h2 className="card__title">Die Urkunde</h2>
+            <p className="muted small">
+              Am vierzigsten Tag gibt es ein Blatt zum Ausdrucken: Name, Geburtsdatum, die Zahlen
+              der vierzig Tage und alle erreichten Medaillen. Noch {BADGE_DAYS - day + 1}{' '}
+              {BADGE_DAYS - day + 1 === 1 ? 'Tag' : 'Tage'}.
+            </p>
+            <p className="muted small">
+              Zum Ausdrucken braucht es keinen Dienst und kein Konto – das Blatt geht direkt an den
+              Drucker oder als PDF an einen Copyshop, wenn ihr es auf festem Papier wollt.
+            </p>
+            <button
+              type="button"
+              className="btn"
+              aria-expanded={showPreview}
+              onClick={() => setShowPreview((on) => !on)}
+            >
+              <Icon name={showPreview ? 'close' : 'eye'} size={18} />{' '}
+              {showPreview ? 'Vorschau schließen' : 'Schon einmal ansehen'}
+            </button>
+          </div>
+
+          {showPreview && (
+            <Certificate paper={paper} now={now} preview currentDay={day} />
+          )}
+        </>
       )}
 
       {open && (

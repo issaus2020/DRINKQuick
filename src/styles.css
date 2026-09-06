@@ -2455,3 +2455,73 @@ button {
     page-break-inside: avoid;
   }
 }
+
+/* Die Vorschau ist als solche erkennbar, auch wenn sie jemand ausdruckt:
+   ein gestrichelter Rand und der Hinweis im Kopf. Ein Blatt, das aussieht
+   wie das echte, aber halbe Zahlen trägt, wäre wertlos. */
+.certificate--preview {
+  border-style: dashed;
+  border-color: #c3bda9;
+}
+
+.certificate--preview .certificate__kicker {
+  color: #9a8c66;
+}
+
+/* Der Hinweis auf eine heute erreichte Medaille. Er liegt unter der Figur,
+   wo der Blick ohnehin hinwandert, und verschwindet mit dem Tag von selbst. */
+.new-medal {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+  border: 1px solid color-mix(in srgb, var(--good) 32%, transparent);
+  background: linear-gradient(color-mix(in srgb, var(--good) 10%, transparent), transparent 70%),
+    var(--glass);
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.new-medal__figures {
+  position: relative;
+  flex: none;
+  display: flex;
+  align-items: center;
+  /* Mehrere Medaillen liegen leicht übereinander wie auf einem Band. */
+  gap: 0;
+}
+
+.new-medal__figures > .medal + .medal {
+  margin-left: -18px;
+}
+
+.new-medal__body {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex-grow: 1;
+}
+
+.new-medal__kicker {
+  font-size: 0.75rem;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--good);
+}
+
+.new-medal__title {
+  font-size: 0.9375rem;
+  font-weight: 650;
+  line-height: 1.3;
+  color: var(--text-primary);
+  text-wrap: pretty;
+}
+
+.new-medal__more {
+  flex: none;
+  color: var(--text-muted);
+}
