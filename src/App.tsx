@@ -7,6 +7,7 @@ import { clearInviteFromUrl, inviteFromUrl } from './lib/sync/invite';
 import { FeedingScreen } from './screens/FeedingScreen';
 import { GrowthScreen } from './screens/GrowthScreen';
 import { HealthScreen } from './screens/HealthScreen';
+import { MedalsScreen } from './screens/MedalsScreen';
 import { Onboarding } from './screens/Onboarding';
 import { ReportScreen } from './screens/ReportScreen';
 import { AccountScreen } from './screens/AccountScreen';
@@ -37,6 +38,7 @@ export function App() {
   const sync = useSync();
   const [tab, setTab] = useState<Tab>('today');
   const [showReport, setShowReport] = useState(false);
+  const [showMedals, setShowMedals] = useState(false);
   const [showAccount, setShowAccount] = useState(false);
   // Der Code aus dem Einladungslink wird einmal beim Start gelesen und
   // behalten, auch nachdem er aus der Adresszeile verschwunden ist.
@@ -154,6 +156,16 @@ export function App() {
     );
   }
 
+  if (showMedals) {
+    return (
+      <div className="app">
+        <main className="app__main">
+          <MedalsScreen baby={activeBaby} onBack={() => setShowMedals(false)} />
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="app">
       <header className="topbar">
@@ -191,6 +203,7 @@ export function App() {
           <SettingsScreen
             baby={activeBaby}
             onShowReport={() => setShowReport(true)}
+            onShowMedals={() => setShowMedals(true)}
             onShowAccount={() => setShowAccount(true)}
           />
         )}

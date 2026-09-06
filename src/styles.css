@@ -2092,6 +2092,7 @@ button {
 @media print {
   .topbar,
   .tabbar,
+  .aurora,
   .no-print {
     display: none !important;
   }
@@ -2246,4 +2247,211 @@ button {
   font-size: 0.8125rem;
   line-height: 1.4;
   color: var(--text-secondary);
+}
+
+/* --- Die ersten vierzig Tage ----------------------------------------------
+   Band, Medaillen und Urkunde. Durchgehend gilt: ein nicht erreichter Tag
+   ist leer, nie rot - er ist etwas, das noch kommt, nicht etwas, das fehlt. */
+
+.forty {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 5px;
+  /* Die Karte ist ein Flex-Behälter: ohne das schrumpft das Raster auf zwei
+     Zeilen zusammen und die übrigen Tage liegen hinter dem Text darunter. */
+  flex: none;
+}
+
+.forty__day {
+  aspect-ratio: 1;
+  border-radius: 5px;
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+}
+
+/* Begleitet: an diesem Tag ist etwas eingetragen worden. */
+.forty__day--logged {
+  background: color-mix(in srgb, var(--accent) 32%, var(--surface-sunken));
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+/* Volle Tagesmenge: dieselbe Farbe, nur satt - kein zweites Signal. */
+.forty__day--reached {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+/* Tage, die noch nicht da waren, sind blasser als leere vergangene Tage. */
+.forty__day--ahead {
+  background: transparent;
+  border-style: dashed;
+  border-color: color-mix(in srgb, var(--border) 70%, transparent);
+}
+
+.medals {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 14px 10px;
+}
+
+.medals__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 6px 12px;
+  border: 0;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+}
+
+.medals__item:hover,
+.medals__item:focus-visible {
+  background: var(--surface-sunken);
+}
+
+.medals__title {
+  font-size: 0.75rem;
+  line-height: 1.3;
+  font-weight: 650;
+  color: var(--text-secondary);
+  text-wrap: balance;
+}
+
+.medals__item--earned .medals__title {
+  color: var(--text-primary);
+}
+
+.medals__meta {
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+}
+
+.medal {
+  display: block;
+  filter: drop-shadow(0 2px 5px rgb(0 0 0 / 18%));
+}
+
+/* Ein offenes Abzeichen wirft keinen Schatten - es liegt noch nicht da. */
+.medal:not(.medal--earned) {
+  filter: none;
+}
+
+/* --- Urkunde ---------------------------------------------------------------
+   Am Bildschirm eine Karte, auf Papier ein Blatt: deshalb hier bewusst feste
+   Farben statt Tokens. Eine Urkunde in Dunkelmodus wäre eine schwarze Seite
+   im Drucker. */
+
+.certificate {
+  background: #fdfdfb;
+  color: #1a1a18;
+  border: 1px solid #ddd9cf;
+  border-radius: var(--radius-lg);
+  padding: 28px 26px 22px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.certificate__rule {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #b99a53, transparent);
+}
+
+.certificate__kicker {
+  margin: 0;
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #8a7a52;
+}
+
+.certificate__name {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  color: #1a1a18;
+}
+
+.certificate__dates {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: #55524a;
+}
+
+.certificate__facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 14px 10px;
+  padding: 14px 0;
+  border-top: 1px solid #e7e3d8;
+  border-bottom: 1px solid #e7e3d8;
+}
+
+.certificate__value {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  line-height: 1.1;
+  color: #1a1a18;
+}
+
+.certificate__label {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.6875rem;
+  line-height: 1.3;
+  color: #6d6a60;
+}
+
+.certificate__medals {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  gap: 12px 8px;
+}
+
+.certificate__medal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.certificate__medal-title {
+  font-size: 0.6875rem;
+  line-height: 1.25;
+  font-weight: 650;
+  color: #2c2a25;
+  text-wrap: balance;
+}
+
+.certificate__medal-day {
+  font-size: 0.625rem;
+  color: #8a867a;
+}
+
+.certificate__foot {
+  margin: 0;
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  color: #8a867a;
+}
+
+@media print {
+  /* Auf Papier ist die Urkunde die Seite, nicht eine Karte darauf. */
+  .certificate {
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    page-break-inside: avoid;
+  }
 }
