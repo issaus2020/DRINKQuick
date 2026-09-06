@@ -17,6 +17,12 @@
  *
  * Über dem Richtwert färbt sich die Füllung um, statt weiter zu steigen:
  * sonst wäre nicht erkennbar, dass er schon überschritten ist.
+ *
+ * Die Figur atmet, solange die App offen ist - eine sehr langsame Bewegung
+ * aus dem Sitz heraus, damit sie lebt und nicht wie ein Aufkleber wirkt. Sie
+ * sitzt auf einer eigenen Gruppe, weil die Gruppe darunter schon die Neigung
+ * aus dem Füllstand trägt und ein zweites `transform` sie überschriebe. Wer
+ * Bewegung reduziert hat, sieht nichts davon.
  */
 import { useId } from 'react';
 
@@ -113,6 +119,7 @@ export function BellyBaby({
 
       {/* Die ganze Figur neigt sich mit dem Füllstand ein wenig - zufrieden
           sitzt man schiefer als hungrig. */}
+      <g className="belly__breath">
       <g style={{ transform: `rotate(${(fill * 3).toFixed(1)}deg)`, transformOrigin: '70px 110px' }}>
         <ellipse className="belly__ink belly__paper" cx="54" cy="169" rx="12" ry="8" />
         <ellipse className="belly__ink belly__paper" cx="86" cy="169" rx="12" ry="8" />
@@ -150,6 +157,7 @@ export function BellyBaby({
 
         <path className="belly__ink" d="M34 100 C 20 106, 15 119, 21 129" />
         <path className="belly__ink" d="M106 100 C 120 106, 125 119, 119 129" />
+      </g>
       </g>
     </svg>
   );
