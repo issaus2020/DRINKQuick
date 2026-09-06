@@ -5,6 +5,18 @@
  * Bild, wegen dem der Bildschirm aufgeht, und muss deshalb ohne Scrollen zu
  * sehen sein. Erst danach kommen laufender Timer, Schnellerfassung, Hinweise
  * und der Verlauf des Tages.
+ *
+ * Die Heldenkarte beantwortet genau drei Fragen, und zwar in dieser
+ * Reihenfolge: Wann war die letzte Mahlzeit, wann kommt die nächste und mit
+ * wie viel, und wie steht es ums Gewicht. Alles andere - Zahl der Mahlzeiten,
+ * Abstände, Perzentile - steht weiter unten und muss hier oben nicht noch
+ * einmal stehen.
+ *
+ * Neben dem Namen liegen zwei Marken: Vitamin D und Windel. Beide tragen mit
+ * einem Tipp ein, und beide lassen sich zurücknehmen - Vitamin D, weil es ein
+ * Haken für den Tag ist und ein zweiter Tipp ihn wieder löst, die Windel über
+ * einen kurzen Rückgängig-Hinweis. Ein Knopf, der ohne Rückfrage schreibt,
+ * braucht einen Weg zurück.
  */
 import { useMemo, useState } from 'react';
 import { DailyGoalHeader } from '../components/DailyGoalHeader';
@@ -14,6 +26,7 @@ import { FeedSheet } from '../components/entry/FeedSheet';
 import { MeasurementSheet } from '../components/entry/MeasurementSheet';
 import { SleepSheet } from '../components/entry/SleepSheet';
 import { SleepToggle } from '../components/entry/SleepToggle';
+import { NewMedalCard } from '../components/NewMedalCard';
 import { NextFeedCard } from '../components/NextFeedCard';
 import { RestCard } from '../components/RestCard';
 import { QuickAmounts } from '../components/entry/QuickAmounts';
@@ -21,8 +34,9 @@ import { Icon } from '../components/ui/Icon';
 import { MetricTile } from '../components/ui/MetricTile';
 import { BellyBaby } from '../components/ui/BellyBaby';
 import { Celebration } from '../components/ui/Celebration';
+import { badgeProgress } from '../lib/badges';
 import { buildAlerts, type AlertLevel } from '../lib/alerts';
-import { ageInDays, formatDurationShort, formatSince, formatTime, startOfDay } from '../lib/date';
+import { ageInDays, formatSince, formatTime, startOfDay } from '../lib/date';
 import { FEED_KIND_LABELS, SIDE_LABELS } from '../lib/export';
 import { expectedMealsPerDay, feedingStats, intakeTarget, usualBottleMl } from '../lib/feeding';
 import {
@@ -34,6 +48,8 @@ import {
   zScore,
 } from '../lib/growth';
 import { dailyDiapers, diaperTargets } from '../lib/health';
+import { newId } from '../lib/id';
+import { forecastNextFeed, planRestOfDay } from '../lib/rhythm';
 import { useGrewSince, useJustHappened, useNow } from '../lib/hooks';
 import { quoteOfDay } from '../lib/quotes';
 import { useStore } from '../lib/store-context';
@@ -48,15 +64,20 @@ const ALERT_ICON: Record<AlertLevel, 'check' | 'info' | 'warning' | 'alert'> = {
 
 interface TodayScreenProps {
   baby: Baby;
+  /** Führt zur Sammlung der ersten vierzig Tage. */
+  onShowMedals: () => void;
 }
 
-export function TodayScreen({ baby }: TodayScreenProps) {
-  const { data, canEdit } = useStore();
+export function TodayScreen({ baby, onShowMedals }: TodayScreenProps) {
+  const { data, canEdit, addDiaper, addHealth, removeDiaper, removeHealth } = useStore();
   const now = useNow(30_000);
   const [feedSheet, setFeedSheet] = useState<{ kind: Feed['kind']; existing?: Feed } | null>(null);
   const [diaperOpen, setDiaperOpen] = useState(false);
   const [weightOpen, setWeightOpen] = useState(false);
   const [sleepOpen, setSleepOpen] = useState(false);
+  // Die zuletzt mit einem Tipp eingetragene Windel - Grundlage für das
+  // Rückgängig, nicht für die Anzeige.
+  const [lastQuickDiaper, setLastQuickDiaper] = useState<{ id: string; at: string } | null>(null);
 
   const feeds = useMemo(() => data.feeds.filter((f) => f.babyId === baby.id), [data.feeds, baby.id]);
   const measurements = useMemo(
@@ -141,6 +162,65 @@ export function TodayScreen({ baby }: TodayScreenProps) {
   // bei der zweiten und dritten Mahlzeit wieder von vorn läuft.
   const dance = useGrewSince(todayEntries.length);
 
+  // Die Sammlung der ersten vierzig Tage - hier nur für den Hinweis, ob
+  // heute eine Medaille dazugekommen ist.
+  const medals = useMemo(
+    () => badgeProgress(baby, data, now).badges,
+    [baby, data, now],
+  );
+
+  // Die übliche Portion ist der Maßstab für den Plan: was Noah wirklich
+  // trinkt, und erst als Rückfall der Richtwert.
+  const usualPerMealMl = usualBottleMl(feeds, now) ?? target?.perMealMl;
+
+  // Wann die nächste Mahlzeit ansteht und mit wie viel. Dieselbe Rechnung wie
+  // in der Karte weiter unten; sie kostet wenig und hält die beiden Stellen
+  // zwangsläufig auf demselben Stand.
+  const forecast = forecastNextFeed(feeds, now);
+  const nextPlanned = planRestOfDay(feeds, remainingMl, usualPerMealMl, now).slots[0];
+
+  // Vitamin D wird einmal am Tag gegeben. Der Knopf ist deshalb ein Haken für
+  // heute und kein Zähler - und ein zweiter Tipp nimmt ihn wieder zurück.
+  const vitaminToday = useMemo(
+    () =>
+      health
+        .filter((entry) => entry.kind === 'vitamin' && new Date(entry.at).getTime() >= todayStart)
+        .sort((a, b) => b.at.localeCompare(a.at))[0],
+    [health, todayStart],
+  );
+
+  const lastDiaper = useMemo(
+    () => [...diapers].sort((a, b) => b.at.localeCompare(a.at))[0],
+    [diapers],
+  );
+
+  // Das Rückgängig steht nur kurz - danach ist der Eintrag ein Eintrag wie
+  // jeder andere und wird dort geändert, wo alle anderen auch stehen.
+  const undoDiaper =
+    lastQuickDiaper && now.getTime() - new Date(lastQuickDiaper.at).getTime() < 3 * 60_000
+      ? lastQuickDiaper
+      : null;
+
+  const logDiaper = () => {
+    const entry = { id: newId(), at: new Date().toISOString() };
+    addDiaper({ ...entry, babyId: baby.id, kind: 'wet' });
+    setLastQuickDiaper(entry);
+  };
+
+  const toggleVitamin = () => {
+    if (vitaminToday) {
+      removeHealth(vitaminToday.id);
+      return;
+    }
+    addHealth({
+      id: newId(),
+      babyId: baby.id,
+      at: new Date().toISOString(),
+      kind: 'vitamin',
+      label: 'Vitamin D',
+    });
+  };
+
   // Der zuletzt gewählte Inhalt wird für den Schnelleintrag übernommen.
   const lastBottleContent = useMemo(
     () =>
@@ -164,7 +244,61 @@ export function TodayScreen({ baby }: TodayScreenProps) {
 
       <div className="card">
         <div className="hero__head">
-          <h2 className="hero__name">{baby.name.trim() || 'Dein Baby'}</h2>
+          <div className="hero__top">
+            <h2 className="hero__name">{baby.name.trim() || 'Dein Baby'}</h2>
+            {/* Zwei Marken, ein Tipp: Uhrzeit und Zählerstand entstehen im
+                Hintergrund, sichtbar ist nur, was heute schon war. */}
+            {canEdit && (
+              <div className="hero__marks">
+                <button
+                  type="button"
+                  className={`hero__mark${vitaminToday ? ' hero__mark--done' : ''}`}
+                  aria-pressed={Boolean(vitaminToday)}
+                  onClick={toggleVitamin}
+                  aria-label={
+                    vitaminToday
+                      ? `Vitamin D heute um ${formatTime(vitaminToday.at)} gegeben – Eintrag zurücknehmen`
+                      : 'Vitamin D für heute eintragen'
+                  }
+                >
+                  <Icon name="pill" size={18} />
+                  <span className="hero__mark-text">
+                    {vitaminToday ? formatTime(vitaminToday.at) : 'Vitamin D'}
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  className="hero__mark"
+                  onClick={logDiaper}
+                  aria-label={
+                    lastDiaper
+                      ? `Nasse Windel eintragen – heute ${diaperToday.wet}, zuletzt ${formatTime(lastDiaper.at)}`
+                      : 'Nasse Windel eintragen – heute noch keine'
+                  }
+                >
+                  <Icon name="diaper" size={18} />
+                  <span className="hero__mark-text">{diaperToday.wet}</span>
+                </button>
+              </div>
+            )}
+          </div>
+
+          {undoDiaper && (
+            <p className="hero__undo">
+              Windel {formatTime(undoDiaper.at)} eingetragen.{' '}
+              <button
+                type="button"
+                className="hero__undo-btn"
+                onClick={() => {
+                  removeDiaper(undoDiaper.id);
+                  setLastQuickDiaper(null);
+                }}
+              >
+                Rückgängig
+              </button>
+            </p>
+          )}
+
           <figure className="quote">
             <blockquote className="quote__text">{quote.text}</blockquote>
             {quote.source && <figcaption className="quote__source">{quote.source}</figcaption>}
@@ -196,39 +330,74 @@ export function TodayScreen({ baby }: TodayScreenProps) {
             {justReached && <Celebration />}
           </div>
           <div className="hero__body">
+            {/* Beide Kennzahlen führen mit einer Uhrzeit: einmal zurück,
+                einmal nach vorn. Das "vor zwei Stunden" steht darunter - als
+                große Zahl bräche es über zwei Zeilen um und wäre schlechter
+                zu lesen als die Uhrzeit selbst. */}
             <div className="hero__block">
               <div className="hero__value">
-                {stats.lastFeed ? formatSince(stats.lastFeed.endedAt ?? stats.lastFeed.startedAt, now) : '-'}
+                {stats.lastFeed ? formatTime(stats.lastFeed.startedAt) : '-'}
               </div>
               <div className="hero__label">
                 {stats.lastFeed
-                  ? `${formatTime(stats.lastFeed.startedAt)} · ${FEED_KIND_LABELS[stats.lastFeed.kind]}${
-                      stats.lastFeed.amountMl ? ` · ${stats.lastFeed.amountMl} ml` : ''
+                  ? `letzte Mahlzeit · ${formatSince(
+                      stats.lastFeed.endedAt ?? stats.lastFeed.startedAt,
+                      now,
+                    )} · ${FEED_KIND_LABELS[stats.lastFeed.kind]}${
+                      stats.lastFeed.amountMl ? ` ${stats.lastFeed.amountMl} ml` : ''
                     }`
-                  : 'noch keine Mahlzeit heute'}
-              </div>
-            </div>
-            <div className="hero__block">
-              <div className="hero__value">{stats.today.meals}</div>
-              <div className="hero__label">
-                {stats.today.meals === 1 ? 'Mahlzeit' : 'Mahlzeiten'}
-                {stats.nightFeeds > 0 ? `, ${stats.nightFeeds} davon nachts` : ''}
+                  : 'letzte Mahlzeit – heute noch keine'}
               </div>
             </div>
             <div className="hero__block">
               <div className="hero__value">
-                {stats.avgIntervalH ? formatDurationShort(stats.avgIntervalH * 3600) : '-'}
+                {forecast.basis === 'insufficient'
+                  ? '-'
+                  : forecast.overdue
+                    ? 'jetzt'
+                    : formatTime(forecast.expectedAt as Date)}
               </div>
               <div className="hero__label">
-                Ø Abstand
-                {stats.longestIntervalH
-                  ? `, längste Pause ${formatDurationShort(stats.longestIntervalH * 3600)}`
-                  : ''}
+                {forecast.basis === 'insufficient'
+                  ? 'nächste Mahlzeit – für eine Vorhersage fehlen noch Einträge'
+                  : `nächste Mahlzeit${forecast.overdue ? ' wäre üblich' : ''}${
+                      nextPlanned?.amountMl ? ` · geplant etwa ${nextPlanned.amountMl} ml` : ''
+                    }`}
               </div>
             </div>
           </div>
         </div>
+
+        {/* Gewicht und seine Entwicklung: die dritte Frage der Karte. Die
+            Verläufe dazu stehen weiter unten in den Kacheln - hier zählt der
+            Stand von heute. */}
+        <p className="hero__weight">
+          {weight.latestWeightG ? (
+            <>
+              <strong className="hero__weight-value">{weight.latestWeightG} g</strong>
+              {weight.gainPerDayG !== undefined && weight.gainSpanDays ? (
+                <span>
+                  {weight.gainPerDayG >= 0 ? '+' : '−'}
+                  {Math.abs(Math.round(weight.gainPerDayG))} g/Tag über{' '}
+                  {weight.gainSpanDays} {weight.gainSpanDays === 1 ? 'Tag' : 'Tage'}
+                </span>
+              ) : (
+                <span>eine zweite Wägung zeigt die Entwicklung</span>
+              )}
+              {weight.vsBirthG !== undefined && (
+                <span>
+                  {weight.vsBirthG >= 0 ? '+' : '−'}
+                  {Math.abs(weight.vsBirthG)} g seit Geburt
+                </span>
+              )}
+            </>
+          ) : (
+            <span>Noch keine Wägung – bis dahin rechnet die App mit dem Geburtsgewicht.</span>
+          )}
+        </p>
       </div>
+
+      <NewMedalCard badges={medals} now={now} onOpen={onShowMedals} />
 
       {/* Alles, was einträgt, entfällt für Beobachter - sie sollen keine
           Knöpfe sehen, die der Server ohnehin abweist. */}
@@ -290,9 +459,7 @@ export function TodayScreen({ baby }: TodayScreenProps) {
       <NextFeedCard
         feeds={feeds}
         remainingMl={remainingMl}
-        // Maßstab ist, was Noah wirklich trinkt; der Richtwert nur als
-        // Rückfall, solange dafür die Einträge fehlen.
-        usualPerMealMl={usualBottleMl(feeds, now) ?? target?.perMealMl}
+        usualPerMealMl={usualPerMealMl}
         now={now}
       />
 

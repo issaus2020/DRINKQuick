@@ -1085,6 +1085,29 @@ button {
   }
 }
 
+/* Atmen, solange die App offen ist. Sehr langsam und sehr klein - die Figur
+   soll leben, nicht auf sich aufmerksam machen. Die Bewegung sitzt auf einer
+   eigenen Gruppe innerhalb der Zeichnung: die Neigung aus dem Füllstand und
+   das Schaukeln bei einer neuen Mahlzeit liegen auf anderen Ebenen und
+   überschreiben sich so nicht gegenseitig. */
+@media (prefers-reduced-motion: no-preference) {
+  .belly__breath {
+    transform-box: fill-box;
+    transform-origin: 50% 100%;
+    animation: belly-breathe 5.5s ease-in-out infinite;
+  }
+}
+
+@keyframes belly-breathe {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-1.6px) scale(1.014);
+  }
+}
+
 /* Einmal schaukeln, wenn eine Mahlzeit dazukommt. Nach hinten abklingend, weil
    ein gleichmäßiges Wackeln wie ein Fehler aussieht und nicht wie Freude.
    Wer Bewegung reduziert hat, sieht nichts davon - die Aussage steckt in den
@@ -1405,6 +1428,76 @@ button {
   margin-bottom: 16px;
 }
 
+/* Name links, die beiden Marken rechts. Bei einem langen Namen rutschen sie
+   in die nächste Zeile, statt den Namen abzuschneiden. */
+.hero__top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+}
+
+.hero__marks {
+  display: flex;
+  gap: 8px;
+}
+
+/* Eine Marke ist ein Knopf, der sofort schreibt. Deshalb ist sie klein genug,
+   um nicht wie die Schnelleingabe darunter auszusehen, und groß genug für
+   einen Daumen - 40 px hoch. */
+.hero__mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-secondary);
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background 160ms ease,
+    color 160ms ease,
+    border-color 160ms ease;
+}
+
+.hero__mark:active {
+  transform: scale(0.96);
+}
+
+.hero__mark--done {
+  color: var(--good);
+  background: var(--good-soft);
+  border-color: color-mix(in srgb, var(--good) 35%, transparent);
+}
+
+.hero__mark-text {
+  white-space: nowrap;
+}
+
+/* Der Weg zurück nach einem versehentlichen Tipp. Er steht nur wenige Minuten
+   und verschwindet dann von selbst - danach ist der Eintrag ein Eintrag wie
+   jeder andere. */
+.hero__undo {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.hero__undo-btn {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 .hero__name {
   font-family: var(--font-display);
   font-size: 1.75rem;
@@ -1474,6 +1567,28 @@ button {
   font-size: 0.75rem;
   line-height: 1.35;
   color: var(--text-secondary);
+}
+
+/* Das Gewicht steht unter den Kennzahlen, nicht neben der Figur: es gehört zur
+   Karte, ist aber keine Zahl, die man stündlich ansieht. */
+.hero__weight {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+
+.hero__weight-value {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
 }
 
 /* --- Hinweise (Ampel) ---------------------------------------------------- */
@@ -2454,4 +2569,74 @@ button {
     padding: 0;
     page-break-inside: avoid;
   }
+}
+
+/* Die Vorschau ist als solche erkennbar, auch wenn sie jemand ausdruckt:
+   ein gestrichelter Rand und der Hinweis im Kopf. Ein Blatt, das aussieht
+   wie das echte, aber halbe Zahlen trägt, wäre wertlos. */
+.certificate--preview {
+  border-style: dashed;
+  border-color: #c3bda9;
+}
+
+.certificate--preview .certificate__kicker {
+  color: #9a8c66;
+}
+
+/* Der Hinweis auf eine heute erreichte Medaille. Er liegt unter der Figur,
+   wo der Blick ohnehin hinwandert, und verschwindet mit dem Tag von selbst. */
+.new-medal {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+  border: 1px solid color-mix(in srgb, var(--good) 32%, transparent);
+  background: linear-gradient(color-mix(in srgb, var(--good) 10%, transparent), transparent 70%),
+    var(--glass);
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.new-medal__figures {
+  position: relative;
+  flex: none;
+  display: flex;
+  align-items: center;
+  /* Mehrere Medaillen liegen leicht übereinander wie auf einem Band. */
+  gap: 0;
+}
+
+.new-medal__figures > .medal + .medal {
+  margin-left: -18px;
+}
+
+.new-medal__body {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex-grow: 1;
+}
+
+.new-medal__kicker {
+  font-size: 0.75rem;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--good);
+}
+
+.new-medal__title {
+  font-size: 0.9375rem;
+  font-weight: 650;
+  line-height: 1.3;
+  color: var(--text-primary);
+  text-wrap: pretty;
+}
+
+.new-medal__more {
+  flex: none;
+  color: var(--text-muted);
 }
